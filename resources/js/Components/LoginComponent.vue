@@ -1,3 +1,48 @@
+<script setup>
+import { ref } from 'vue'
+import axios from 'axios'
+
+const props = defineProps({
+  csrf_token: String
+})
+
+
+const email = ref('')
+const password = ref('')
+
+const handleLogin = async () => {
+  
+  console.log('Intentando iniciar sesión con:', email.value, password.value)
+  
+  try {
+    const response = await axios.post('/login', {
+      email: email.value,
+      password: password.value,
+      _token: props.csrf_token 
+    });
+
+    if (response.data.success) {
+     
+      window.location.href = response.data.redirect_url;
+    } else {
+      
+      alert(response.data.message);
+    }
+  } catch (error) {
+    alert('Error en el servidor.');
+  }
+}
+
+const goToRegister = () => {
+  console.log('Ir a registro')
+  window.location.href = '/register';
+}
+
+const goToForgotPassword = () => {
+  console.log('Ir a recuperar contraseña')
+}
+</script>
+
 <template>
   <div class="login-container">
     <h2>Iniciar sesión</h2>
@@ -22,26 +67,7 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
 
-const email = ref('')
-const password = ref('')
-
-const handleLogin = () => {
-  console.log('Login:', email.value, password.value)
-  // Aquí puedes llamar a la API o store
-}
-
-const goToRegister = () => {
-  console.log('Ir a registro')
-  // Aquí puedes redireccionar con router o window.location.href
-}
-
-const goToForgotPassword = () => {
-  console.log('Ir a recuperar contraseña')
-}
-</script>
 
 <style scoped>
 .login-container {

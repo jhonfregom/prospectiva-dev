@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import Login from './Components/LoginComponent.vue'
+import Register from './Components/RegisterComponent.vue'
 import axios from 'axios'
 
 // ------------------
@@ -16,6 +17,8 @@ import.meta.glob([
 
 // Create Vue app
 const app = createApp(Login)
+
+
 
 // Pinia setup
 const pinia = createPinia()

@@ -18,5 +18,6 @@
         'tasks' => [
                 'index' => route('tasks.index'),
                 'create' => route('task.store'),
-            ]
+        ],
+        'login' => route('login'),
     ];
