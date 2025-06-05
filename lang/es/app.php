@@ -26,58 +26,46 @@ return [
         'modules_title' => 'módulos',
         'queries_title' => 'consultas',
         'modules' => [
-            'inventory' =>  [
-                'title' =>  'inventario',
+            'variables' =>  [
+                'title' =>  'variables',
                 'description' => [
-                    'Facturación',
-                    'Compras',
+                    'creación de variables',
                 ]
             ],
-            'treasury' => [
-                'title' =>  'tesorería',
+            'matrix' => [
+                'title' =>  'matriz variables',
                 'description' => [
-                    'Pagos',
-                    'Recaudos',
+                    'calificación variables',
                 ]
             ],
-            'payroll' => [
-                'title' =>  'nomina',
+            'graphics' => [
+                'title' =>  'graficas variables',
                 'description' => [
-                    'Liquidación',
+                    'matriz de variables',
                 ]
             ],
 
         ],
         'queries' => [
-            'parameters' =>  [
-                'title' =>  'parámetros',
+            'analysis' =>  [
+                'title' =>  'análisis mapa de variables',
                 'description' => [
-                    'Terceros, Sucursal,',
-                    'Puc, Centro costos',
                 ]
             ],
-            'roles' => [
-                'title' =>  'roles',
+            'hypothesis' => [
+                'title' =>  'análisis hipótesis de futuro',
                 'description' => [
-                    'Permisos'
                 ]
             ],
-            'budget' => [
-                'title' =>  'presupuesto',
+            'schuwartz' => [
+                'title' =>  'schuwartz',
                 'description' => [
-                    'Ejecución'
                 ]
             ],
         ],
     ],
 
-    'parameters' => [
-        'title' =>  'parámetros',
-    ],
 
-    'roles' => [
-        'title' =>  'roles',
-    ],
 
     'inventory' => [
         'title' =>  'inventarios',

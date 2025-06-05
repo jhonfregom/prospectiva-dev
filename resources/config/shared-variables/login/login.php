@@ -23,7 +23,7 @@
 
     //List urls to use global in store from pinia/vue
     $list_urls = [
-      // "home" => route('home'),
-      // "login" => route('start_login'),
+       "home" => route('home'),
+       "login" => route('start_login'),
     ];
 ?>

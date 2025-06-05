@@ -12,7 +12,7 @@
                         <article class="media">
                             <div class="media-left">
                                 <figure class="avatar">
-                                    <img class="image" src="{{ Vite::asset('resources/img/logo-1280.png') }}" alt="Cloud Back">
+                                    <img class="image" src="{{ Vite::asset('resources/img/unad.png') }}" alt="Cloud Back">
                                 </figure>
                             </div>
                             <div class="media-content">

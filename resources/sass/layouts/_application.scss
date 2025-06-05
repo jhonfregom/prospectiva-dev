@@ -1,0 +1,82 @@
+@use '../variables' as var;
+
+.application{
+    .action-main{
+
+        .section-content{
+            margin-top: 1.5rem;
+        }
+
+        //Table
+        .table-container {
+            border: 2px solid var.$color-purple;
+            border-radius: 15px;
+            padding: 10px;
+
+            .b-table table th .sort-icon {
+                display: none;
+                font-size: 12px;
+            }
+        }
+        .table {
+            th {
+                cursor: pointer;
+                color: var.$color-purple;
+            }
+
+            .b-checkbox.checkbox {
+                input[type=checkbox]:checked+.check.is-success {
+                    background-color: var.$color-light-teal !important;
+                }
+                .check {
+                    border-color: var.$color-light-teal !important;
+
+                    &.is-success:checked {
+                        background-color: var.$color-light-teal !important;
+                    }
+                }
+            }
+
+            &.is-striped tbody tr:not(.is-selected):nth-child(even) {
+                background-color: var.$color-dark-striped !important;
+            }
+
+            .are-small .is-white {
+                border: 1px solid var.$color-dark-striped;
+            }
+            .requiredInput {
+                color: #f14668;
+                .input{
+                    border-color: #f14668;
+                }
+            }
+        }
+
+        //Pagination
+        .pagination {
+            display: inline-flex !important;
+            float: right;
+
+            &-list {
+                .is-current {
+                    background-color: var.$color-teal;
+                    border-color: var.$color-teal;
+                    color: #fff;
+                }
+
+                a {
+                    border-color: var.$color-teal;
+                }
+            }
+
+            &-link {
+                border-color: var.$color-teal;
+            }
+
+            ul.pagination-list{
+                margin-left: 0;
+                margin-top: 0;
+            }
+        }
+    }
+}

@@ -1,0 +1,139 @@
+@use './variables' as *;
+
+.button.is-primary{
+    background-color: $color-primary;
+}
+.button.is-link{
+    background-color: $color-link;
+}
+.button.is-info{
+    background-color: $color-info;
+}
+.button.is-success{
+    background-color: $color-success;
+}
+.button.is-warning{
+    background-color: $color-warning;
+}
+.button.is-danger{
+    background-color: $color-danger;
+}
+.has-text-primary{
+    color: $color-primary !important;
+}
+.has-text-link{
+    color: $color-link !important;
+}
+.has-text-info{
+    color: $color-info !important;
+}
+.has-text-success{
+    color: $color-success !important;
+}
+.has-text-warning{
+    color: $color-warning !important;
+}
+.has-text-danger{
+    color: $color-danger !important;
+}
+.select select:focus,
+.taginput .taginput-container.is-focusable:focus,
+.textarea:focus,
+.input:focus,
+.select select.is-focused,
+.taginput .is-focused.taginput-container.is-focusable,
+.is-focused.textarea,
+.is-focused.input,
+.select select:active,
+.taginput .taginput-container.is-focusable:active,
+.textarea:active,
+.input:active,
+.select select.is-active,
+.taginput .is-active.taginput-container.is-focusable,
+.is-active.textarea,
+.is-active.input {
+    border-color: $color-primary;
+}
+.b-checkbox.checkbox input[type="checkbox"]:checked + .check {
+    background-color: $color-primary;
+    border-color: $color-primary;
+}
+.b-checkbox.checkbox:hover input[type="checkbox"]:not(:disabled) + .check {
+    border-color: $color-primary;
+}
+.b-tooltip.is-primary .tooltip-content{
+    background-color: $color-primary;
+}
+.b-tooltip.is-bottom .tooltip-content::before{
+    border-bottom-color: $color-primary !important;
+}
+.b-tooltip.is-top.is-primary .tooltip-content::before {
+    border-top-color: $color-primary !important;
+}
+.tag:not(body).is-primary {
+    background-color: $color-primary;
+}
+.datepicker{
+    .datepicker-table{
+        .datepicker-body{
+            .datepicker-cell.is-selected{
+                background-color: $color-primary;
+            }
+        }
+    }
+}
+.Password{
+    .Password__strength-meter{
+        .Password__strength-meter--fill[data-score="3"]{
+            background-color: $color-blue-cyan;
+        }
+        .Password__strength-meter--fill[data-score="4"]{
+            background-color: $color-dark-teal;
+        }
+    }
+}
+.switch input[type="checkbox"]:checked + .switch-background{
+    background-color: $color-primary;
+}
+
+.dialog {
+    .modal-card-body,
+    .modal-card-foot {
+        color: white;
+        background-color: $color-dark-teal;
+        border-color: $color-dark-teal;
+
+        button {
+            color: white;
+            background-color: $color-dark-teal;
+            border-color: $color-light-teal;
+        }
+
+        .is-success {
+            background-color: $color-light-teal;
+            border-color: $color-light-teal;
+        }
+    }
+}
+
+.custom-menu-item {
+  border: 1px solid #b19cd9; /* Morado suave */
+  border-radius: 25px;
+  margin: 0.4rem 0;
+  text-align: center;
+  background-color: white;
+  color: #6a4c93; /* Morado medio */
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.custom-menu-item:hover {
+  background-color: #e6dbf9;
+  cursor: pointer;
+}
+
+.custom-menu-item.is-active {
+  background-color: #b19cd9;
+  color: white;
+}
+

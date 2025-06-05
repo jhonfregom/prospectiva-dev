@@ -1,0 +1,308 @@
+@media(min-width: 1920px){
+    .login,
+    .register{
+        .container{
+            .content{
+                .subtitle{
+                    font-size: 3rem;
+                    margin-bottom: 4rem;
+                }
+                input,
+                .button{
+                    font-size: 1.7rem;
+                }
+            }
+            .sub-content{
+                font-size: 1.7rem;
+            }
+        }
+    }
+    .footer.static{
+        font-size: 1.3rem;
+    }
+}
+@media(max-width: 1440px){
+    .login,
+    .register{
+        .container{
+            .content{
+                width: 60%;
+                .subtitle{
+                    font-size: 3rem;
+                    margin-bottom: 4rem;
+                }
+                input,
+                .button{
+                    font-size: 1.7rem;
+                }
+            }
+            .sub-content{
+                font-size: 1.7rem;
+            }
+        }
+    }
+}
+@media(max-width: 1366px){
+    .login,
+    .register{
+        .container{
+            .content{
+                width: 65%;
+                .title{
+                    font-size: 3rem;
+                }
+                .subtitle{
+                    font-size: 2.5rem;
+                }
+            }
+        }
+    }
+}
+@media(max-width: 1360px){
+
+}
+@media(max-width: 1024px){
+    .login,
+    .register,
+    .restore-password{
+        .container{
+            .content{
+                width: 70%;
+            }
+        }
+        .hero-foot{
+            bottom: 6rem;
+        }
+    }
+}
+@media(max-width: 930px){
+    .login,
+    .register{
+        .container{
+            .content{
+                .title{
+                    font-size: 2.5rem;
+                }
+            }
+        }
+    }
+}
+@media(max-width: 860px){
+    .login,
+    .register{
+        .container{
+            .content{
+                width: 80%;
+                .title{
+                    font-size: 3rem;
+                }
+            }
+        }
+    }
+}
+@media(max-width: 834px){
+    .login,
+    .register{
+        .container{
+            .content{
+                .box{
+                    .title{
+                        font-size: 2.4rem;
+                    }
+                    .subtitle{
+                        font-size: 1.8rem;
+                    }
+                    input{
+                        font-size: 0.9rem;
+                    }
+                    .button.is-info{
+                        font-size: 1.2rem;
+                    }
+                }
+            }
+            .sub-content{
+                a{
+                    margin: 0 2rem;
+                }
+            }
+        }
+    }
+}
+@media(max-width: 768px){
+    .login,
+    .register{
+        .container{
+            .content{
+                width: 90%;
+                .box{
+                    .title{
+                        font-size: 2.6rem;
+                    }
+                    .subtitle{
+                        font-size: 1.4rem;
+                    }
+                }
+            }
+        }
+    }
+    .application
+    {
+        .footer.is-footer-my-space-section,
+        .footer.is-footer-create-folder-section,
+        .footer.is-footer-deleted-section{
+            .columns{
+                .column.is-3{
+                    width: 100%;
+                }
+                .content-buttons{
+                    text-align: center;
+                }
+            }
+        }
+    }
+    .footer.static{
+        position: relative;
+    }
+    .footer{
+        text-align:center;
+    }
+}
+@media(max-width: 640px){
+    .login,
+    .register{
+        .container{
+            .content{
+                .box{
+                    .title{
+                        font-size: 2.2rem;
+                    }
+                    .subtitle{
+                        font-size: 1.2rem;
+                    }
+                    .sub-content{
+                        .column{
+                            margin: 0 20px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+@media(max-width: 576px){
+    .login,
+    .register,
+    .restore-password{
+        .container{
+            .content{
+                .box{
+                    .media{
+                        display: block;
+                        .media-left{
+                            margin-right: 0;
+                            .avatar{
+                                margin-left: auto;
+                                margin-right: auto;
+                            }
+                        }
+                        .media-content{
+                            text-align: center;
+                        }
+                    }
+                    form{
+                        .input{
+                            width: 100%;
+                        }
+                        .button.is-info{
+                            width: 80%;
+                        }
+                    }
+                    .sub-content{
+                        a{
+                            font-size: 1rem;
+                            margin: 0rem 1rem;
+                        }
+                    }
+                }
+            }
+        }
+        .hero-foot{
+            bottom: 20rem;
+        }
+    }
+}
+@media(max-width: 481px){
+    .login,
+    .register{
+        min-height: auto;
+        .container{
+            .content{
+                width: 100%;
+                input{
+                    font-size: 1rem;
+                }
+            }
+            .sub-content{
+                .separator{
+                    display: none;
+                }
+                a:first-child,
+                a:last-child{
+                    margin: 0rem;
+                }
+                a{
+                    display: list-item;
+                    list-style: none;
+                    margin: 1rem 0rem;
+                }
+            }
+        }
+    }
+}
+@media(max-width: 414px){
+    .login,
+    .register,
+    .restore-password{
+        .content{
+            .box{
+                .title{
+                    font-size: 2.5rem;
+                }
+            }
+        }
+        .hero-foot{
+            bottom: 22rem;
+        }
+    }
+}
+@media(max-width: 320px){
+    .login,
+    .register{
+        .container{
+            .content{
+                width: 100%;
+                .box{
+                    .title{
+                        font-size: 1.7rem;
+                    }
+                    .subtitle{
+                        font-size: 1rem;
+                    }
+                    form{
+                        .button.is-info{
+                            width: 100%;
+                        }
+                    }
+                    .sub-content{
+                        margin-top: 2rem;
+                        display: block;
+                        .column{
+                            margin-right: auto;
+                            margin-left: auto;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

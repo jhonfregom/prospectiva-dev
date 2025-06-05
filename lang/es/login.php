@@ -13,7 +13,7 @@ return [
     'login'             => 'Iniciar sesión',
     'need_help'         => '¿ayuda?',
     'sign_up'           => 'registrarse',
-    'subtitle'          => 'Seguridad Tecnológica en los procesos',
-    'title'             => 'Infracounter<br>Horizon',
-    'user_placeholder' =>  'Correo electrónico o numero celular',
+    'subtitle'          => 'UNAD - Universidad Nacional Abierta y a Distancia',
+    'title'             => 'Proyecto<br>Prospectiva',
+    'user_placeholder' =>  'Correo electrónico',
 ];

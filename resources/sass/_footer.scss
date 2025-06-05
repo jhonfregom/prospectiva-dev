@@ -1,0 +1,16 @@
+@use './variables' as var;
+
+.footer{
+    background-color: var.$color-black !important;
+    color: var.$color-white;
+    font-size: 1rem !important;
+    a{
+        color: var.$color-white;
+    }
+}
+.footer.static{
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}

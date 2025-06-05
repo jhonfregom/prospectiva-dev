@@ -1,0 +1,40 @@
+@use '../variables' as *;
+
+.application{
+    .action-main{
+        .section-content{
+            .main-content{
+                .dashboard{
+                    margin-top: 1.5rem;
+                    .card{
+                        border-radius: 22px;
+                        cursor: pointer;
+                        margin: 50px;
+                        min-height: 155px;
+                        .card-header{
+                            box-shadow: none;
+                            padding-top: 1.5rem;
+                            .card-header-title{
+                                display: inline-block;
+                                text-align: center;
+                                text-transform: capitalize;
+                            }
+                        }
+                        .card-content{
+                            p{
+                                line-height: 1.5;
+                                text-align: center;
+                            }
+                        }
+                    }
+                    .card:hover{
+                        background-color: $color-yellow;
+                        box-shadow: 10px 10px 13px 0px rgba(0,0,0,0.75);
+                        -webkit-box-shadow: 10px 10px 13px 0px rgba(0,0,0,0.75);
+                        -moz-box-shadow: 10px 10px 13px 0px rgba(0,0,0,0.75);
+                    }
+                }
+            }
+        }
+    }
+}

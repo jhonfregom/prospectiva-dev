@@ -24,11 +24,9 @@
                     @lang('footer.copyright')
                 </div>
                 <div class="column columns">
-                    <div class="column"><a href="#">@lang('footer.support')</a></div>
                     <div class="column"><a href="#">@lang('footer.terms')</a></div>
                     <div class="column"><a href="#">@lang('footer.policies')</a></div>
-                    <div class="column"><a class="has-text-warning" href="#">@lang('footer.go_infracounter')</a></div>
-                </div>
+                      </div>
             </div>
         </footer>
     </body>

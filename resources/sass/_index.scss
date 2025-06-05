@@ -1,0 +1,23 @@
+// Import Bulma's core
+@use "bulma/sass/utilities/index";
+
+// Import Bulma and Buefy styles
+/* @use "bulma/bulma"; */
+@use "buefy/dist/buefy";
+
+@use './default_controls';
+@use './layouts/application';
+
+@use './footer';
+
+//Layouts
+@use './layouts/main';
+@use './layouts/login';
+
+//sections
+@use './sections/main' as main_section;
+
+//TODO Import your custom styles
+
+// Responsive seection
+@use './responsive';
