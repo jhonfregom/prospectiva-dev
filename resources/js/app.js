@@ -50,7 +50,8 @@ app.component('login-form', LoginFormComponent);
 import MainAppComponent from './components/app/MainAppComponent.vue';
 app.component('main-app', MainAppComponent);
 
-
+import RegisterFormComponent from './components/app/ui/RegisterFormComponent.vue';
+app.component('register-form', RegisterFormComponent);
 //Mount the app
 app.mount('#app');
 

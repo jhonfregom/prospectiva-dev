@@ -25,5 +25,6 @@
     $list_urls = [
        "home" => route('home'),
        "login" => route('start_login'),
+         "register" => route('start_register'),
     ];
 ?>

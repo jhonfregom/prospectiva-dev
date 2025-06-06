@@ -26,4 +26,5 @@ export const useUrlsStore = defineStore('urls', {
             }
         }
     }
+
 });

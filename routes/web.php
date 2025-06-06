@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RegisterController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -12,16 +13,6 @@ Route::group(['middleware' => ['auth']], function(){
     Route::get('/app', function(){
         return view('app');
     })->name('home');}
-
-
-
-
-
-
-
-
-
-
 );
 
 
@@ -45,6 +36,11 @@ Route::controller(UserController::class)->group(function(){
     Route::get('/user/password-reset/{data}', 'passwordReset')->name('user_password_reset');
     // Route::post('/user/password-update-restore','updatePasswordRestore')
     //     ->name('user_password_update_restore');
+});
+
+Route::controller(RegisterController::class)->group(function(){
+    Route::get('/register', 'showRegistrationForm')->name('register');
+    Route::post('/register', 'register')->name('start_register');
 });
 
 
