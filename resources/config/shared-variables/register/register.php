@@ -41,7 +41,7 @@ $fields = [
         'label' => __('register.document_id'),
         'placeholder' => __('register.document_id'),
         'error' => false,
-        'msg' => '',
+        'msg' => 'Falta el documento de identidad',
     ],
     'submit' => [
         'label' => __('register.submit'),

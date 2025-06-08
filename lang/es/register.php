@@ -16,7 +16,7 @@ return [
     'button' => 'Registrarse',
     'first_name' => 'Nombre',           
     'last_name' => 'Apellidos',         
-    'user' => 'Usuario',                
+    'user' => 'Correo electrónico',                
     'document_id' => 'Documento',       
     'password' => 'Contraseña',
     'confirm_password' => 'Confirmar Contraseña',

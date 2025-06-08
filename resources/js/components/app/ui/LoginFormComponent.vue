@@ -64,7 +64,7 @@ export default {
 
             if(  this.user !== '' || this.password !== '' )
             {
-                // return true;
+            // return true;
                 const data = {
                     _token: this.csrf_token,
                     user: this.user,

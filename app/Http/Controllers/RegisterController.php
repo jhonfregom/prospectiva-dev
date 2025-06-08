@@ -56,6 +56,12 @@ class RegisterController extends Controller
                 'error' => false,
                 'msg' => '',
             ],
+            'confirm_password' => [
+                'label' => __('register.confirm_password'),
+                'placeholder' => __('register.confirm_password'),
+                'error' => false,
+                'msg' => '',
+            ],
             'submit' => [
                 'label' => __('register.submit'),
             ],
@@ -80,10 +86,10 @@ class RegisterController extends Controller
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'user' => $request->user,
+            'password' => bcrypt($request->password), // Encriptar la contraseña
             'status_users_id' => 2, // Estado inactivo por defecto
         ]);
         
-        //return redirect()->route('login')->with('success', 'Registro exitoso...');//############<-
         session()->flash('success', __('register.success'));//############<-
         
         return response()->json([

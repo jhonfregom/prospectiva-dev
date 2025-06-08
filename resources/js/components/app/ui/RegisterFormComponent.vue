@@ -33,6 +33,54 @@ export default {
             copy_msg_user: ''
         }
     },
+
+    computed: {
+        passwordMatch() {
+            if (this.password === '' && this.confirm_password === '') return true;
+            return this.password === this.confirm_password;
+        }
+    },
+
+    
+    watch: {
+        first_name(newValue) {
+            if (newValue !== '') {
+                this.fields.first_name.error = false;
+                this.fields.first_name.msg = '';
+            }
+        },
+        last_name(newValue) {
+            if (newValue !== '') {
+                this.fields.last_name.error = false;
+                this.fields.last_name.msg = '';
+            }
+        },
+        user(newValue) {
+            if (newValue !== '') {
+                this.fields.user.error = false;
+                this.fields.user.msg = '';
+            }
+        },
+        password(newValue) {
+            if (newValue !== '') {
+                this.fields.password.error = false;
+                this.fields.password.msg = '';
+            }
+        },
+        document_id(newValue) {
+            if (newValue !== '') {
+                this.fields.document_id.error = false;
+                this.fields.document_id.msg = '';
+            }
+        },
+        confirm_password(newValue) {
+            if (newValue !== '') {
+                this.fields.confirm_password.error = false;
+                this.fields.confirm_password.msg = '';
+            }
+        }
+    },
+
     created() {
         this.initUrlsStore();
         this.fields = JSON.parse(this.fields_json);
@@ -49,11 +97,22 @@ export default {
             
             // Validar campos vacíos
             this.fields.first_name.error = this.first_name === '';
+            this.fields.first_name.msg = this.first_name === '' ? 'Este campo es requerido' : '';
+
             this.fields.last_name.error = this.last_name === '';
+            this.fields.last_name.msg = this.last_name === '' ? 'Este campo es requerido' : '';
+
             this.fields.user.error = this.user === '';
+            this.fields.user.msg = this.user === '' ? 'Este campo es requerido' : '';
+
             this.fields.password.error = this.password === '';
+            this.fields.password.msg = this.password === '' ? 'Este campo es requerido' : '';
+
             this.fields.document_id.error = this.document_id === '';
+            this.fields.document_id.msg = this.document_id === '' ? 'Este campo es requerido' : '';
+
             this.fields.confirm_password.error = this.confirm_password === '';
+            this.fields.confirm_password.msg = this.confirm_password === '' ? 'Este campo es requerido' : '';
 
             if (!this.fields.first_name.error && !this.fields.last_name.error && 
                 !this.fields.user.error && !this.fields.password.error && !this.fields.document_id.error && !this.fields.confirm_password.error) {
@@ -160,12 +219,12 @@ export default {
             </b-field>
 
             <b-field
-                v-bind:type="{ 'is-danger' : fields.confirm_password.error }"
-                :message="fields.confirm_password.error ? fields.confirm_password.msg : ''">
+                v-bind:type="{ 'is-danger' : !passwordMatch }"
+                :message="!passwordMatch ? 'Las contraseñas no coinciden' : ''">
                 <b-input
                     name="confirm_password"
                     size="is-large"
-                    type="password"
+                    type="password"  
                     :placeholder="capitalize(fields.confirm_password.placeholder)"
                     v-model="confirm_password" />
             </b-field>
