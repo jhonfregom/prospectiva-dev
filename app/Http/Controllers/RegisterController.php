@@ -67,20 +67,29 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'document_id' => 'required|string|max:20|unique:users,user',
+            'document_id' => 'required|string|max:20|unique:users,document_id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:100',
-            'user' => 'required|string|max:255',
-            'password' => 'required|string|min:8|confirmed',
+            'user' => 'required|string|email|max:255|unique:users,user',//############<-
+            'password' => 'required|string|min:8',//############<-
+            'confirm_password' => 'required|string|min:8|same:password', //############<-
         ]);
+        
         $user = User::create([
             'document_id' => $request->document_id,
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'user' => $request->user,
-            'password' => bcrypt($request->password),
             'status_users_id' => 2, // Estado inactivo por defecto
         ]);
-        return redirect()->route('login')->with('success', 'Registro exitoso. Por favor, inicie sesión.');
+        
+        //return redirect()->route('login')->with('success', 'Registro exitoso...');//############<-
+        session()->flash('success', __('register.success'));//############<-
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => __('register.success'),
+            'redirect' => route('login')
+        ]);
     }
 }

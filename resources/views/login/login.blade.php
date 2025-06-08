@@ -23,7 +23,8 @@
                         <login-form
                             v-bind:csrf_token="'{{ csrf_token() }}'"
                             v-bind:urls_json="'{{ json_encode($list_urls) }}'"
-                            v-bind:fields_json="'{{ json_encode($fields) }}'">
+                            v-bind:fields_json="'{{ json_encode($fields) }}'"
+                            v-bind:success_message="{{ json_encode(session('success')) }}">
                         </login-form>
                         <div class="sub-content columns is-mobile is-centered">
                             <a class="column" href="{{ route('register') }}">{{ ucfirst( __('login.sign_up') ) }}</a>

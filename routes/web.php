@@ -25,7 +25,7 @@ Route::controller(LoginController::class)->group(function(){
 
 //Register
 Route::get('/sign-up', function(){
-    //TODO remplace by [CompanyController::class, 'showRegisterForm']
+    //TODO replace by [CompanyController::class, 'showRegisterForm']
     return "TODO";
 })->name('sign-up');
 

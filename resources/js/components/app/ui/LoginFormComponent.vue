@@ -21,6 +21,10 @@ export default {
         fields_json: {
             type: String,
             required: true
+        },
+        success_message: {
+            type: String,
+            default: null
         }
     },
     data() {
@@ -30,12 +34,22 @@ export default {
             fields: [],
             copy_msg_user: '',
             isCapsLock: false,
+            showSuccessMessage: false,
+            successMessage: ''
         }
     },
     created(){
         this.initUrlsStore();
         this.fields = JSON.parse(this.fields_json);
         this.copy_msg_user = this.fields.user.msg;
+        
+        if (this.success_message) {
+            this.successMessage = this.success_message;
+            this.showSuccessMessage = true;
+            setTimeout(() => {
+                this.showSuccessMessage = false;//############<-
+            }, 3000); // El mensaje desaparecerá después de 3 segundos
+        }
     },
     methods:{
         capitalize,
@@ -84,6 +98,9 @@ export default {
 </script>
 <template>
     <div>
+        <div v-if="showSuccessMessage" class="notification is-success">
+            {{ successMessage }}
+        </div>
         <form
             :action="storeUrls.login"
             @submit="clickLogin"

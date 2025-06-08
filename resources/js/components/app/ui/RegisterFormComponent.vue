@@ -27,6 +27,7 @@ export default {
             last_name: '',
             user: '',
             password: '',
+            confirm_password: '',
             document_id: '',
             fields: [],
             copy_msg_user: ''
@@ -52,9 +53,10 @@ export default {
             this.fields.user.error = this.user === '';
             this.fields.password.error = this.password === '';
             this.fields.document_id.error = this.document_id === '';
+            this.fields.confirm_password.error = this.confirm_password === '';
 
             if (!this.fields.first_name.error && !this.fields.last_name.error && 
-                !this.fields.user.error && !this.fields.password.error && !this.fields.document_id.error) {
+                !this.fields.user.error && !this.fields.password.error && !this.fields.document_id.error && !this.fields.confirm_password.error) {
                 
                 const data = {
                     _token: this.csrf_token,
@@ -62,22 +64,41 @@ export default {
                     last_name: this.last_name,
                     user: this.user,
                     password: this.password,
+                    confirm_password: this.confirm_password, 
                     document_id: this.document_id
                 };
 
                 axios.post(this.storeUrls.register, data)
                     .then(res => {
                         if (res.data.status === 'success') {
-                            window.location.href = this.storeUrls.home;
+                            window.location.href = res.data.redirect;//############<-
+                            //window.location.href = res.data.redirect;
                         } else {
                             this.fields.user.error = true;
                             this.fields.user.msg = res.data.message;
                         }
                     })
-                    .catch(error => {
+
+                    //.catch(error => {
+                    //    this.fields.user.error = true;
+                    //    this.fields.user.msg = 'An error occurred during registration.';
+                    //});
+                    .catch(error => {//############<-
                         console.error('Registration error:', error);
-                        this.fields.user.error = true;
-                        this.fields.user.msg = 'An error occurred during registration.';
+                        if (error.response && error.response.data) {
+                            const errors = error.response.data.errors;
+                            if (errors) {
+                                Object.keys(errors).forEach(field => {
+                                    if (this.fields[field]) {
+                                        this.fields[field].error = true;
+                                        this.fields[field].msg = errors[field][0];
+                                    }
+                                });
+                            }
+                        } else {
+                            this.fields.user.error = true;
+                            this.fields.user.msg = 'An error occurred during registration.';
+                        }
                     });
             }
         }
@@ -137,6 +158,18 @@ export default {
                     :placeholder="capitalize(fields.password.placeholder)"
                     v-model="password" />
             </b-field>
+
+            <b-field
+                v-bind:type="{ 'is-danger' : fields.confirm_password.error }"
+                :message="fields.confirm_password.error ? fields.confirm_password.msg : ''">
+                <b-input
+                    name="confirm_password"
+                    size="is-large"
+                    type="password"
+                    :placeholder="capitalize(fields.confirm_password.placeholder)"
+                    v-model="confirm_password" />
+            </b-field>
+
 
             <b-field
                 v-bind:type="{ 'is-danger' : fields.document_id.error }"

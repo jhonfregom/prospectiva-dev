@@ -31,6 +31,12 @@ $fields = [
         'error' => false,
         'msg' => '',
     ],
+    'confirm_password' => [
+        'label' => __('register.confirm_password'),
+        'placeholder' => __('register.confirm_password'),
+        'error' => false,
+        'msg' => '',
+    ],
     'document_id' => [
         'label' => __('register.document_id'),
         'placeholder' => __('register.document_id'),
