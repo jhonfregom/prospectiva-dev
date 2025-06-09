@@ -44,9 +44,6 @@ return [
                     'matriz de variables',
                 ]
             ],
-
-        ],
-        'queries' => [
             'analysis' =>  [
                 'title' =>  'análisis mapa de variables',
                 'description' => [
@@ -62,13 +59,41 @@ return [
                 'description' => [
                 ]
             ],
+            'inicialconditions' => [
+                'title' =>  'condiciones iniciales',
+                'description' => [
+                ]
+            ],
+            'scenary1' => [
+                'title' =>  'escenario 1',
+                'description' => [
+                ]
+            ],
+            'scenary2' => [
+                'title' =>  'escenario 2',
+                'description' => [
+                ]
+            ],
+            'conclusions' => [
+                'title' =>  'conclusiones',
+                'description' => [
+                ]
+            ],
+            'results' => [
+                'title' =>  'resultados',
+                'description' => [
+                ]
+            ],
         ],
+        ],
+        'queries' => [
+            
     ],
 
 
 
-    'inventory' => [
-        'title' =>  'inventarios',
+    'variables' => [
+        'title' =>  'variables',
         'category' =>  'categoría',
         'confirm_save' => 'Confirma que desea guardar los cambios asignados?',        
         'apply' => 'Aplicar',

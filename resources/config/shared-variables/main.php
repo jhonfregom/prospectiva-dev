@@ -28,8 +28,8 @@
     $text_main_section = __('app.main');
 
     //Texts invetory section
-    $text_inventory = array_merge(
-        __('app.inventory'), [
+    $text_variables = array_merge(
+        __('app.variables'), [
         'item' => __('validation.attributes.item'),
         'elements' => __('validation.attributes.elements'),
         'opening_balances' => __('validation.attributes.opening_balances'),
@@ -163,9 +163,9 @@
     $texts = [
         "global" => $texts_messages,
         "main_section" => $text_main_section,
-        "parameters" => __('app.parameters'),
-        "roles" => __('app.roles'),
-        "inventory" => $text_inventory,
+      //  "parameters" => __('app.parameters'),
+      //  "roles" => __('app.roles'),
+        "variables" => $text_variables,
     ];
 
     //List urls to use global in store from pinia/vue

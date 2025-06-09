@@ -9,9 +9,9 @@ export const useSessionStore = defineStore('session',{
         participant: new Object(),
         contentActive: {
             main: true,
-            parameters: false,
-            roles: false,
-            inventory: false,
+            //parameters: false,
+            //roles: false,
+            variables: false,
         },
     }),
     getters: {

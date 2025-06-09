@@ -10,7 +10,7 @@
     //Import Sections
     //import parameters from '../sections/parameters/ParametersMainComponent.vue';
     //import roles from '../sections/roles/RolesMainComponent.vue';
-    //import inventories from '../sections/inventory/InventoriesMainComponent.vue';
+    import variables from '../sections/variables/VariablesMainComponent.vue';
 
     export default{
         setup(){
@@ -23,7 +23,7 @@
             mainSection,
          //   parameters,
          //   roles,
-         //   inventories
+            variables
         },
         props: {
         },
@@ -55,13 +55,13 @@
                     <main-section v-if="contentActive.main"
                         v-bind:key="1"
                     />
-                    <parameters v-if="contentActive.parameters"
+                   <!-- <parameters v-if="contentActive.parameters"
                         v-bind:key="2"
                     />
                     <roles v-if="contentActive.roles"
                         v-bind:key="3"
-                    />
-                    <inventories v-if="contentActive.inventory"
+                    />-->
+                    <variables v-if="contentActive.variables"
                         v-bind:key="4"
                     />
                 </transition-group>
