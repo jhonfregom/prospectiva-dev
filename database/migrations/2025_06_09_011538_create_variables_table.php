@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('score');
             $table->unsignedBigInteger('user_id');
             $table->enum('state', ['0', '1'])->default('0');
+            $table->boolean('is_edited')->default(false);
             $table->dateTime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->dateTime('updated_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->primary([ 'id', 'user_id' ]);

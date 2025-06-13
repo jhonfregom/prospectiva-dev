@@ -1,15 +1,5 @@
-<!-- 
-    VariableFormModal.vue
-    
-    Este componente implementa un modal para la creación de nuevas variables.
-    Proporciona:
-    - Formulario simple con validación
-    - Manejo de estados de carga
-    - Notificaciones de éxito/error
-    - Limpieza automática al cerrar
--->
 <template>
-    <!-- Modal usando el componente b-modal de Buefy -->
+    <!-- Modal para crear nuevas variables -->
     <b-modal
         v-model="isActive"
         has-modal-card
@@ -19,14 +9,11 @@
         aria-modal>
         
         <template #default="props">
-            <!-- Tarjeta del modal con el formulario -->
+            <!-- Formulario de creación -->
             <div class="modal-card" style="width: auto">
-                <!-- Encabezado del modal -->
                 <header class="modal-card-head">
                     <p class="modal-card-title">Nueva Variable</p>
                 </header>
-
-                <!-- Cuerpo del modal con el campo de nombre -->
                 <section class="modal-card-body">
                     <b-field label="Nombre de la Variable">
                         <b-input
@@ -36,8 +23,6 @@
                         </b-input>
                     </b-field>
                 </section>
-
-                <!-- Pie del modal con botones de acción -->
                 <footer class="modal-card-foot">
                     <b-button
                         :loading="isLoading"
@@ -60,29 +45,16 @@
 import { useVariablesStore } from '@/stores/variables';
 
 export default {
-    // Define los eventos que el componente puede emitir
+    // Define los eventos que emite el componente
     emits: ['close'],
     
-    /**
-     * Setup del componente usando Composition API
-     * 
-     * Inicializa el store de variables para:
-     * - Crear nuevas variables
-     * - Mantener el estado global actualizado
-     */
+    // Inicializa el store de variables
     setup() {
         const variablesStore = useVariablesStore();
         return { variablesStore };
     },
 
-    /**
-     * Estado local del componente
-     * 
-     * Maneja:
-     * - Visibilidad del modal
-     * - Estado de carga durante el guardado
-     * - Datos del formulario
-     */
+    // Estado local del componente
     data() {
         return {
             isActive: true,     // Controla la visibilidad del modal
@@ -96,13 +68,6 @@ export default {
     methods: {
         /**
          * Maneja el envío del formulario
-         * 
-         * Este método:
-         * 1. Activa el estado de carga
-         * 2. Intenta crear la variable
-         * 3. Muestra notificación de éxito/error
-         * 4. Cierra el modal si hay éxito
-         * 5. Desactiva el estado de carga
          */
         async handleSubmit() {
             this.isLoading = true;
@@ -118,8 +83,12 @@ export default {
                     throw new Error('No se pudo crear la variable');
                 }
             } catch (error) {
+                let errorMessage = 'Error al crear la variable';
+                if (error.response && error.response.status === 400) {
+                    errorMessage = error.response.data.message || 'Se ha alcanzado el límite máximo de 15 variables permitidas';
+                }
                 this.$buefy.toast.open({
-                    message: error.message || 'Error al crear la variable',
+                    message: errorMessage,
                     type: 'is-danger'
                 });
             } finally {
@@ -129,10 +98,6 @@ export default {
 
         /**
          * Limpia el formulario y cierra el modal
-         * 
-         * Este método:
-         * 1. Reinicia el formulario a valores iniciales
-         * 2. Emite el evento 'close' al componente padre
          */
         handleClose() {
             // Limpiamos el formulario
@@ -147,18 +112,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/* Estilos para el cuerpo del modal */
 .modal-card-body {
     padding: 20px;
 }
 
-/* Estilos para el pie del modal */
 .modal-card-foot {
     justify-content: flex-end;
     padding: 20px;
 }
 
-/* Estilos para los campos del formulario */
 .b-field {
     margin-bottom: 1rem;
 }

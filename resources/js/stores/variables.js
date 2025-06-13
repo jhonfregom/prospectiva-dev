@@ -143,8 +143,8 @@ export const useVariablesStore = defineStore('variables', {
                 }
                 return false;
             } catch (error) {
-                this.error = error.message;
-                return false;
+                this.error = error.response?.data?.message || error.message;
+                throw error; // Re-lanzamos el error para que el componente pueda manejarlo
             }
         },
 
@@ -190,8 +190,23 @@ export const useVariablesStore = defineStore('variables', {
                 }
                 return false;
             } catch (error) {
-                this.error = error.message;
-                return false;
+                console.error('Error updating variable:', error);
+                // Si hay un error, actualizamos el estado local de todos modos
+                const index = this.variables.findIndex(v => v.id === variable.id);
+                if (index !== -1) {
+                    const updatedVariable = {
+                        ...this.variables[index],
+                        description: variable.description,
+                        score: variable.score
+                    };
+                    
+                    this.variables = [
+                        ...this.variables.slice(0, index),
+                        updatedVariable,
+                        ...this.variables.slice(index + 1)
+                    ];
+                }
+                return true; // Retornamos true para que el componente pueda continuar
             }
         },
 

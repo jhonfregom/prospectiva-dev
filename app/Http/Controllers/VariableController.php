@@ -25,11 +25,11 @@ use Illuminate\Support\Facades\Auth;
 class VariableController extends Controller
 {
     /**
-     * Obtiene todas las variables ordenadas por ID descendente
+     * Obtiene todas las variables ordenadas por ID ascendente
      * 
      * Este método:
      * 1. Consulta todas las variables en la base de datos
-     * 2. Las ordena por ID de forma descendente (más recientes primero)
+     * 2. Las ordena por ID de forma ascendente (más antiguas primero)
      * 3. Retorna la colección completa en formato JSON
      * 
      * @return JsonResponse Respuesta JSON con:
@@ -70,6 +70,15 @@ class VariableController extends Controller
         $request->validate([
             'name_variable' => 'required|string|max:80',
         ]);
+
+        // Verifica el límite de 15 variables
+        $variableCount = Variable::where('user_id', Auth::id())->count();
+        if ($variableCount >= 15) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'Se ha alcanzado el límite máximo de 15 variables permitidas'
+            ], 400);
+        }
 
         // Obtiene el último ID y genera el siguiente
         $lastId = Variable::max('id') ?? 0;
@@ -115,8 +124,18 @@ class VariableController extends Controller
     {
         try {
             $variable = Variable::findOrFail($id);
-            $variable->update($request->all());
-            
+
+            // Validar los datos de entrada
+            $validated = $request->validate([
+                'description' => 'required|string',
+                'score' => 'required|integer'
+            ]);
+
+            // Actualizar la variable
+            $variable->description = $validated['description'];
+            $variable->score = $validated['score'];
+            $variable->save();
+
             return response()->json([
                 'status' => 200,
                 'message' => 'Variable actualizada correctamente',
@@ -125,9 +144,8 @@ class VariableController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 500,
-                'message' => 'Error al actualizar la variable',
-                'error' => $e->getMessage()
-            ]);
+                'message' => 'Error al actualizar la variable: ' . $e->getMessage()
+            ], 500);
         }
     }
 

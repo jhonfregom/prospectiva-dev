@@ -16,14 +16,14 @@
             :loading="variablesStore.isLoading"
             :striped="true"
             :hoverable="true"
-            default-sort="id_variable"
-            default-sort-direction="asc"
+            default-sort="id"
+            default-sort-direction="desc"
             sort-icon="arrow-up"
             icon-pack="fas">
 
             <!-- Columna para el ID de la variable (V1, V2, etc.) -->
-            <b-table-column field="id_variable" label="VARIABLE" v-slot="props" width="100" sortable>
-                {{ getVariableId(props.row.id_variable) }}
+            <b-table-column field="id" label="VARIABLE" v-slot="props" width="100" sortable>
+                {{ props.row.id_variable }}
             </b-table-column>
 
             <!-- Columna para el nombre de la variable -->
@@ -303,10 +303,6 @@ export default {
                     });
 
                     if (success) {
-                        this.$buefy.toast.open({
-                            message: 'Variable actualizada correctamente',
-                            type: 'is-success'
-                        });
                         this.editingRow = null; // Desactivar modo edición
                     }
                 } catch (error) {

@@ -43,7 +43,8 @@ class Variable extends Model
         'description',
         'score',
         'user_id',
-        'state'
+        'state',
+        'is_edited'
     ];
 
     /**
@@ -57,7 +58,14 @@ class Variable extends Model
      */
     protected $casts = [
         'score' => 'integer',
-        'user_id' => 'integer'
+        'user_id' => 'integer',
+        'is_edited' => 'boolean',
+        'state' => 'string'
+    ];
+
+    protected $attributes = [
+        'is_edited' => false,
+        'state' => '0'
     ];
 
     /**
