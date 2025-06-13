@@ -253,127 +253,106 @@ export default {
         },
 
         /**
-         * Maneja los cambios en la descripción
+         * Maneja el cambio en la descripción de una variable
          * 
          * Este método:
-         * 1. Verifica si la fila está en modo edición
-         * 2. Actualiza la descripción localmente
-         * 3. Calcula el nuevo score basado en palabras
-         * 4. Actualiza el estado de la variable
+         * 1. Calcula el nuevo score basado en el conteo de palabras
+         * 2. Actualiza el estado local
+         * 3. Programa una actualización en el servidor
          * 
-         * @param {Event|string} event - Evento de input o valor directo
-         * @param {Object} variable - Variable siendo editada
+         * @param {Event} event - Evento de input
+         * @param {Object} row - Fila de la variable siendo editada
          */
-        handleDescriptionChange(event, variable) {
-            // Solo procesar cambios si la fila está en modo edición
-            if (this.editingRow === variable.id) {
-                // Obtiene el valor del evento
-                const newDescription = typeof event === 'string' ? event : event.target.value;
-                
-                // Actualiza la descripción localmente
-                variable.description = newDescription;
-                
-                // Calcula el score basado en el conteo de palabras
-                if (!newDescription || newDescription.trim() === '') {
-                    variable.score = 0;
-                } else {
-                    const wordCount = newDescription.trim().split(/\s+/).filter(word => word.length > 0).length;
-                    variable.score = wordCount;
-                }
-            }
+        handleDescriptionChange(event, row) {
+            // Calcula el score basado en el conteo de palabras
+            const wordCount = event.target.value.trim().split(/\s+/).length;
+            row.score = wordCount;
+
+            // Programa la actualización en el servidor
+            this.debouncedUpdate(row);
         },
 
         /**
          * Maneja el clic en el botón de editar/guardar
          * 
-         * Comportamiento:
-         * - Si no está editando: Activa modo edición
-         * - Si está editando: Guarda cambios y desactiva edición
+         * Este método:
+         * 1. Alterna el modo de edición
+         * 2. Actualiza el servidor si se está guardando
          * 
-         * @param {Object} variable - Variable a editar/guardar
+         * @param {Object} row - Fila de la variable siendo editada
          */
-        async handleEditSave(variable) {
-            if (this.editingRow === variable.id) {
+        async handleEditSave(row) {
+            if (this.editingRow === row.id) {
                 // Estamos guardando
-                try {
-                    const success = await this.variablesStore.updateVariable({
-                        id: variable.id,
-                        description: variable.description,
-                        score: variable.score
-                    });
-
-                    if (success) {
-                        this.editingRow = null; // Desactivar modo edición
-                    }
-                } catch (error) {
-                    this.$buefy.toast.open({
-                        message: 'Error al actualizar la variable',
-                        type: 'is-danger'
-                    });
-                }
+                await this.updateVariableInServer(row);
+                this.editingRow = null;
             } else {
                 // Estamos entrando en modo edición
-                this.editingRow = variable.id;
+                this.editingRow = row.id;
             }
         },
 
         /**
-         * Confirma y ejecuta la eliminación de una variable
-         * 
-         * Muestra un diálogo de confirmación y:
-         * 1. Si se confirma: Elimina la variable
-         * 2. Si se cancela: No hace nada
-         * 3. Maneja errores mostrando notificaciones
-         * 
-         * @param {Object} variable - Variable a eliminar
-         */
-        confirmDelete(variable) {
-            this.$buefy.dialog.confirm({
-                title: 'Eliminar Variable',
-                message: `¿Estás seguro de que deseas eliminar la variable <b>${variable.name_variable}</b>?`,
-                confirmText: 'Eliminar',
-                cancelText: 'Cancelar',
-                type: 'is-danger',
-                hasIcon: true,
-                onConfirm: async () => {
-                    try {
-                        const success = await this.variablesStore.deleteVariable(variable.id);
-                        if (success) {
-                            this.$buefy.toast.open({
-                                message: 'Variable eliminada correctamente',
-                                type: 'is-success'
-                            });
-                        }
-                    } catch (error) {
-                        this.$buefy.toast.open({
-                            message: 'Error al eliminar la variable',
-                            type: 'is-danger'
-                        });
-                    }
-                }
-            });
-        },
-
-        /**
-         * Actualiza la variable en el servidor
+         * Actualiza una variable en el servidor
          * 
          * Este método:
          * 1. Envía los cambios al servidor
-         * 2. Maneja errores de la actualización
-         * 3. Muestra notificaciones de error
+         * 2. Maneja errores de la operación
          * 
          * @param {Object} variable - Variable a actualizar
          */
         async updateVariableInServer(variable) {
             try {
-                await this.variablesStore.updateVariable({
-                    id: variable.id,
-                    description: variable.description,
-                    score: variable.score
-                });
+                await this.variablesStore.updateVariable(variable);
             } catch (error) {
                 this.$buefy.toast.open({
                     message: 'Error al actualizar la variable',
+                    type: 'is-danger'
+                });
+            }
+        },
+
+        /**
+         * Confirma la eliminación de una variable
+         * 
+         * Este método:
+         * 1. Muestra un diálogo de confirmación
+         * 2. Elimina la variable si se confirma
+         * 
+         * @param {Object} row - Fila de la variable a eliminar
+         */
+        confirmDelete(row) {
+            this.$buefy.dialog.confirm({
+                title: 'Eliminar Variable',
+                message: '¿Está seguro de eliminar esta variable?',
+                confirmText: 'Eliminar',
+                cancelText: 'Cancelar',
+                type: 'is-danger',
+                onConfirm: () => this.deleteVariable(row)
+            });
+        },
+
+        /**
+         * Elimina una variable
+         * 
+         * Este método:
+         * 1. Envía la solicitud de eliminación al servidor
+         * 2. Actualiza la UI según el resultado
+         * 
+         * @param {Object} row - Fila de la variable a eliminar
+         */
+        async deleteVariable(row) {
+            try {
+                const success = await this.variablesStore.deleteVariable(row.id);
+                if (success) {
+                    this.$buefy.toast.open({
+                        message: 'Variable eliminada correctamente',
+                        type: 'is-success'
+                    });
+                }
+            } catch (error) {
+                this.$buefy.toast.open({
+                    message: 'Error al eliminar la variable',
                     type: 'is-danger'
                 });
             }
@@ -383,68 +362,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/* Contenedor principal */
 .variables-container {
-    padding: 1.5rem;
+    padding: 20px;
 }
 
-/* Estilos para la tabla */
-:deep(.table) {
-    background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+.description-column {
+    min-width: 300px;
 }
 
-/* Separadores entre filas */
-:deep(.table tr) {
-    border-bottom: 1px solid #f5f5f5;
-}
-
-:deep(.table tr:last-child) {
-    border-bottom: none;
-}
-
-/* Estilos para el textarea */
-:deep(.textarea) {
-    min-height: 120px;
-    border: 1px solid #dbdbdb;
-    border-radius: 4px;
-    padding: 0.5rem;
-    width: 100%;
-    resize: vertical;
-    font-size: 0.95rem;
-    line-height: 1.5;
-}
-
-:deep(.textarea:focus) {
-    border-color: #485fc7;
-    box-shadow: 0 0 0 0.125em rgba(72, 95, 199, 0.25);
-}
-
-/* Estilos para la columna de descripción */
-:deep(.table td.description-column) {
-    width: 50%;
-    max-width: none;
-}
-
-/* Colores para los estados */
-.has-text-success {
-    color: #48c774 !important;
-    font-weight: bold;
-}
-
-.has-text-info {
-    color: #3e8ed0 !important;
-    font-weight: bold;
-}
-
-.has-text-warning {
-    color: #ffe08a !important;
-    font-weight: bold;
-}
-
-.has-text-danger {
-    color: #f14668 !important;
-    font-weight: bold;
+.buttons {
+    gap: 0.5rem;
 }
 </style>

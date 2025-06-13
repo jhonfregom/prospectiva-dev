@@ -63,6 +63,11 @@ class Variable extends Model
         'state' => 'string'
     ];
 
+    /**
+     * Valores por defecto para los atributos
+     * 
+     * @var array
+     */
     protected $attributes = [
         'is_edited' => false,
         'state' => '0'
