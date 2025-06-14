@@ -7,39 +7,12 @@ use App\Models\Variable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * Controlador que maneja todas las operaciones relacionadas con variables
- * 
- * Este controlador implementa la lógica de negocio para el módulo de variables,
- * proporcionando endpoints REST para:
- * - Listar todas las variables
- * - Crear nuevas variables
- * - Actualizar variables existentes
- * - Eliminar variables
- * 
- * Cada método retorna respuestas JSON estandarizadas con:
- * - data: Datos solicitados/modificados
- * - status: Código de estado HTTP
- * - message: Mensaje descriptivo del resultado
- */
 class VariableController extends Controller
 {
-    /**
-     * Obtiene todas las variables ordenadas por ID ascendente
-     * 
-     * Este método:
-     * 1. Consulta todas las variables en la base de datos
-     * 2. Las ordena por ID de forma ascendente (más antiguas primero)
-     * 3. Retorna la colección completa en formato JSON
-     * 
-     * @return JsonResponse Respuesta JSON con:
-     *         - data: Array de variables
-     *         - status: 200 si la operación fue exitosa
-     *         - message: Mensaje de éxito
-     */
     public function index(): JsonResponse
     {
-        $variables = Variable::orderBy('id', 'desc')->get();
+        $variables = Variable::orderBy('id', 'desc');
+        $variables = $variables->where('user_id', Auth::id())->get();
         return response()->json([
             'data' => $variables,
             'status' => 200,
@@ -47,91 +20,66 @@ class VariableController extends Controller
         ]);
     }
 
-    /**
-     * Crea una nueva variable
-     * 
-     * Este método:
-     * 1. Valida los datos de entrada
-     * 2. Genera un nuevo ID secuencial
-     * 3. Crea la variable con valores iniciales
-     * 4. Asocia la variable al usuario actual
-     * 
-     * @param Request $request Contiene:
-     *        - name_variable: Nombre de la variable (requerido, máx 80 caracteres)
-     * 
-     * @return JsonResponse Respuesta JSON con:
-     *         - data: Variable creada
-     *         - status: 200 si la creación fue exitosa
-     *         - message: Mensaje de éxito
-     */
     public function store(Request $request): JsonResponse
     {
-        // Valida que el nombre de la variable sea requerido y tenga máximo 80 caracteres
-        $request->validate([
-            'name_variable' => 'required|string|max:80',
-        ]);
+        try {
+            $userVariablesCount = Variable::where('user_id', Auth::id())->count();
+            if ($userVariablesCount >= 15) {
+                return response()->json([
+                    'data' => null,
+                    'status' => 400,
+                    'message' => 'Has alcanzado el límite máximo de 15 variables'
+                ], 400);
+            }
 
-        // Verifica el límite de 15 variables
-        $variableCount = Variable::where('user_id', Auth::id())->count();
-        if ($variableCount >= 15) {
+            $request->validate([
+                'name_variable' => 'required|string|max:80'
+            ]);
+
+            $existingIds = Variable::where('user_id', Auth::id())
+                ->pluck('id')
+                ->toArray();
+
+            $newId = 1;
+            while (in_array($newId, $existingIds) && $newId <= 15) {
+                $newId++;
+            }
+
+            $variable = Variable::create([
+                'id' => $newId,
+                'id_variable' => 'V' . $newId,
+                'name_variable' => $request->name_variable,
+                'description' => '',
+                'score' => 0,
+                'state' => '0',
+                'user_id' => Auth::id()
+            ]);
+
             return response()->json([
-                'status' => 400,
-                'message' => 'Se ha alcanzado el límite máximo de 15 variables permitidas'
-            ], 400);
+                'data' => $variable,
+                'status' => 201,
+                'message' => 'Variable creada correctamente'
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'data' => null,
+                'status' => 500,
+                'message' => 'Error al crear la variable: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Obtiene el último ID y genera el siguiente
-        $lastId = Variable::max('id') ?? 0;
-        $newId = $lastId + 1;
-
-        // Crea la nueva variable con score inicial 0
-        $variable = Variable::create([
-            'id' => $newId,
-            'id_variable' => 'V' . $newId,
-            'name_variable' => $request->name_variable,
-            'description' => '',
-            'score' => 0,
-            'state' => '0',
-            'user_id' => Auth::id() // Obtiene el ID del usuario autenticado
-        ]);
-
-        return response()->json([
-            'data' => $variable,
-            'status' => 200,
-            'message' => 'Variable creada correctamente'
-        ]);
     }
 
-    /**
-     * Actualiza una variable existente
-     * 
-     * Este método:
-     * 1. Busca la variable por ID
-     * 2. Actualiza todos los campos enviados en la request
-     * 3. Maneja posibles errores durante la actualización
-     * 
-     * @param Request $request Contiene los campos a actualizar:
-     *        - description: Nueva descripción de la variable
-     *        - score: Nueva puntuación calculada
-     * @param int $id ID de la variable a actualizar
-     * 
-     * @return JsonResponse Respuesta JSON con:
-     *         - data: Variable actualizada
-     *         - status: 200 si la actualización fue exitosa, 500 en caso de error
-     *         - message: Mensaje de éxito o error
-     */
     public function update(Request $request, $id): JsonResponse
     {
         try {
             $variable = Variable::findOrFail($id);
 
-            // Validar los datos de entrada
             $validated = $request->validate([
                 'description' => 'required|string',
                 'score' => 'required|integer'
             ]);
 
-            // Actualizar la variable
             $variable->description = $validated['description'];
             $variable->score = $validated['score'];
             $variable->save();
@@ -149,20 +97,6 @@ class VariableController extends Controller
         }
     }
 
-    /**
-     * Elimina una variable existente
-     * 
-     * Este método:
-     * 1. Busca la variable por ID
-     * 2. Elimina la variable de la base de datos
-     * 3. Maneja posibles errores durante la eliminación
-     *
-     * @param int $id ID de la variable a eliminar
-     * 
-     * @return JsonResponse Respuesta JSON con:
-     *         - status: 200 si la eliminación fue exitosa, 500 en caso de error
-     *         - message: Mensaje de éxito o error
-     */
     public function destroy($id)
     {
         try {

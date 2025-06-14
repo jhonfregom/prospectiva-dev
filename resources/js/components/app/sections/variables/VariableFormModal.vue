@@ -1,15 +1,4 @@
-<!-- 
-    VariableFormModal.vue
-    
-    Este componente implementa el modal para crear nuevas variables.
-    Proporciona:
-    - Un formulario para ingresar el nombre de la variable
-    - Validación de datos
-    - Manejo de errores
-    - Integración con el store de variables
--->
 <template>
-    <!-- Modal para crear nuevas variables -->
     <b-modal
         v-model="isActive"
         has-modal-card
@@ -19,7 +8,6 @@
         aria-modal>
         
         <template #default="props">
-            <!-- Formulario de creación -->
             <div class="modal-card" style="width: auto">
                 <header class="modal-card-head">
                     <p class="modal-card-title">Nueva Variable</p>
@@ -55,41 +43,30 @@
 import { useVariablesStore } from '@/stores/variables';
 
 export default {
-    // Define los eventos que emite el componente
     emits: ['close'],
     
-    // Inicializa el store de variables
     setup() {
         const variablesStore = useVariablesStore();
         return { variablesStore };
     },
 
-    // Estado local del componente
     data() {
         return {
-            isActive: true,     // Controla la visibilidad del modal
-            isLoading: false,   // Controla el estado del botón de submit
+            isActive: true,
+            isLoading: false,
             form: {
-                name_variable: ''  // Campo para el nombre de la variable
+                name_variable: ''
             }
         };
     },
 
     methods: {
-        /**
-         * Maneja el envío del formulario
-         * 
-         * Este método:
-         * 1. Activa el estado de carga
-         * 2. Intenta crear la variable
-         * 3. Muestra notificaciones de éxito/error
-         * 4. Cierra el modal si la creación fue exitosa
-         */
         async handleSubmit() {
             this.isLoading = true;
             try {
                 const success = await this.variablesStore.createVariable(this.form);
                 if (success) {
+                    await this.variablesStore.fetchVariables();
                     this.$buefy.toast.open({
                         message: 'Variable creada exitosamente',
                         type: 'is-success'
@@ -112,19 +89,10 @@ export default {
             }
         },
 
-        /**
-         * Limpia el formulario y cierra el modal
-         * 
-         * Este método:
-         * 1. Reinicia el formulario a su estado inicial
-         * 2. Emite el evento de cierre al componente padre
-         */
         handleClose() {
-            // Limpiamos el formulario
             this.form = {
                 name_variable: ''
             };
-            // Emitimos el evento de cierre
             this.$emit('close');
         }
     }
@@ -132,18 +100,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/* Estilos para el cuerpo del modal */
 .modal-card-body {
     padding: 20px;
 }
 
-/* Estilos para el pie del modal */
 .modal-card-foot {
     justify-content: flex-end;
     padding: 20px;
 }
 
-/* Espaciado entre campos del formulario */
 .b-field {
     margin-bottom: 1rem;
 }
