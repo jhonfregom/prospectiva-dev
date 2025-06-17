@@ -26,5 +26,8 @@
         "vite": "^6.2.4",
         "vite-plugin-node-polyfills": "^0.23.0",
         "vue": "^3.5.16"
+    },
+    "dependencies": {
+        "crypto-js": "^4.2.0"
     }
 }

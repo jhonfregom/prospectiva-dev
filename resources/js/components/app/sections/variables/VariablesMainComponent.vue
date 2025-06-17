@@ -4,6 +4,7 @@ import { useSectionStore } from '../../../../stores/section';
 import VariableFormModal from './VariableFormModal.vue';
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
+import CryptoJS from 'crypto-js';
 
 export default {
     components: {
@@ -28,6 +29,8 @@ export default {
             showModal: false,
             updateTimeout: null,
             editingRow: null,
+            editCounts: {},
+            secretKey: 'prospectiva-secret-key-2024', // Clave secreta para encriptación
         };
     },
 
@@ -41,11 +44,52 @@ export default {
             this.showModal = true;
         });
         this.loadVariables();
+        this.loadEditCounts();
     },
 
     methods: {
+        // Método para encriptar datos
+        encryptData(data) {
+            return CryptoJS.AES.encrypt(JSON.stringify(data), this.secretKey).toString();
+        },
+
+        // Método para desencriptar datos
+        decryptData(encryptedData) {
+            try {
+                const bytes = CryptoJS.AES.decrypt(encryptedData, this.secretKey);
+                return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+            } catch (error) {
+                console.error('Error al desencriptar datos:', error);
+                return {};
+            }
+        },
+
         async loadVariables() {
             await this.variablesStore.fetchVariables();
+            this.$nextTick(() => {
+                this.applyStateFromEditCounts();
+            });
+        },
+
+        loadEditCounts() {
+            const encryptedCounts = localStorage.getItem('variableEditCounts');
+            if (encryptedCounts) {
+                this.editCounts = this.decryptData(encryptedCounts);
+            }
+        },
+
+        saveEditCounts() {
+            const encryptedData = this.encryptData(this.editCounts);
+            localStorage.setItem('variableEditCounts', encryptedData);
+        },
+
+        applyStateFromEditCounts() {
+            this.variables.forEach(variable => {
+                const count = this.editCounts[variable.id] || 0;
+                if (count >= 2) {
+                    variable.state = 1;
+                }
+            });
         },
 
         handleDescriptionChange(event, row) {
@@ -54,11 +98,39 @@ export default {
         },
 
         async handleEditSave(row) {
+            const count = this.editCounts[row.id] || 0;
+            if (count >= 2 || row.state === 1) return;
+
             if (this.editingRow === row.id) {
                 await this.updateVariableInServer(row);
                 this.editingRow = null;
+                this.editCounts[row.id] = (this.editCounts[row.id] || 0) + 1;
+                this.saveEditCounts();
+                if (this.editCounts[row.id] >= 2) {
+                    row.state = 1;
+                    await this.variablesStore.updateVariableState(row.id, 1);
+                    this.$buefy.toast.open({
+                        message: 'Has alcanzado el límite de ediciones para esta variable.',
+                        type: 'is-warning'
+                    });
+                } else {
+                    this.$buefy.toast.open({
+                        message: `Te quedan ${2 - this.editCounts[row.id]} ediciones para esta variable.`,
+                        type: 'is-info'
+                    });
+                }
             } else {
-                this.editingRow = row.id;
+                const remainingEdits = 2 - (this.editCounts[row.id] || 0);
+                this.$buefy.dialog.confirm({
+                    title: 'Confirmar Edición',
+                    message: `Esta variable solo puede ser editada ${remainingEdits} vez más. ¿Estás seguro de que deseas editarla?`,
+                    confirmText: 'Confirmar',
+                    cancelText: 'Cancelar',
+                    type: 'is-info',
+                    onConfirm: () => {
+                        this.editingRow = row.id;
+                    }
+                });
             }
         },
 
@@ -179,8 +251,10 @@ export default {
                         size="is-small"
                         :icon-left="editingRow === props.row.id ? 'save' : 'edit'"
                         @click="handleEditSave(props.row)"
-                        outlined>
-                        {{ editingRow === props.row.id ? 'Guardar' : 'Editar' }}
+                        outlined
+                        :disabled="(editCounts[props.row.id] || props.row.state === 1) >= 2"
+                    >
+                        {{ editingRow === props.row.id ? (editCounts[props.row.id] === 1 ? 'Finalizar' : 'Guardar') : 'Editar' }}
                     </b-button>
 
                     <b-button 

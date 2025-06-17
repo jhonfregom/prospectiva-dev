@@ -161,6 +161,23 @@ export const useVariablesStore = defineStore('variables', {
                 this.error = error.message;
                 return false;
             }
+        },
+
+        async updateVariableState(id, state) {
+            try {
+                const response = await axios.put(`/variables/${id}/state`, { state });
+                if (response.data.status === 200) {
+                    const index = this.variables.findIndex(v => v.id === id);
+                    if (index !== -1) {
+                        this.variables[index].state = state;
+                    }
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('Error updating variable state:', error);
+                return false;
+            }
         }
     }
 });
