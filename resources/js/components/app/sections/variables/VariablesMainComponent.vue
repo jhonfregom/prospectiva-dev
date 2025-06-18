@@ -89,14 +89,17 @@ export default {
             if (row.state === 1) return;
 
             if (this.editingRow === row.id) {
+                if (this.editCounts[row.id] === 1) {
+                    row.state = 1;
+                    this.$forceUpdate();
+                }
+                
                 await this.updateVariableInServer(row);
                 this.editingRow = null;
                 this.editCounts[row.id] = (this.editCounts[row.id] || 0) + 1;
                 this.saveEditCounts();
                 
                 if (this.editCounts[row.id] >= 2) {
-                    row.state = 1;
-                    this.$forceUpdate();
                     await this.variablesStore.updateVariableState(row.id, 1);
                     this.$buefy.toast.open({
                         message: 'Has alcanzado el límite de ediciones para esta variable.',
@@ -111,8 +114,6 @@ export default {
             } else {
                 const remainingEdits = 2 - (this.editCounts[row.id] || 0);
                 if (remainingEdits <= 0) {
-                    row.state = 1;
-                    this.$forceUpdate();
                     this.$buefy.toast.open({
                         message: 'No puedes editar más esta variable.',
                         type: 'is-danger'
@@ -136,6 +137,12 @@ export default {
         async updateVariableInServer(variable) {
             try {
                 await this.variablesStore.updateVariable(variable);
+                const count = this.editCounts[variable.id] || 0;
+                if (count >= 2) {
+                    variable.state = 1;
+                    this.$forceUpdate();
+                    await this.variablesStore.updateVariableState(variable.id, 1);
+                }
             } catch (error) {
                 this.$buefy.toast.open({
                     message: 'Error al actualizar la variable',
