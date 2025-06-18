@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('id_variable');
             $table->integer('id_resp_depen');
             $table->integer('id_resp_influ');
-            $table->integer('user_id')->nullable();
+            $table->integer('user_id');
             $table->enum('state', ['0', '1'])->default('0');
             $table->dateTime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->dateTime('updated_at')->default(new Expression('CURRENT_TIMESTAMP'));
