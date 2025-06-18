@@ -1,0 +1,60 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Variable;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+;
+use Illuminate\Support\Facades\DB;
+
+class TestVariablesSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        DB::statement('DELETE FROM variables WHERE id > 0');
+        DB::statement('ALTER TABLE variables AUTO_INCREMENT = 0');
+
+   $variables = [
+    [
+        'id_variable' => 'V1',
+        'name_variable' => 'Variable 1',
+        'description' => 'Este es una variable de prueba',
+        'score' => 10,
+        'user_id' => 1,
+        'state' => '0'
+    ],
+    [
+        'id_variable' => 'V2',
+        'name_variable' => 'Variable 2',
+        'description' => 'Este es una segunda variable de prueba',
+        'score' => 10,
+        'user_id' => 1,
+        'state' => '0'
+    ],
+    [
+        'id_variable' => 'V3',
+        'name_variable' => 'Variable 3',
+        'description' => 'Este es una tercera variable de prueba',
+        'score' => 10,
+        'user_id' => 1,
+        'state' => '0'
+    ],
+    [
+        'id_variable' => 'V4',
+        'name_variable' => 'Variable 4',
+        'description' => 'Este es una cuarta variable de prueba',
+        'score' => 10,
+        'user_id' => 1,
+        'state' => '0'
+    ]
+];
+
+foreach ($variables as $data) {
+    Variable::create($data);
+}
+    }
+}
