@@ -21,3 +21,18 @@
 
 // Responsive seection
 @use './responsive';
+
+body, html {
+    min-height: 100vh;
+    height: 100%;
+}
+
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+}

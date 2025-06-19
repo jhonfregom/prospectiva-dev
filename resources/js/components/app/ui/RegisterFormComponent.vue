@@ -30,7 +30,9 @@ export default {
             confirm_password: '',
             document_id: '',
             fields: [],
-            copy_msg_user: ''
+            copy_msg_user: '',
+            showSuccessMessage: false,
+            successMessage: ''
         }
     },
 
@@ -130,19 +132,18 @@ export default {
                 axios.post(this.storeUrls.register, data)
                     .then(res => {
                         if (res.data.status === 'success') {
-                            window.location.href = res.data.redirect;//############<-
-                            //window.location.href = res.data.redirect;
+                            this.showSuccessMessage = true;
+                            this.successMessage = res.data.message;
+                            setTimeout(() => {
+                                this.showSuccessMessage = false;
+                                window.location.href = res.data.redirect;
+                            }, 3000);
                         } else {
                             this.fields.user.error = true;
                             this.fields.user.msg = res.data.message;
                         }
                     })
-
-                    //.catch(error => {
-                    //    this.fields.user.error = true;
-                    //    this.fields.user.msg = 'An error occurred during registration.';
-                    //});
-                    .catch(error => {//############<-
+                    .catch(error => {
                         console.error('Registration error:', error);
                         if (error.response && error.response.data) {
                             const errors = error.response.data.errors;
@@ -166,7 +167,10 @@ export default {
 </script>
 
 <template>
-    <div>
+    <div class="register-form-container">
+        <div v-if="showSuccessMessage" class="notification is-success">
+            {{ successMessage }}
+        </div>
         <form
             :action="storeUrls.register"
             @submit="clickRegister"
@@ -247,3 +251,14 @@ export default {
         </form>
     </div>
 </template>
+
+<style lang="scss" scoped>
+.register-form-container {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 2rem 2.5rem 2.5rem 2.5rem;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+</style>

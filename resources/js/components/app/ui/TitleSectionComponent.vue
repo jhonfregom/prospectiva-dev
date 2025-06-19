@@ -118,9 +118,10 @@
         }
 
         .title{
-            color: var.$color-yellow !important;
+            color: var.$color-white !important;
             display: inline-block;
-            font-size: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
             margin-bottom: 0;
         }
         .content-actions{

@@ -37,7 +37,7 @@ export default {
     },
 
     mounted() {
-        this.sectionStore.setTitleSection('Variables');
+        this.sectionStore.setTitleSection('CONTEXTUALIZACIÓN DE LAS VARIABLES CLAVES');
         this.sectionStore.addDynamicButton('Nuevo', () => {
             this.showModal = true;
         });
@@ -259,6 +259,7 @@ export default {
                         @click="handleEditSave(props.row)"
                         outlined
                         :disabled="props.row.state === 1"
+                        class="fixed-width-btn"
                     >
                         {{ editingRow === props.row.id ? (editCounts[props.row.id] === 1 ? 'Finalizar' : 'Guardar') : 'Editar' }}
                     </b-button>
@@ -313,5 +314,11 @@ export default {
 .has-text-success {
     color: #48c774 !important;
     font-weight: 600;
+}
+
+.fixed-width-btn {
+    min-width: 90px;
+    max-width: 110px;
+    text-align: center;
 }
 </style>
