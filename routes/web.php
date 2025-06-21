@@ -5,6 +5,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\VariableController;
+use App\Http\Controllers\MatrizController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,6 +31,12 @@ Route::group(['middleware' => ['auth']], function(){
         Route::post('/variables', 'store')->name('variables.store');
         Route::put('/variables/{id}', 'update')->name('variables.update');
         Route::delete('/variables/{variable}', 'destroy')->name('variables.destroy');
+    });
+
+    // Rutas de matriz protegidas por autenticación
+    Route::controller(MatrizController::class)->group(function(){
+        Route::get('/matriz', 'index')->name('matriz.index');
+        Route::post('/matriz', 'store')->name('matriz.store');
     });
 });
 

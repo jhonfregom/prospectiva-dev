@@ -9,6 +9,7 @@ export const useSessionStore = defineStore('session',{
         contentActive: {
             main: true,        // Vista principal/dashboard está activa por defecto
             variables: false,  // Vista de variables está inactiva por defecto
+            matrix: false,     // Vista de matriz está inactiva por defecto
         },
         
         // Otros estados del store...
@@ -24,12 +25,14 @@ export const useSessionStore = defineStore('session',{
     actions: {
         // Activa un componente específico y desactiva los demás
         setActiveContent(content) {
+            console.log('Activando contenido:', content);
             // Desactiva todos los contenidos
             Object.keys(this.contentActive).forEach(key => {
                 this.contentActive[key] = false;
             });
             // Activa el contenido especificado
             this.contentActive[content] = true;
+            console.log('Estado final:', this.contentActive);
         },
         // Vuelve a la vista principal
         toBack(){

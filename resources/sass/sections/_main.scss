@@ -38,3 +38,206 @@
         }
     }
 }
+
+// Centrado de celdas
+.matriz-cell-center {
+  text-align: center;
+  vertical-align: middle;
+}
+
+// Popover moderno y compacto
+.popover-modern .popover-content {
+  padding: 0.5rem 1rem;
+  min-width: 120px;
+  display: flex;
+  justify-content: center;
+}
+.popover-btns-modern {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+// Colores suaves para los valores
+.matriz-value-none-modern {
+  background: #f5f6fa !important;
+  color: #888 !important;
+  border-radius: 8px;
+}
+.matriz-value-weak-modern {
+  background: #b8e1ff !important;
+  color: #2563eb !important;
+  border-radius: 8px;
+}
+.matriz-value-medium-modern {
+  background: #ffe6b8 !important;
+  color: #b45309 !important;
+  border-radius: 8px;
+}
+.matriz-value-strong-modern {
+  background: #ffd6e0 !important;
+  color: #be185d !important;
+  border-radius: 8px;
+}
+
+// Para los valores mostrados en la celda
+.matriz-value-none-modern {
+  background: #f5f6fa !important;
+  color: #888 !important;
+  border-radius: 8px;
+  display: inline-block;
+  min-width: 24px;
+}
+.matriz-value-weak-modern {
+  background: #e0f7fa !important;
+  color: #0288d1 !important;
+  border-radius: 8px;
+  display: inline-block;
+  min-width: 24px;
+}
+.matriz-value-medium-modern {
+  background: #fff9c4 !important;
+  color: #fbc02d !important;
+  border-radius: 8px;
+  display: inline-block;
+  min-width: 24px;
+}
+.matriz-value-strong-modern {
+  background: #f8bbd0 !important;
+  color: #c2185b !important;
+  border-radius: 8px;
+  display: inline-block;
+  min-width: 24px;
+}
+
+// Encabezados y totales
+.matriz-header-bg {
+  background: #f3f6fd !important;
+  color: #6c63ff !important;
+  font-weight: 600;
+}
+.matriz-total-bg {
+  background: #e6f9f0 !important;
+  color: #1b5e20 !important;
+  font-weight: 600;
+}
+
+// Fondo alterno para filas
+.matriz-row-alt {
+  background: #f9fafb !important;
+}
+
+// Menú flotante absoluto
+.matriz-float-menu {
+  position: fixed;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(44,62,80,0.12);
+  padding: 0.5rem 0.7rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 9999;
+  min-width: 90px;
+  justify-content: center;
+  align-items: center;
+}
+.matriz-float-btn {
+  border: none;
+  outline: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+// Colores suaves para los valores (reutilizando los -modern)
+.matriz-value-0-modern {
+  background: #f5f6fa !important;
+  color: #888 !important;
+}
+.matriz-value-1-modern {
+  background: #e0f7fa !important;
+  color: #0288d1 !important;
+}
+.matriz-value-2-modern {
+  background: #fff9c4 !important;
+  color: #fbc02d !important;
+}
+.matriz-value-3-modern {
+  background: #f8bbd0 !important;
+  color: #c2185b !important;
+}
+
+// Mejorar separación visual
+.matriz-table {
+  table-layout: fixed !important;
+  width: 100% !important;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.matriz-table th, .matriz-table td {
+  border-bottom: 1px solid #e0e0e0;
+}
+.matriz-table th {
+  border-top: 2px solid #e0e0e0;
+}
+
+.matriz-cell-popover-wrap {
+  position: relative;
+  overflow: visible;
+}
+.matriz-float-menu-abs {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(44,62,80,0.12);
+  padding: 0.3rem 0.5rem;
+  display: flex;
+  gap: 0.3rem;
+  z-index: 100;
+  min-width: 90%;
+  justify-content: center;
+  align-items: center;
+}
+
+.matriz-header-cell,
+.matriz-total-cell,
+.matriz-cell-center,
+.matriz-col-align {
+  min-width: 60px;
+  max-width: 60px;
+  width: 60px;
+  text-align: center;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 0 !important;
+}
+
+.matriz-codigo-cell {
+  min-width: 80px !important;
+  max-width: 80px !important;
+  width: 80px !important;
+  text-align: center !important;
+}
+.matriz-nombre-cell {
+  min-width: 180px !important;
+  max-width: 180px !important;
+  width: 180px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  color: #222 !important;
+  font-weight: 600 !important;
+}
+.matriz-data-cell {
+  min-width: 60px !important;
+  max-width: 60px !important;
+  width: 60px !important;
+  text-align: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin: 0 !important;
+}

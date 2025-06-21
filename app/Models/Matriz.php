@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Matriz extends Model
 {
+    use HasFactory;
 
     protected $table = 'matriz';
     
     protected $fillable = [
-        'id',
         'id_matriz',
         'id_variable',
         'id_resp_depen',
@@ -20,6 +21,8 @@ class Matriz extends Model
     ];
 
     protected $casts = [
+        'id_matriz' => 'integer',
+        'id_variable' => 'integer',
         'id_resp_depen' => 'integer',
         'id_resp_influ' => 'integer',
         'user_id' => 'integer',
@@ -32,7 +35,7 @@ class Matriz extends Model
      * @var array
      */
     protected $attributes = [
-          'state' => '0'
+        'state' => '0'
     ];
 
     /**
@@ -45,9 +48,14 @@ class Matriz extends Model
      * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function matriz()
+    public function user()
     {
-        return $this->belongsTo(Matriz::class);
+        return $this->belongsTo(User::class);
+    }
+
+    public function variable()
+    {
+        return $this->belongsTo(Variable::class, 'id_variable');
     }
 } 
 

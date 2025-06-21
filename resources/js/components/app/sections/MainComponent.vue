@@ -3,16 +3,23 @@
     import { useTextsStore } from '../../../stores/texts';
     //Import session from store
     import { useSessionStore } from '../../../stores/session';
+    import VariablesMainComponent from './variables/VariablesMainComponent.vue';
+    import MatrizMainComponent from './matriz/MatrizMainComponent.vue';
 
     export default {
+        components: {
+            VariablesMainComponent,
+            MatrizMainComponent
+        },
         setup(){
             const storeTexts = useTextsStore();
             const storeSession = useSessionStore();
             return { storeTexts, storeSession };
         },
         methods: {
-            setActiveSection(item){
-                this.storeSession.setActiveContent( item );
+            setActiveSection(moduleName){
+                console.log('Activando módulo:', moduleName);
+                this.storeSession.setActiveContent( moduleName );
             },
         }
     }

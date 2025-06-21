@@ -20,6 +20,22 @@ export default {
                 console.warn('Action is not a function');
             }
         }
+    },
+    data() {
+        return {
+            menu: [
+                {
+                    title: 'Variables',
+                    icon: 'format-list-bulleted',
+                    route: '/variables'
+                },
+                {
+                    title: 'Matriz de Influencia',
+                    icon: 'grid',
+                    route: '/matriz'
+                }
+            ]
+        }
     }
 }
 </script>
