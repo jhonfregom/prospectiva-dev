@@ -1,26 +1,155 @@
+<template>
+    <div class="matriz-container">
+        <div class="matriz-header">
+            <b-button
+                type="is-primary"
+                icon-left="save"
+                @click="guardarMatriz"
+                :loading="isLoading"
+                :disabled="isLocked || isLoading">
+                {{ textsStore.getText('matriz.save') }}
+            </b-button>
+        </div>
+
+        <div class="matriz-table-container">
+            <b-loading :is-full-page="false" v-model="isLoading" :can-cancel="false"></b-loading>
+            
+            <div v-if="!isLoading && orderedVariables.length === 0" class="empty-state-container">
+                <p>{{ textsStore.getText('matriz.no_variables_message') }}</p>
+                <p>
+                    {{ textsStore.getText('matriz.create_variables_message_part1') }}
+                    <a @click="$router.push({ name: 'variables' })">{{ textsStore.getText('matriz.create_variables_link_text') }}</a>
+                    {{ textsStore.getText('matriz.create_variables_message_part2') }}
+                </p>
+            </div>
+
+            <table class="matriz-table" v-if="orderedVariables.length > 0">
+                <thead>
+                    <tr>
+                        <th class="matriz-header-cell matriz-header-bg matriz-codigo-cell">{{ textsStore.getText('matriz.code') }}</th>
+                        <th class="matriz-header-cell matriz-header-bg matriz-nombre-cell">{{ textsStore.getText('matriz.name') }}</th>
+                        <th v-for="variable in orderedVariables" 
+                            :key="'header-' + variable.id"
+                            class="matriz-header-cell matriz-header-bg matriz-data-cell matriz-col-align">
+                            {{ variable.id_variable }}
+                        </th>
+                        <th class="matriz-header-cell matriz-header-bg matriz-total-cell">{{ textsStore.getText('matriz.total_dependency') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(varOrigen, rowIdx) in orderedVariables" :key="'row-' + varOrigen.id" :class="{'matriz-row-alt': rowIdx % 2 === 1}">
+                        <td class="matriz-cell-header matriz-header-bg matriz-codigo-cell matriz-col-align">{{ varOrigen.id_variable }}</td>
+                        <td class="matriz-cell-header matriz-header-bg matriz-nombre-cell">{{ varOrigen.name_variable }}</td>
+                        <td v-for="(varDestino, colIdx) in orderedVariables"
+                            :key="'cell-' + varOrigen.id + '-' + varDestino.id"
+                            :class="['matriz-cell-center', 'matriz-col-align', 'matriz-data-cell', getCellClass(varOrigen.id, varDestino.id), {'locked': isLocked}]"
+                            @click="handleCellClick(varOrigen.id, varDestino.id, $event)">
+                            <div style="position: relative; width: 100%; height: 100%;">
+                                <div v-if="!isLocked && origenIdPopover === varOrigen.id && destinoIdPopover === varDestino.id" class="matriz-float-menu-abs">
+                                    <button v-for="val in [0,1,2,3]" :key="val" @click.stop="selectPopoverValue(varOrigen.id, varDestino.id, val)" :class="'matriz-float-btn matriz-value-' + val + '-modern'">{{ val }}</button>
+                                </div>
+                                <div v-else :class="getColorClase(getCellValue(varOrigen.id, varDestino.id)) + '-modern'">
+                                    {{ getCellValue(varOrigen.id, varDestino.id) }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="matriz-total-cell matriz-total-bg matriz-col-align">{{ totalesInfluencia[varOrigen.id] || 0 }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td class="matriz-total-header-cell matriz-total-bg matriz-col-align matriz-codigo-cell" colspan="2">{{ textsStore.getText('matriz.total_influence') }}</td>
+                        <td v-for="variable in orderedVariables" :key="'footer-' + variable.id" class="matriz-total-cell matriz-total-bg matriz-col-align matriz-data-cell">
+                            {{ totalesDependencia[variable.id] || 0 }}
+                        </td>
+                        <td class="matriz-total-cell matriz-total-bg matriz-col-align">{{ sumaTotalDependencia }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="matriz-legend">
+            <h3>{{ textsStore.getText('matriz.interpretation_title') }}</h3>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="legend-value legend-strong">3</span>
+                    <span>{{ textsStore.getText('matriz.strong_influence') }}</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-value legend-medium">2</span>
+                    <span>{{ textsStore.getText('matriz.medium_influence') }}</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-value legend-weak">1</span>
+                    <span>{{ textsStore.getText('matriz.weak_influence') }}</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-value legend-none">0</span>
+                    <span>{{ textsStore.getText('matriz.null_influence') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Resumen -->
+        <div class="matriz-resumen">
+            <table class="resumen-table">
+                <thead>
+                    <tr>
+                        <th>{{ textsStore.getText('matriz.summary') }}</th>
+                        <th v-for="variable in variables" 
+                            :key="'resumen-' + variable.id">
+                            {{ variable.codigo }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ textsStore.getText('matriz.dependency') }}</td>
+                        <td v-for="variable in variables" 
+                            :key="'dep-' + variable.id">
+                            {{ totalesDependencia[variable.id] || 0 }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ textsStore.getText('matriz.influence') }}</td>
+                        <td v-for="variable in variables" 
+                            :key="'inf-' + variable.id">
+                            {{ totalesInfluencia[variable.id] || 0 }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</template>
+
 <script>
 import { useMatrizStore } from '../../../../stores/matriz';
 import { useSectionStore } from '../../../../stores/section';
+import { useTextsStore } from '../../../../stores/texts';
 import { storeToRefs } from 'pinia';
 
 export default {
     setup() {
         const matrizStore = useMatrizStore();
         const sectionStore = useSectionStore();
-        const { variables, isLoading } = storeToRefs(matrizStore);
+        const textsStore = useTextsStore();
+        const { variables, isLoading, isLocked } = storeToRefs(matrizStore);
 
         return {
             matrizStore,
             sectionStore,
+            textsStore,
             variables,
-            isLoading
+            isLoading,
+            isLocked
         };
     },
 
     data() {
         return {
             editingCell: null,
-            matrizValues: {},
             origenIdPopover: null,
             destinoIdPopover: null,
             popoverStyle: {},
@@ -68,7 +197,7 @@ export default {
     },
 
     mounted() {
-        this.sectionStore.setTitleSection('CALIFICACIÓN DE VARIABLES');
+        this.sectionStore.setTitleSection(this.textsStore.getText('matriz.section_title'));
         this.loadMatrizData();
         document.addEventListener('click', this.closePopover);
     },
@@ -80,27 +209,12 @@ export default {
     methods: {
         async loadMatrizData() {
             await this.matrizStore.fetchMatrizData();
-            // Inicializar valores por defecto si no existen
-            this.initializeDefaultValues();
-        },
-
-        initializeDefaultValues() {
-            this.variables.forEach(varOrigen => {
-                this.variables.forEach(varDestino => {
-                    if (varOrigen.id !== varDestino.id) {
-                        const key = `${varOrigen.id}-${varDestino.id}`;
-                        if (!this.matrizValues[key]) {
-                            this.matrizValues[key] = 0;
-                        }
-                    }
-                });
-            });
         },
 
         getCellValue(origenId, destinoId) {
             if (origenId === destinoId) return 'X';
             const key = `${origenId}-${destinoId}`;
-            return this.matrizValues[key] || 0;
+            return this.matrizStore.matrizData[key] !== undefined ? this.matrizStore.matrizData[key] : 0;
         },
 
         getCellClass(origenId, destinoId) {
@@ -111,6 +225,7 @@ export default {
         },
 
         handleCellClick(origenId, destinoId, event) {
+            if (this.isLocked || this.isLoading) return;
             event.stopPropagation();
             if (origenId === destinoId) return;
             this.origenIdPopover = origenId;
@@ -131,14 +246,12 @@ export default {
         },
 
         selectPopoverValue(origenId, destinoId, valor) {
-            const key = `${origenId}-${destinoId}`;
-            this.matrizValues[key] = valor;
             this.matrizStore.updateMatrizValue(origenId, destinoId, valor);
             this.closePopover();
         },
 
         async guardarMatriz() {
-            const result = await this.matrizStore.saveMatriz();
+            const result = await this.matrizStore.saveMatriz(this.textsStore);
             this.$buefy.toast.open({
                 message: result.message,
                 type: result.success ? 'is-success' : 'is-danger',
@@ -172,127 +285,6 @@ export default {
     }
 };
 </script>
-
-<template>
-    <div class="matriz-container">
-        <div class="matriz-header">
-            <b-button
-                type="is-primary"
-                icon-left="save"
-                @click="guardarMatriz"
-                :loading="isLoading">
-                Guardar Matriz
-            </b-button>
-        </div>
-
-        <div class="matriz-table-container">
-            <b-loading :is-full-page="false" v-model="isLoading" :can-cancel="false"></b-loading>
-            
-            <div v-if="!isLoading && orderedVariables.length === 0" class="empty-state-container">
-                <p>No hay variables para mostrar.</p>
-                <p>Por favor, <a @click="$router.push({ name: 'variables' })">crea algunas variables</a> primero para poder calificarlas en la matriz.</p>
-            </div>
-
-            <table class="matriz-table" v-if="orderedVariables.length > 0">
-                <thead>
-                    <tr>
-                        <th class="matriz-header-cell matriz-header-bg matriz-codigo-cell">CÓDIGO</th>
-                        <th class="matriz-header-cell matriz-header-bg matriz-nombre-cell">NOMBRE</th>
-                        <th v-for="variable in orderedVariables" 
-                            :key="'header-' + variable.id"
-                            class="matriz-header-cell matriz-header-bg matriz-data-cell matriz-col-align">
-                            {{ variable.id_variable }}
-                        </th>
-                        <th class="matriz-header-cell matriz-header-bg matriz-total-cell">TOTAL DEPENDENCIA</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(varOrigen, rowIdx) in orderedVariables" :key="'row-' + varOrigen.id" :class="{'matriz-row-alt': rowIdx % 2 === 1}">
-                        <td class="matriz-cell-header matriz-header-bg matriz-codigo-cell matriz-col-align">{{ varOrigen.id_variable }}</td>
-                        <td class="matriz-cell-header matriz-header-bg matriz-nombre-cell">{{ varOrigen.name_variable }}</td>
-                        <td v-for="(varDestino, colIdx) in orderedVariables"
-                            :key="'cell-' + varOrigen.id + '-' + varDestino.id"
-                            :class="['matriz-cell-center', 'matriz-col-align', 'matriz-data-cell', getCellClass(varOrigen.id, varDestino.id), 'matriz-cell-popover-wrap']"
-                            @click="handleCellClick(varOrigen.id, varDestino.id, $event)">
-                            <div style="position: relative; width: 100%; height: 100%;">
-                                <div v-if="origenIdPopover === varOrigen.id && destinoIdPopover === varDestino.id" class="matriz-float-menu-abs">
-                                    <button v-for="val in [0,1,2,3]" :key="val" @click.stop="selectPopoverValue(varOrigen.id, varDestino.id, val)" :class="'matriz-float-btn matriz-value-' + val + '-modern'">{{ val }}</button>
-                                </div>
-                                <div v-else :class="getColorClase(getCellValue(varOrigen.id, varDestino.id)) + '-modern'">
-                                    {{ getCellValue(varOrigen.id, varDestino.id) }}
-                                </div>
-                            </div>
-                        </td>
-                        <td class="matriz-total-cell matriz-total-bg matriz-col-align">{{ totalesInfluencia[varOrigen.id] || 0 }}</td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td class="matriz-total-header-cell matriz-total-bg matriz-col-align matriz-codigo-cell" colspan="2">TOTAL INFLUENCIA</td>
-                        <td v-for="variable in orderedVariables" :key="'footer-' + variable.id" class="matriz-total-cell matriz-total-bg matriz-col-align matriz-data-cell">
-                            {{ totalesDependencia[variable.id] || 0 }}
-                        </td>
-                        <td class="matriz-total-cell matriz-total-bg matriz-col-align">{{ sumaTotalDependencia }}</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <!-- Leyenda -->
-        <div class="matriz-legend">
-            <h3>Interpretación de valores:</h3>
-            <div class="legend-grid">
-                <div class="legend-item">
-                    <span class="legend-value legend-strong">3</span>
-                    <span>Influencia directa fuerte</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-value legend-medium">2</span>
-                    <span>Influencia directa media</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-value legend-weak">1</span>
-                    <span>Influencia débil o potencial</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-value legend-none">0</span>
-                    <span>Influencia nula</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabla de Resumen -->
-        <div class="matriz-resumen">
-            <table class="resumen-table">
-                <thead>
-                    <tr>
-                        <th>RESUMEN</th>
-                        <th v-for="variable in variables" 
-                            :key="'resumen-' + variable.id">
-                            {{ variable.codigo }}
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>DEPENDENCIA</td>
-                        <td v-for="variable in variables" 
-                            :key="'dep-' + variable.id">
-                            {{ totalesDependencia[variable.id] || 0 }}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>INFLUENCIA</td>
-                        <td v-for="variable in variables" 
-                            :key="'inf-' + variable.id">
-                            {{ totalesInfluencia[variable.id] || 0 }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</template>
 
 <style lang="scss" scoped>
 .matriz-container {
@@ -383,6 +375,11 @@ export default {
                     z-index: 2;
                 }
             }
+
+            &.locked {
+                cursor: not-allowed;
+                background-color: #f5f5f5;
+            }
         }
 
         .matriz-total-cell {
@@ -393,6 +390,17 @@ export default {
             font-weight: 600;
             border: none;
             border-left: 2px solid #DCFCE7;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .matriz-total-header-cell {
+            background-color: #F0FDF4;
+            color: #166534;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border: none;
             font-size: 13px;
             letter-spacing: 0.5px;
         }

@@ -23,7 +23,9 @@ class VariableController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            $userVariablesCount = Variable::where('user_id', Auth::id())->count();
+            $user = Auth::user();
+            $userVariablesCount = Variable::where('user_id', $user->id)->count();
+
             if ($userVariablesCount >= 15) {
                 return response()->json([
                     'data' => null,
@@ -36,23 +38,15 @@ class VariableController extends Controller
                 'name_variable' => 'required|string|max:80'
             ]);
 
-            $existingIds = Variable::where('user_id', Auth::id())
-                ->pluck('id')
-                ->toArray();
-
-            $newId = 1;
-            while (in_array($newId, $existingIds) && $newId <= 15) {
-                $newId++;
-            }
+            $nextVariableNumber = $userVariablesCount + 1;
 
             $variable = Variable::create([
-                'id' => $newId,
-                'id_variable' => 'V' . $newId,
+                'id_variable' => 'V' . $nextVariableNumber,
                 'name_variable' => $request->name_variable,
                 'description' => '',
                 'score' => 0,
                 'state' => '0',
-                'user_id' => Auth::id()
+                'user_id' => $user->id
             ]);
 
             return response()->json([

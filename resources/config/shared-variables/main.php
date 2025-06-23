@@ -53,6 +53,12 @@
         'error_delete' => __('validation.attributes.error_delete'),
     ]);
 
+    //Texts matriz section
+    $text_matriz = array_merge(
+        __('app.main.modules.matrix'), [
+        'item' => __('validation.attributes.item'),
+        'elements' => __('validation.attributes.elements'),
+    ]);
 
     //Fields participan
     $fields_participant =   [
@@ -166,6 +172,7 @@
       //  "parameters" => __('app.parameters'),
       //  "roles" => __('app.roles'),
         "variables" => $text_variables,
+        "matriz" => $text_matriz,
     ];
 
     //List urls to use global in store from pinia/vue

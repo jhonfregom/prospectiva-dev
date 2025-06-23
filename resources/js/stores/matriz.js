@@ -7,6 +7,7 @@ export const useMatrizStore = defineStore('matriz', () => {
     const variables = ref([]);
     const isLoading = ref(false);
     const matrizData = ref({});
+    const isLocked = ref(false); // Nuevo estado para el bloqueo
 
     // Computed
     const getMatrizData = computed(() => matrizData.value);
@@ -15,15 +16,34 @@ export const useMatrizStore = defineStore('matriz', () => {
     async function fetchMatrizData() {
         isLoading.value = true;
         try {
+            // Volvemos a separar las llamadas para asegurar la compatibilidad
             const variablesResponse = await axios.get('/variables');
-            variables.value = variablesResponse.data.data;
+            if (variablesResponse.data && variablesResponse.data.data) {
+                variables.value = variablesResponse.data.data;
+            }
 
             const matrizResponse = await axios.get('/matriz');
-            if (matrizResponse.data && matrizResponse.data.matriz) {
+            if (matrizResponse.data) {
+                isLocked.value = matrizResponse.data.state == 1;
+
                 const newMatrizData = {};
-                matrizResponse.data.matriz.forEach(item => {
-                    const key = `${item.id_variable}-${item.id_resp_depen}`;
-                    newMatrizData[key] = item.id_resp_influ;
+                if (matrizResponse.data.matriz) {
+                    matrizResponse.data.matriz.forEach(item => {
+                        const key = `${item.id_variable}-${item.id_resp_depen}`;
+                        newMatrizData[key] = item.id_resp_influ;
+                    });
+                }
+                
+                // Después de cargar los datos guardados, inicializar los valores por defecto
+                variables.value.forEach(varOrigen => {
+                    variables.value.forEach(varDestino => {
+                        if (varOrigen.id !== varDestino.id) {
+                            const key = `${varOrigen.id}-${varDestino.id}`;
+                            if (newMatrizData[key] === undefined) {
+                                newMatrizData[key] = 0;
+                            }
+                        }
+                    });
                 });
                 matrizData.value = newMatrizData;
             }
@@ -36,15 +56,18 @@ export const useMatrizStore = defineStore('matriz', () => {
     }
 
     function updateMatrizValue(origenId, destinoId, valor) {
+        if (isLocked.value) return; // No permitir cambios si está bloqueado
         const key = `${origenId}-${destinoId}`;
         matrizData.value[key] = valor;
     }
 
-    async function saveMatriz() {
+    async function saveMatriz(textsStore = null) {
+        if (isLocked.value) {
+            return { success: false, message: 'La matriz ya está guardada y no se puede modificar.' };
+        }
         isLoading.value = true;
         try {
             const matrizPayload = [];
-            let idCounter = 1; // Contador para id_matriz
 
             for (const key in matrizData.value) {
                 if (Object.hasOwnProperty.call(matrizData.value, key)) {
@@ -57,7 +80,7 @@ export const useMatrizStore = defineStore('matriz', () => {
                     }
 
                     matrizPayload.push({
-                        id_matriz: idCounter++, // Asignar y luego incrementar
+                        // id_matriz ya no se envía, se genera en el backend
                         id_variable: origenId,
                         id_resp_depen: destinoId,
                         id_resp_influ: value
@@ -66,19 +89,20 @@ export const useMatrizStore = defineStore('matriz', () => {
             }
 
             if (matrizPayload.length === 0) {
-                // Opcional: manejar el caso donde no hay nada que guardar
                 return { success: true, message: 'No hay datos nuevos para guardar.' };
             }
 
-            // Log para depuración final
-            console.log("Enviando el siguiente payload al backend:", { matriz: matrizPayload });
-            
             const response = await axios.post('/matriz', { matriz: matrizPayload });
+            
+            // Después de guardar, actualizamos el estado de bloqueo
+            isLocked.value = true;
 
-            return { success: true, message: response.data.message || 'Matriz guardada correctamente.' };
+            const successMessage = textsStore ? textsStore.getText('matriz.save_success') : 'Matriz guardada correctamente.';
+            return { success: true, message: response.data.message || successMessage };
         } catch (error) {
             console.error('Error al guardar la matriz:', error.response?.data || error.message);
-            const message = error.response?.data?.message || 'Error al guardar la matriz.';
+            const errorMessage = textsStore ? textsStore.getText('matriz.save_error') : 'Error al guardar la matriz.';
+            const message = error.response?.data?.message || errorMessage;
             return { success: false, message: message };
         } finally {
             isLoading.value = false;
@@ -88,6 +112,7 @@ export const useMatrizStore = defineStore('matriz', () => {
     return {
         variables,
         isLoading,
+        isLocked, // Exponer el nuevo estado
         matrizData,
         getMatrizData,
         fetchMatrizData,
