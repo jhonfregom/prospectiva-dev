@@ -9,6 +9,8 @@
     import mainSection from '../sections/MainComponent.vue';
     // Importa el componente que maneja la tabla de variables
     import variables from '../sections/variables/VariablesMainComponent.vue';
+    // Importa el componente que maneja la matriz de influencia
+    import matriz from '../sections/matriz/MatrizMainComponent.vue';
 
     export default {
         // Setup es un hook de composition API que inicializa los stores
@@ -22,7 +24,8 @@
         components: {
             titleSection,    // Componente para el título de sección
             mainSection,     // Componente para la vista principal/dashboard
-            variables        // Componente para la tabla de variables
+            variables,       // Componente para la tabla de variables
+            matriz          // Componente para la matriz de influencia
         },
 
         data() {
@@ -36,6 +39,16 @@
         created() {
             // Al crear el componente, obtiene el contenido activo del store de sesión
             this.contentActive = this.storeSession.contentActive;
+        },
+
+        watch: {
+            'storeSession.contentActive': {
+                handler(newVal) {
+                    console.log('Contenido activo cambiado:', newVal);
+                    this.contentActive = newVal;
+                },
+                deep: true
+            }
         },
 
         methods: {
@@ -64,6 +77,12 @@
                     <!-- La key=4 es única para este componente en la transición -->
                     <variables v-if="contentActive.variables"
                         v-bind:key="4"
+                    />
+                    
+                    <!-- Muestra el componente matriz si contentActive.matrix es true -->
+                    <!-- La key=5 es única para este componente en la transición -->
+                    <matriz v-if="contentActive.matrix"
+                        v-bind:key="5"
                     />
                 </transition-group>
             </section>

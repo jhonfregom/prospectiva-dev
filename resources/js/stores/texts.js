@@ -15,7 +15,20 @@ export const useTextsStore = defineStore('texts', {
          */
         //Get text in the first level
         getText: (state) => {
-            return (name) => state[name];
+            return (name) => {
+                //Use for get texts with structure object. Ex, texts.section.title
+                const keys = name.split('.');
+                let current = state;
+                for(const key of keys)
+                {
+                    if(current === null || current === undefined || current[key] === undefined)
+                    {
+                        return;
+                    }
+                    current = current[key];
+                }
+                return current;
+            }
         },
         getLocale: (state) => {
             return state.locale

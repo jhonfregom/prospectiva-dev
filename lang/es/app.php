@@ -1,4 +1,3 @@
-
 <?php
 return [
     /*
@@ -36,7 +35,27 @@ return [
                 'title' =>  'matriz variables',
                 'description' => [
                     'calificación variables',
-                ]
+                ],
+                'save' => 'Guardar Matriz',
+                'no_variables_message' => 'No hay variables para mostrar.',
+                'create_variables_message_part1' => 'Por favor,',
+                'create_variables_link_text' => 'crea algunas variables',
+                'create_variables_message_part2' => 'primero para poder calificarlas en la matriz.',
+                'code' => 'CÓDIGO',
+                'name' => 'NOMBRE',
+                'total_dependency' => 'TOTAL DEPENDENCIA',
+                'total_influence' => 'TOTAL INFLUENCIA',
+                'interpretation_title' => 'Interpretación de valores:',
+                'strong_influence' => 'Influencia directa fuerte',
+                'medium_influence' => 'Influencia directa media',
+                'weak_influence' => 'Influencia débil o potencial',
+                'null_influence' => 'Influencia nula',
+                'summary' => 'RESUMEN',
+                'dependency' => 'DEPENDENCIA',
+                'influence' => 'INFLUENCIA',
+                'section_title' => 'CALIFICACIÓN DE VARIABLES',
+                'save_success' => 'Matriz guardada correctamente.',
+                'save_error' => 'Error al guardar la matriz.'
             ],
             'graphics' => [
                 'title' =>  'graficas variables',
