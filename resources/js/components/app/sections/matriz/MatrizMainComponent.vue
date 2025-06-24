@@ -97,23 +97,23 @@
                 <thead>
                     <tr>
                         <th>{{ textsStore.getText('matriz.summary') }}</th>
-                        <th v-for="variable in variables" 
+                        <th v-for="variable in orderedVariables" 
                             :key="'resumen-' + variable.id">
-                            {{ variable.codigo }}
+                            {{ variable.id_variable }}
                         </th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>{{ textsStore.getText('matriz.dependency') }}</td>
-                        <td v-for="variable in variables" 
+                        <td v-for="variable in orderedVariables" 
                             :key="'dep-' + variable.id">
                             {{ totalesDependencia[variable.id] || 0 }}
                         </td>
                     </tr>
                     <tr>
                         <td>{{ textsStore.getText('matriz.influence') }}</td>
-                        <td v-for="variable in variables" 
+                        <td v-for="variable in orderedVariables" 
                             :key="'inf-' + variable.id">
                             {{ totalesInfluencia[variable.id] || 0 }}
                         </td>

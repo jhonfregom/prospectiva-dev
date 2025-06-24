@@ -21,8 +21,11 @@
         },
         methods: {
             setActiveSection(moduleName){
-                console.log('Activando módulo:', moduleName);
-                this.storeSession.setActiveContent( moduleName );
+                if(moduleName === 'graphics'){
+                    this.storeSession.setActiveContent('graphics');
+                } else {
+                    this.storeSession.setActiveContent(moduleName);
+                }
             },
         }
     }
@@ -52,6 +55,16 @@
                                 :key="index">
                                 {{ descp }}
                             </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-6">
+                    <div class="card" v-on:click.prevent="setActiveSection('graphics')">
+                        <header class="card-header">
+                            <p class="card-header-title">Gráfica Variables</p>
+                        </header>
+                        <div class="card-content">
+                            <p>Visualiza la gráfica de análisis estructural de variables.</p>
                         </div>
                     </div>
                 </div>

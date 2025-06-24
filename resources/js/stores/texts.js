@@ -7,7 +7,16 @@ export const useTextsStore = defineStore('texts', {
          * Or other resource to view
          * These will not be visible in the development console
          */
-        locale: null //Current language to translations
+        locale: null, //Current language to translations
+        graphics: {
+            title: 'Gráfica Variables',
+            zone_power: 'Zona de Poder',
+            zone_indifference: 'Zona de Indiferencia',
+            zone_conflict: 'Zona de Conflicto',
+            zone_exit: 'Zona de Salida',
+            x_axis: 'DEPENDENCIA',
+            y_axis: 'INFLUENCIA'
+        }
     }),
     getters: {
         /**

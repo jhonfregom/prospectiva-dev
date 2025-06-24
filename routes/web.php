@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\VariableController;
 use App\Http\Controllers\MatrizController;
+use App\Http\Controllers\GraphicsController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -65,5 +66,7 @@ Route::controller(RegisterController::class)->group(function(){
     Route::get('/register', 'showRegistrationForm')->name('register');
     Route::post('/register', 'register')->name('start_register');
 });
+
+Route::get('/graphics', [GraphicsController::class, 'index']);
 
 

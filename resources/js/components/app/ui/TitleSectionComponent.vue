@@ -118,7 +118,7 @@
         }
 
         .title{
-            color: var.$color-yellow !important;
+            color: var.$color-white !important;
             display: inline-block;
             font-size: 1rem;
             margin-bottom: 0;
