@@ -5,11 +5,11 @@ export const useAnalysisStore = defineStore('analysis', {
   state: () => ({
     zones: [], // Se llenará desde textsStore
     rows: [
-      // Simulación de variables por zona, puedes cambiar los valores
-      { key: 'poder', variables: ['V1'], comment: '', score: 0 },
-      { key: 'conflicto', variables: ['V2'], comment: '', score: 0 },
-      { key: 'indiferencia', variables: ['V3'], comment: '', score: 0 },
-      { key: 'salida', variables: ['V4'], comment: '', score: 0 }
+      // Filas vacías que se llenarán dinámicamente
+      { key: 'poder', variables: [], comment: '', score: 0 },
+      { key: 'conflicto', variables: [], comment: '', score: 0 },
+      { key: 'indiferencia', variables: [], comment: '', score: 0 },
+      { key: 'salida', variables: [], comment: '', score: 0 }
     ]
   }),
   actions: {

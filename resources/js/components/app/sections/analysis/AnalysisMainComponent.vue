@@ -17,7 +17,16 @@
       </b-table-column>
       <b-table-column field="variables" label="Variables en la zona" v-slot="props" centered>
         <span>
-          <b-tag v-for="v in props.row.variables" :key="v" type="is-info" class="mr-1">{{ v }}</b-tag>
+          <span v-for="v in props.row.variables" :key="v.codigo" style="display:inline-block;text-align:center;">
+            <b-tag
+              type="is-info"
+              class="mr-1"
+              :style="v.frontera ? 'border: 2px solid #f9d423; box-shadow: 0 0 4px #f9d423;' : ''"
+              :title="v.frontera ? 'En frontera: asignada a zona crítica' : ''"
+            >
+              {{ v.codigo }}
+            </b-tag>
+          </span>
         </span>
       </b-table-column>
       <b-table-column field="comment" label="ANÁLISIS" v-slot="props" centered>
@@ -57,9 +66,10 @@ export default {
       return textsStore.analysis.description.replace(/de \d+ variables/i, `de ${count} variables`);
     });
 
-    onMounted(() => {
+    onMounted(async () => {
       sectionStore.setTitleSection(textsStore.analysis.title);
       analysisStore.initZones();
+      await graphicsStore.fetchGraphicsData();
       updateVariablesByZone();
     });
 
@@ -91,24 +101,35 @@ export default {
     }
 
     function updateVariablesByZone() {
-      // Determinar centro de la gráfica
       if (!data.value || data.value.length === 0) return;
       const maxX = Math.max(...data.value.map(v => v.dependencia), 10);
       const maxY = Math.max(...data.value.map(v => v.influencia), 12);
       const centroX = maxX / 2;
       const centroY = maxY / 2;
-      // Limpiar variables
       rows.value.forEach(r => r.variables = []);
-      // Asignar variables a zonas
+      // Limpiar marcas de frontera
+      rows.value.forEach(r => r.frontierVars = []);
       data.value.forEach(v => {
         let zona = '';
-        if (v.dependencia < centroX && v.influencia > centroY) zona = 'poder';
-        else if (v.dependencia > centroX && v.influencia > centroY) zona = 'conflicto';
-        else if (v.dependencia < centroX && v.influencia < centroY) zona = 'indiferencia';
-        else if (v.dependencia > centroX && v.influencia < centroY) zona = 'salida';
-        // Buscar la fila correspondiente y agregar la variable
+        let esFrontera = false;
+        // Detectar frontera
+        if (v.dependencia === centroX || v.influencia === centroY) {
+          esFrontera = true;
+          // Prioridad: Conflicto > Poder > Salida > Indiferencia
+          if (v.dependencia > centroX && v.influencia >= centroY) zona = 'conflicto';
+          else if (v.dependencia <= centroX && v.influencia > centroY) zona = 'poder';
+          else if (v.dependencia > centroX && v.influencia < centroY) zona = 'salida';
+          else zona = 'indiferencia';
+        } else {
+          if (v.dependencia <= centroX && v.influencia > centroY) zona = 'poder';
+          else if (v.dependencia > centroX && v.influencia >= centroY) zona = 'conflicto';
+          else if (v.dependencia <= centroX && v.influencia <= centroY) zona = 'indiferencia';
+          else if (v.dependencia > centroX && v.influencia < centroY) zona = 'salida';
+        }
         const row = rows.value.find(r => r.key === zona);
-        if (row) row.variables.push(v.codigo);
+        if (row) {
+          row.variables.push({ codigo: v.codigo, frontera: esFrontera });
+        }
       });
     }
 
