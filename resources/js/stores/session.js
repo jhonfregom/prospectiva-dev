@@ -10,8 +10,8 @@ export const useSessionStore = defineStore('session',{
             main: true,        // Vista principal/dashboard está activa por defecto
             variables: false,  // Vista de variables está inactiva por defecto
             matrix: false,     // Vista de matriz está inactiva por defecto
-            graphics: false,
-            analysis: false, // Vista de análisis de variables está inactiva por defecto
+            graphics: false,   // Vista de gráfica está inactiva por defecto
+            analysis: false    // Vista de análisis mapa de variables
         },
         
         // Otros estados del store...

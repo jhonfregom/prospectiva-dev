@@ -49,6 +49,30 @@ class TestMatrizSeeder extends Seeder
             'id_resp_influ' => 1,
             'user_id' => 1,
             'state' => '0'
+        ],
+        [
+            'id_matriz' => 1,
+            'id_variable' => 1,
+            'id_resp_depen' => 4,
+            'id_resp_influ' => 2,
+            'user_id' => 1,
+            'state' => '0'
+        ],
+        [
+            'id_matriz' => 1,
+            'id_variable' => 2,
+            'id_resp_depen' => 4,
+            'id_resp_influ' => 1,
+            'user_id' => 1,
+            'state' => '0'
+        ],
+        [
+            'id_matriz' => 1,
+            'id_variable' => 3,
+            'id_resp_depen' => 4,
+            'id_resp_influ' => 2,
+            'user_id' => 1,
+            'state' => '0'
         ]
     ]);
     foreach ($matriz as $data) {

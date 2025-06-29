@@ -7,6 +7,7 @@ use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\VariableController;
 use App\Http\Controllers\MatrizController;
 use App\Http\Controllers\GraphicsController;
+use App\Http\Controllers\VariablesMapController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,6 +39,16 @@ Route::group(['middleware' => ['auth']], function(){
     Route::controller(MatrizController::class)->group(function(){
         Route::get('/matriz', 'index')->name('matriz.index');
         Route::post('/matriz', 'store')->name('matriz.store');
+    });
+
+    // Rutas de análisis protegidas por autenticación
+    Route::controller(VariablesMapController::class)->group(function(){
+        Route::get('/analysis', 'index')->name('analysis.index');
+        Route::post('/analysis', 'store')->name('analysis.store');
+        Route::put('/analysis/{id}', 'update')->name('analysis.update');
+        Route::delete('/analysis/{id}', 'destroy')->name('analysis.destroy');
+        Route::post('/analysis/reset-auto-increment', 'resetAutoIncrement')->name('analysis.reset-auto-increment');
+        Route::post('/analysis/delete-all-reset', 'deleteAllAndReset')->name('analysis.delete-all-reset');
     });
 });
 

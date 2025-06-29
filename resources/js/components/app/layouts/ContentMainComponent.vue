@@ -13,8 +13,8 @@
     import matriz from '../sections/matriz/MatrizMainComponent.vue';
     // Importa el componente que maneja la gráfica principal
     import graphics from '../sections/graphics/GraphicsMainComponent.vue';
-    // Importa el componente que maneja el análisis de mapa de variables
-    import analysis from '../sections/AnalisisVariables/AnalisisMapaVariablesMainComponent.vue';
+    // Importa el componente para el análisis mapa de variables
+    import analysis from '../sections/analisisVariables/AnalisisMapaVariablesMainComponent.vue';
 
     export default {
         // Setup es un hook de composition API que inicializa los stores
@@ -31,7 +31,7 @@
             variables,       // Componente para la tabla de variables
             matriz,          // Componente para la matriz de influencia
             graphics,        // Componente para la gráfica principal
-            analysis     // Componente para el análisis de mapa
+            analysis,        // Componente para el análisis mapa de variables
         },
 
         data() {
@@ -96,7 +96,9 @@
                     <graphics v-if="contentActive.graphics"
                         v-bind:key="6"
                     />
-                    <!-- Muestra el componente analisismapa si contentActive.analisismapa es true -->
+                    
+                    <!-- Muestra el componente analysis si contentActive.analysis es true -->
+                    <!-- La key=7 es única para este componente en la transición -->
                     <analysis v-if="contentActive.analysis"
                         v-bind:key="7"
                     />

@@ -16,6 +16,56 @@ export const useTextsStore = defineStore('texts', {
             zone_exit: 'Zona de Salida',
             x_axis: 'DEPENDENCIA',
             y_axis: 'INFLUENCIA'
+        },
+        analysis: {
+            title: 'Análisis Mapa de Variables',
+            subtitle: 'Analiza y describe cada zona del mapa de variables',
+            description: 'De 5 Variables propuestas que se encuentran enunciadas en la tabla Matriz Variables, se hizo un proceso de calificación del nivel de influencia que tenían entre ellas. Dicha calificación arrojó un gráfico que permite visualizar su ubicación en diferentes zonas de la Matriz de Análisis Estructural.',
+            description_placeholder: 'Describe el análisis de esta zona...',
+            score: 'Puntaje',
+            score_help: 'Ingresa un puntaje entre 0 y 100',
+            save: 'Guardar',
+            locked: 'Bloqueado',
+            editable: 'Editable',
+            zones: [
+                { key: 'poder', name: 'Zona de Poder' },
+                { key: 'conflicto', name: 'Zona de Conflicto' },
+                { key: 'indiferencia', name: 'Zona de Indiferencia' },
+                { key: 'salida', name: 'Zona de Salida' }
+            ],
+            zones_detail: {
+                poder: {
+                    title: 'Zona de Poder',
+                    description: 'Variables con alta influencia y baja dependencia'
+                },
+                conflicto: {
+                    title: 'Zona de Conflicto',
+                    description: 'Variables con alta influencia y alta dependencia'
+                },
+                indiferencia: {
+                    title: 'Zona de Indiferencia',
+                    description: 'Variables con baja influencia y baja dependencia'
+                },
+                salida: {
+                    title: 'Zona de Salida',
+                    description: 'Variables con baja influencia y alta dependencia'
+                }
+            },
+            diagnosis: [
+                { min: 0, max: 40, text: 'DEBES MEJORAR', color: 'red' },
+                { min: 41, max: 80, text: 'FALTA ALGO MAS', color: 'orange' },
+                { min: 81, max: 120, text: 'UN ESFUERZO MAS', color: 'blue' },
+                { min: 121, max: 9999, text: 'LO LOGRASTE', color: 'green' }
+            ]
+        },
+        common: {
+            loading: 'Cargando...',
+            save_success: 'Guardado correctamente',
+            save_error: 'Error al guardar',
+            delete_success: 'Eliminado correctamente',
+            delete_error: 'Error al eliminar',
+            update_success: 'Actualizado correctamente',
+            update_error: 'Error al actualizar'
         }
     }),
     getters: {
