@@ -69,12 +69,12 @@ return [
                 ]
             ],
             'hypothesis' => [
-                'title' =>  'análisis hipótesis de futuro',
+                'title' =>  'direccionadores de futuro',
                 'description' => [
                 ]
             ],
-            'schuwartz' => [
-                'title' =>  'schuwartz',
+            'schwartz' => [
+                'title' =>  'ejes de peter schwartz',
                 'description' => [
                 ]
             ],

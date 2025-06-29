@@ -15,6 +15,10 @@
     import graphics from '../sections/graphics/GraphicsMainComponent.vue';
     // Importa el componente para el análisis mapa de variables
     import analysis from '../sections/analisisVariables/AnalisisMapaVariablesMainComponent.vue';
+    // Importa el componente que maneja los direccionadores de futuro
+    import hypothesis  from '../sections/directionFuture/DirectionFutureMainComponent.vue';
+    // Importa el componente que maneja los ejes de Peter Schwartz
+    import schwartz from '../sections/schwartz/SchwartzMainComponent.vue';
 
     export default {
         // Setup es un hook de composition API que inicializa los stores
@@ -32,6 +36,8 @@
             matriz,          // Componente para la matriz de influencia
             graphics,        // Componente para la gráfica principal
             analysis,        // Componente para el análisis mapa de variables
+            hypothesis, // Componente para los direccionadores de futuro
+            schwartz         // Componente para los ejes de Peter Schwartz
         },
 
         data() {
@@ -101,6 +107,14 @@
                     <!-- La key=7 es única para este componente en la transición -->
                     <analysis v-if="contentActive.analysis"
                         v-bind:key="7"
+                    />
+                    <!-- Muestra el componente hypothesis si contentActive.hypothesis es true -->
+                    <hypothesis v-if="contentActive.hypothesis"
+                        v-bind:key="8"
+                    />
+                    <!-- Muestra el componente schwartz si contentActive.schwartz es true -->
+                    <schwartz v-if="contentActive.schwartz"
+                        v-bind:key="9"
                     />
                 </transition-group>
             </section>

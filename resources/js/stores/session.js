@@ -11,7 +11,9 @@ export const useSessionStore = defineStore('session',{
             variables: false,  // Vista de variables está inactiva por defecto
             matrix: false,     // Vista de matriz está inactiva por defecto
             graphics: false,   // Vista de gráfica está inactiva por defecto
-            analysis: false    // Vista de análisis mapa de variables
+            analysis: false,    // Vista de análisis mapa de variables
+            hypothesis: false, // Vista de hipótesis está inactiva por defecto
+            schwartz: false,  // Vista de ejes de Peter Schwartz está inactiva por defecto
         },
         
         // Otros estados del store...
