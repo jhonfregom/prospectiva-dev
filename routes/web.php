@@ -8,6 +8,7 @@ use App\Http\Controllers\VariableController;
 use App\Http\Controllers\MatrizController;
 use App\Http\Controllers\GraphicsController;
 use App\Http\Controllers\VariablesMapController;
+use App\Http\Controllers\HypothesisController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -49,6 +50,23 @@ Route::group(['middleware' => ['auth']], function(){
         Route::delete('/analysis/{id}', 'destroy')->name('analysis.destroy');
         Route::post('/analysis/reset-auto-increment', 'resetAutoIncrement')->name('analysis.reset-auto-increment');
         Route::post('/analysis/delete-all-reset', 'deleteAllAndReset')->name('analysis.delete-all-reset');
+    });
+
+    // Rutas de hipótesis protegidas por autenticación
+    Route::controller(HypothesisController::class)->group(function(){
+        Route::get('/hypothesis', 'index')->name('hypothesis.index');
+        Route::post('/hypothesis', 'store')->name('hypothesis.store');
+        Route::post('/hypothesis/reset-auto-increment', 'resetAutoIncrement')->name('hypothesis.reset-auto-increment');
+        Route::post('/hypothesis/delete-all-reset', 'deleteAllAndReset')->name('hypothesis.delete-all-reset');
+    });
+
+    // Ruta de prueba para verificar autenticación
+    Route::get('/test-auth', function() {
+        return response()->json([
+            'authenticated' => auth()->check(),
+            'user_id' => auth()->id(),
+            'user' => auth()->user()
+        ]);
     });
 });
 

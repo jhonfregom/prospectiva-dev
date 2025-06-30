@@ -26,14 +26,19 @@ export default {
     data() {
         return {
             showModal: false,
-            updateTimeout: null,
             editingRow: null,
-            editCounts: {},
+            debouncedUpdate: null
         };
     },
 
     created() {
-        this.debouncedUpdate = debounce(this.updateVariableInServer, 1000);
+        // Crear función debounced para actualizar automáticamente
+        this.debouncedUpdate = this.debounce(async (row) => {
+            // Solo actualizar si no está bloqueada y no está en modo edición manual
+            if (row.state !== '1' && this.editingRow !== row.id) {
+                await this.updateVariableInServer(row);
+            }
+        }, 1000);
     },
 
     mounted() {
@@ -42,107 +47,51 @@ export default {
             this.showModal = true;
         });
         this.loadVariables();
-        this.loadEditCounts();
     },
 
     methods: {
+        // Función debounce helper
+        debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        },
+
         async loadVariables() {
             await this.variablesStore.fetchVariables();
-            this.$nextTick(() => {
-                this.applyStateFromEditCounts();
-            });
-        },
-
-        loadEditCounts() {
-            try {
-                const counts = localStorage.getItem('variableEditCounts');
-                this.editCounts = counts ? JSON.parse(counts) : {};
-            } catch (e) {
-                console.error('Error al cargar conteo de ediciones:', e);
-                this.editCounts = {};
-            }
-        },
-
-        saveEditCounts() {
-            try {
-                localStorage.setItem('variableEditCounts', JSON.stringify(this.editCounts));
-            } catch (e) {
-                console.error('Error al guardar conteo de ediciones:', e);
-            }
-        },
-
-        applyStateFromEditCounts() {
-            this.variables.forEach(variable => {
-                const count = this.editCounts[variable.id] || 0;
-                if (count >= 2) {
-                    variable.state = 1;
-                }
-            });
         },
 
         handleDescriptionChange(event, row) {
             row.score = event.target.value.split(/\s+/).filter(word => word.length > 0).length;
-            this.debouncedUpdate(row);
+            // this.debouncedUpdate(row); // Comentado temporalmente
         },
 
         async handleEditSave(row) {
-            if (row.state === 1) return;
+            console.log('handleEditSave - Variable ID:', row.id, 'Current state:', row.state);
+            
+            if (row.state === '1') return;
 
             if (this.editingRow === row.id) {
-                if (this.editCounts[row.id] === 1) {
-                    row.state = 1;
-                    this.$forceUpdate();
-                }
-                
+                // Guardar
+                console.log('Saving variable ID:', row.id);
                 await this.updateVariableInServer(row);
+                console.log('After save - Variable ID:', row.id, 'New state:', row.state);
                 this.editingRow = null;
-                this.editCounts[row.id] = (this.editCounts[row.id] || 0) + 1;
-                this.saveEditCounts();
-                
-                if (this.editCounts[row.id] >= 2) {
-                    await this.variablesStore.updateVariableState(row.id, 1);
-                    this.$buefy.toast.open({
-                        message: 'Has alcanzado el límite de ediciones para esta variable.',
-                        type: 'is-warning'
-                    });
-                } else {
-                    this.$buefy.toast.open({
-                        message: `Te quedan ${2 - this.editCounts[row.id]} ediciones para esta variable.`,
-                        type: 'is-info'
-                    });
-                }
             } else {
-                const remainingEdits = 2 - (this.editCounts[row.id] || 0);
-                if (remainingEdits <= 0) {
-                    this.$buefy.toast.open({
-                        message: 'No puedes editar más esta variable.',
-                        type: 'is-danger'
-                    });
-                    return;
-                }
-                
-                this.$buefy.dialog.confirm({
-                    title: 'Confirmar Edición',
-                    message: `Esta variable solo puede ser editada ${remainingEdits} vez más. ¿Estás seguro de que deseas editarla?`,
-                    confirmText: 'Confirmar',
-                    cancelText: 'Cancelar',
-                    type: 'is-info',
-                    onConfirm: () => {
-                        this.editingRow = row.id;
-                    }
-                });
+                // Entrar en modo edición
+                this.editingRow = row.id;
             }
         },
 
         async updateVariableInServer(variable) {
             try {
                 await this.variablesStore.updateVariable(variable);
-                const count = this.editCounts[variable.id] || 0;
-                if (count >= 2) {
-                    variable.state = 1;
-                    this.$forceUpdate();
-                    await this.variablesStore.updateVariableState(variable.id, 1);
-                }
             } catch (error) {
                 this.$buefy.toast.open({
                     message: 'Error al actualizar la variable',
@@ -258,9 +207,9 @@ export default {
                         :icon-left="editingRow === props.row.id ? 'save' : 'edit'"
                         @click="handleEditSave(props.row)"
                         outlined
-                        :disabled="props.row.state === 1"
+                        :disabled="props.row.state === '1'"
                     >
-                        {{ editingRow === props.row.id ? (editCounts[props.row.id] === 1 ? 'Finalizar' : 'Guardar') : 'Editar' }}
+                        {{ editingRow === props.row.id ? 'Guardar' : 'Editar' }}
                     </b-button>
 
                     <b-button 
@@ -313,5 +262,11 @@ export default {
 .has-text-success {
     color: #48c774 !important;
     font-weight: 600;
+}
+
+/* Centrado vertical SOLO en filas de datos (tbody td) de la tabla de variables */
+::v-deep .b-table .table tbody td {
+    vertical-align: middle !important;
+    height: 80px !important;
 }
 </style>

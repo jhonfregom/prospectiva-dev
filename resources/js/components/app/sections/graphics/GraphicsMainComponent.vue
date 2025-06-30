@@ -52,8 +52,8 @@ export default {
     function renderChart() {
       if (chartInstance) chartInstance.destroy();
       const points = data.value.map(item => ({
-        x: item.dependencia,
-        y: item.influencia,
+        x: item.influencia,
+        y: item.dependencia,
         label: item.codigo
       }));
       const { maxX, maxY, minX, minY } = getAxisLimits(points);

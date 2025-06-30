@@ -108,14 +108,14 @@
                         <td>{{ textsStore.getText('matriz.dependency') }}</td>
                         <td v-for="variable in orderedVariables" 
                             :key="'dep-' + variable.id">
-                            {{ totalesDependencia[variable.id] || 0 }}
+                            {{ totalesInfluencia[variable.id] || 0 }}
                         </td>
                     </tr>
                     <tr>
                         <td>{{ textsStore.getText('matriz.influence') }}</td>
                         <td v-for="variable in orderedVariables" 
                             :key="'inf-' + variable.id">
-                            {{ totalesInfluencia[variable.id] || 0 }}
+                            {{ totalesDependencia[variable.id] || 0 }}
                         </td>
                     </tr>
                 </tbody>

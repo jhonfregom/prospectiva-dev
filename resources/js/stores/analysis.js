@@ -82,7 +82,18 @@ export const useAnalysisStore = defineStore('analysis', {
         async saveAnalysis(analysisData) {
             try {
                 const response = await axios.post('/analysis', analysisData);
+                console.log('Analysis save response:', response.data);
+                
                 if (response.data.status === 201) {
+                    // Actualizar el state en el store si la respuesta incluye el análisis actualizado
+                    if (response.data.data) {
+                        const zoneKey = analysisData.zone_id;
+                        const rowIndex = this.rows.findIndex(row => row.key === zoneKey);
+                        if (rowIndex !== -1) {
+                            this.rows[rowIndex].state = response.data.data.state;
+                            console.log('Analysis updated, new state:', this.rows[rowIndex].state);
+                        }
+                    }
                     return { success: true, data: response.data.data, message: response.data.message };
                 }
                 return { success: false, message: response.data.message };

@@ -151,13 +151,19 @@ export default {
 
         // Al hacer click en el botón
         async function handleEditSave(row) {
-            if (row.state === '1') return; // Verificar si está bloqueado
+            console.log('handleEditSave - Zone:', row.key, 'Current state:', row.state);
+            
+            if (row.state === '1') {
+                console.log('Análisis bloqueado, no se puede editar:', row.key);
+                return; // Verificar si está bloqueado
+            }
             
             if (editingRow.value === row.key) {
                 // Guardar manualmente
                 console.log('Guardando manualmente análisis:', row.key);
                 debouncedSaveAnalysis.cancel(); // Cancelar guardado automático pendiente
-                await saveOrCreateAnalysis(row, true);
+                const result = await saveOrCreateAnalysis(row, true);
+                console.log('After save - Zone:', row.key, 'New state:', row.state);
                 editingRow.value = null;
             } else {
                 // Entrar en modo edición
@@ -210,8 +216,8 @@ export default {
         function updateVariablesByZone() {
             if (!data.value || data.value.length === 0) return;
             
-            const maxX = Math.max(...data.value.map(v => v.dependencia), 10);
-            const maxY = Math.max(...data.value.map(v => v.influencia), 12);
+            const maxX = Math.max(...data.value.map(v => v.influencia), 10);
+            const maxY = Math.max(...data.value.map(v => v.dependencia), 12);
             const centroX = maxX / 2;
             const centroY = maxY / 2;
             
@@ -221,19 +227,17 @@ export default {
                 let zona = '';
                 let esFrontera = false;
                 
-                // Detectar frontera
-                if (v.dependencia === centroX || v.influencia === centroY) {
+                if (v.influencia === centroX || v.dependencia === centroY) {
                     esFrontera = true;
-                    // Prioridad: Conflicto > Poder > Salida > Indiferencia
-                    if (v.dependencia > centroX && v.influencia >= centroY) zona = 'conflicto';
-                    else if (v.dependencia <= centroX && v.influencia > centroY) zona = 'poder';
-                    else if (v.dependencia > centroX && v.influencia < centroY) zona = 'salida';
+                    if (v.influencia > centroX && v.dependencia >= centroY) zona = 'conflicto';
+                    else if (v.influencia <= centroX && v.dependencia > centroY) zona = 'poder';
+                    else if (v.influencia > centroX && v.dependencia < centroY) zona = 'salida';
                     else zona = 'indiferencia';
                 } else {
-                    if (v.dependencia <= centroX && v.influencia > centroY) zona = 'poder';
-                    else if (v.dependencia > centroX && v.influencia >= centroY) zona = 'conflicto';
-                    else if (v.dependencia <= centroX && v.influencia <= centroY) zona = 'indiferencia';
-                    else if (v.dependencia > centroX && v.influencia < centroY) zona = 'salida';
+                    if (v.influencia <= centroX && v.dependencia > centroY) zona = 'poder';
+                    else if (v.influencia > centroX && v.dependencia >= centroY) zona = 'conflicto';
+                    else if (v.influencia <= centroX && v.dependencia <= centroY) zona = 'indiferencia';
+                    else if (v.influencia > centroX && v.dependencia < centroY) zona = 'salida';
                 }
                 
                 const row = rows.value.find(r => r.key === zona);
@@ -250,7 +254,10 @@ export default {
 
         // Función para manejar input del comentario
         function onCommentInput(row) {
-            if (row.state === '1') return; // No permitir cambios si está bloqueado
+            if (row.state === '1') {
+                console.log('Análisis bloqueado, no se permiten cambios:', row.key);
+                return; // No permitir cambios si está bloqueado
+            }
             
             // Guardado automático
             debouncedSaveAnalysis(row);
@@ -366,5 +373,11 @@ export default {
 .has-text-success {
     color: #48c774 !important;
     font-weight: 600;
+}
+
+/* Centrado vertical SOLO en filas de datos (tbody td) de la tabla de análisis mapa de variables */
+::v-deep .b-table .table tbody td {
+    vertical-align: middle !important;
+    height: 80px !important;
 }
 </style>

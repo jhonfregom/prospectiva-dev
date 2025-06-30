@@ -66,7 +66,21 @@ export const useTextsStore = defineStore('texts', {
             delete_error: 'Error al eliminar',
             update_success: 'Actualizado correctamente',
             update_error: 'Error al actualizar'
-        }
+        },
+        hypothesis: {
+            title: 'Direccionadores de futuro',
+            subtitle: 'En esta sección se generan las hipótesis para las dos variables más cercanas a la zona de poder.',
+            table: {
+                h: 'H',
+                variable: 'VARIABLE',
+                descriptionH0: 'HIPÓTESIS H0',
+                descriptionH1: 'HIPÓTESIS H1',
+                edit: 'Editar',
+                save: 'Guardar',
+                locked: 'BLOQUEADO',
+            },
+            note: 'Las hipótesis se bloquean después de dos ediciones manuales. Cada textarea tiene un límite de 40 palabras. Ambos campos (H0 y H1) se editan juntos.'
+        },
     }),
     getters: {
         /**

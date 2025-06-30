@@ -68,15 +68,41 @@ class VariableController extends Controller
     {
         try {
             $variable = Variable::findOrFail($id);
+            $userId = Auth::id();
+
+            // Si ya está bloqueada, no permitir editar
+            if ($variable->state === '1') {
+                return response()->json([
+                    'data' => $variable,
+                    'status' => 200,
+                    'message' => 'Esta variable ya está bloqueada y no se puede editar.'
+                ]);
+            }
 
             $validated = $request->validate([
-                'description' => 'required|string',
+                'description' => 'nullable|string',
                 'score' => 'required|integer'
             ]);
 
-            $variable->description = $validated['description'];
+            // Contador de ediciones en sesión (por usuario y variable)
+            $sessionKey = 'variable_edit_count_' . $variable->id . '_user_' . $userId;
+            $editCount = session($sessionKey, 0) + 1;
+            session([$sessionKey => $editCount]);
+
+            \Log::info('Variable update - ID: ' . $variable->id . ', Edit count: ' . $editCount . ', Current state: ' . $variable->state);
+
+            $variable->description = $validated['description'] ?? '';
             $variable->score = $validated['score'];
+
+            // Si es la segunda edición o más, bloquear (después de la primera)
+            if ($editCount >= 2) {
+                $variable->state = '1';
+                \Log::info('Variable update - Blocking variable ID: ' . $variable->id);
+            }
+
             $variable->save();
+
+            \Log::info('Variable update - Final state: ' . $variable->state . ', Response data: ' . json_encode($variable));
 
             return response()->json([
                 'status' => 200,

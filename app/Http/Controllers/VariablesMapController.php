@@ -7,7 +7,6 @@ use App\Models\VariableMapAnalisys;
 use App\Models\Zones;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class VariablesMapController extends Controller
 {
@@ -38,7 +37,6 @@ class VariablesMapController extends Controller
                 'message' => 'Análisis obtenidos correctamente'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al obtener análisis: ' . $e->getMessage());
             return response()->json([
                 'data' => null,
                 'status' => 500,
@@ -81,25 +79,25 @@ class VariablesMapController extends Controller
                 ->first();
 
             if ($analysis) {
-                // Si ya existe, verificar si está bloqueado
+                // Si ya está bloqueada, no permitir editar
                 if ($analysis->state === '1') {
                     return response()->json([
-                        'data' => null,
-                        'status' => 400,
+                        'data' => $analysis,
+                        'status' => 200,
                         'message' => 'Este análisis ya está bloqueado y no se puede editar.'
-                    ], 400);
+                    ]);
                 }
-                
+
                 // Solo contar como edición si es guardado manual
                 if ($isManualSave) {
-                    // Si el contenido ha cambiado, es una edición
-                    $contentChanged = $analysis->description !== $data['description'] || $analysis->score !== $data['score'];
-                    
-                    if ($contentChanged) {
-                        // Si ya se ha editado antes (updated_at es diferente de created_at), bloquear
-                        if ($analysis->updated_at->gt($analysis->created_at)) {
-                            $data['state'] = '1'; // Bloquear después de la segunda edición
-                        }
+                    // Contador de ediciones en sesión (por usuario y análisis)
+                    $sessionKey = 'analysis_edit_count_' . $analysis->id . '_user_' . $data['user_id'];
+                    $editCount = session($sessionKey, 0) + 1;
+                    session([$sessionKey => $editCount]);
+
+                    // Si es la segunda edición o más, bloquear
+                    if ($editCount >= 2) {
+                        $data['state'] = '1';
                     }
                 }
                 
@@ -121,7 +119,6 @@ class VariablesMapController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            Log::error('Error al guardar análisis: ' . $e->getMessage());
             return response()->json([
                 'data' => null,
                 'status' => 500,
@@ -149,7 +146,6 @@ class VariablesMapController extends Controller
                 'message' => 'Análisis actualizado correctamente'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al actualizar análisis: ' . $e->getMessage());
             return response()->json([
                 'data' => null,
                 'status' => 500,
@@ -170,7 +166,6 @@ class VariablesMapController extends Controller
                 'message' => 'Análisis eliminado correctamente'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al eliminar análisis: ' . $e->getMessage());
             return response()->json([
                 'data' => null,
                 'status' => 500,
@@ -225,7 +220,6 @@ class VariablesMapController extends Controller
                 'message' => 'No se puede reiniciar AUTO_INCREMENT mientras hay registros.'
             ], 400);
         } catch (\Exception $e) {
-            Log::error('Error al reiniciar AUTO_INCREMENT: ' . $e->getMessage());
             return response()->json([
                 'data' => null,
                 'status' => 500,
@@ -247,7 +241,6 @@ class VariablesMapController extends Controller
                 'message' => 'Todos los registros borrados y AUTO_INCREMENT reiniciado.'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al borrar registros: ' . $e->getMessage());
             return response()->json([
                 'data' => null,
                 'status' => 500,

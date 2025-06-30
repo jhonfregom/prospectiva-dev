@@ -111,41 +111,26 @@ export const useVariablesStore = defineStore('variables', {
                     score: variable.score
                 });
 
+                console.log('Variable update response:', response.data);
+
                 if (response.data.status === 200) {
                     const index = this.variables.findIndex(v => v.id === variable.id);
                     if (index !== -1) {
-                        const updatedVariable = {
-                            ...this.variables[index],
-                            description: variable.description,
-                            score: variable.score
-                        };
-                        
+                        console.log('Updating variable at index:', index, 'with data:', response.data.data);
+                        // Forzar reactividad reemplazando todo el array
                         this.variables = [
                             ...this.variables.slice(0, index),
-                            updatedVariable,
+                            response.data.data,
                             ...this.variables.slice(index + 1)
                         ];
+                        console.log('Variable updated, new state:', this.variables[index].state);
                     }
                     return true;
                 }
                 return false;
             } catch (error) {
                 console.error('Error updating variable:', error);
-                const index = this.variables.findIndex(v => v.id === variable.id);
-                if (index !== -1) {
-                    const updatedVariable = {
-                        ...this.variables[index],
-                        description: variable.description,
-                        score: variable.score
-                    };
-                    
-                    this.variables = [
-                        ...this.variables.slice(0, index),
-                        updatedVariable,
-                        ...this.variables.slice(index + 1)
-                    ];
-                }
-                return true;
+                throw error;
             }
         },
 
