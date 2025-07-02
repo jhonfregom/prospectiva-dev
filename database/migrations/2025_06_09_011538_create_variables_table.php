@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('score');
             $table->integer('user_id')->nullable();
             $table->enum('state', ['0', '1'])->default('0');
+            $table->text('now_condition')->nullable(); // Default value for now_condition
             $table->dateTime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->dateTime('updated_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->primary([ 'id' ]);

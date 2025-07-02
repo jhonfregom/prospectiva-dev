@@ -89,18 +89,13 @@ return [
                 'description' => [
                 ]
             ],
-            'inicialconditions' => [
+            'initialconditions' => [
                 'title' =>  'condiciones iniciales',
                 'description' => [
                 ]
             ],
-            'scenary1' => [
-                'title' =>  'escenario 1',
-                'description' => [
-                ]
-            ],
-            'scenary2' => [
-                'title' =>  'escenario 2',
+            'scenarios' => [
+                'title' =>  'escenarios',
                 'description' => [
                 ]
             ],

@@ -19,6 +19,10 @@
     import hypothesis  from '../sections/directionFuture/DirectionFutureMainComponent.vue';
     // Importa el componente que maneja los ejes de Peter Schwartz
     import schwartz from '../sections/schwartz/SchwartzMainComponent.vue';
+    // Importa el componente que maneja las condiciones iniciales
+    import initialConditions from '../sections/initialConditions/InitialConditionsMainComponent.vue';
+    // Importa el componente que maneja los escenarios
+    import scenarios from '../sections/scenery/SceneryMainComponent.vue';
 
     export default {
         // Setup es un hook de composition API que inicializa los stores
@@ -37,7 +41,9 @@
             graphics,        // Componente para la gráfica principal
             analysis,        // Componente para el análisis mapa de variables
             hypothesis, // Componente para los direccionadores de futuro
-            schwartz         // Componente para los ejes de Peter Schwartz
+            schwartz,         // Componente para los ejes de Peter Schwartz
+            initialConditions, // Componente para las condiciones iniciales
+            scenarios         // Componente para los escenarios
         },
 
         data() {
@@ -116,6 +122,14 @@
                     <schwartz v-if="contentActive.schwartz"
                         v-bind:key="9"
                     />
+                    <!-- Muestra el componente initialConditions si contentActive.initialconditions es true -->
+                    <initialConditions v-if="contentActive.initialconditions"
+                        v-bind:key="10"
+                    />
+                    <!-- Muestra el componente scenarios si contentActive.scenarios es true -->
+                    <scenarios v-if="contentActive.scenarios"
+                        v-bind:key="11"
+                    /> 
                 </transition-group>
             </section>
         </div>

@@ -18,8 +18,8 @@ return new class extends Migration
             $table->integer('id')->autoIncrement();
             $table->integer('id_variable');            
             $table->integer('zone_id');
-            $table->text('descriptionH0')->nullable();            
-            $table->text('descriptionH1')->nullable();   
+            $table->text('name_hypothesis')->nullable();
+            $table->text('description')->nullable();   
             $table->integer('user_id');
             $table->enum('state', ['0', '1'])->default('0');
             $table->datetime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
