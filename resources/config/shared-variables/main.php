@@ -60,6 +60,23 @@
         'elements' => __('validation.attributes.elements'),
     ]);
 
+    //Texts schwartz section
+    $text_schwartz = [
+        'title' => 'Ejes de Peter Schwartz',
+        'hypothesis' => [
+            'h1_plus' => 'HIPÓTESIS 1+',
+            'h1_minus' => 'HIPÓTESIS 1-',
+            'h2_plus' => 'HIPÓTESIS 2+',
+            'h2_minus' => 'HIPÓTESIS 2-',
+        ],
+        'scenarios' => [
+            'scenario_1' => 'ESCENARIO 1',
+            'scenario_2' => 'ESCENARIO 2',
+            'scenario_3' => 'ESCENARIO 3',
+            'scenario_4' => 'ESCENARIO 4',
+        ],
+    ];
+
     //Fields participan
     $fields_participant =   [
         'first_name' =>  [
@@ -173,6 +190,7 @@
       //  "roles" => __('app.roles'),
         "variables" => $text_variables,
         "matriz" => $text_matriz,
+        "schwartz" => $text_schwartz,
     ];
 
     //List urls to use global in store from pinia/vue

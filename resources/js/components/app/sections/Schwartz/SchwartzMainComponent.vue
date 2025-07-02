@@ -3,6 +3,7 @@ import { onMounted, computed } from 'vue';
 import { useSectionStore } from '../../../../stores/section';
 import { useFutureDriversStore } from '../../../../stores/futureDrivers';
 import { useSchwartzStore } from '../../../../stores/schwartz';
+import { useTextsStore } from '../../../../stores/texts';
 
 export default {
     name: 'SchwartzMainComponent',
@@ -10,9 +11,10 @@ export default {
         const sectionStore = useSectionStore();
         const futureDriversStore = useFutureDriversStore();
         const schwartzStore = useSchwartzStore();
+        const textsStore = useTextsStore();
 
         onMounted(async () => {
-            sectionStore.setTitleSection('Ejes de Peter Schwartz');
+            sectionStore.setTitleSection(textsStore.getText('schwartz.title'));
             if (futureDriversStore.drivers.length === 0) {
                 await futureDriversStore.fetchDrivers();
             }
@@ -34,7 +36,8 @@ export default {
             h2H0,
             h2H1,
             escenarios,
-            setEscenario
+            setEscenario,
+            textsStore
         };
     }
 };
@@ -50,7 +53,7 @@ export default {
             <div class="cell empty"></div>
             <div class="cell empty"></div>
             <div class="cell hypo top">
-                <div class="cell-title">HIPÓTESIS 1+</div>
+                <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_plus') }}</div>
                 <div class="cell-content">{{ h1H0 }}</div>
             </div>
             <div class="cell empty"></div>
@@ -59,38 +62,38 @@ export default {
             <!-- Fila 2 -->
             <div class="cell empty"></div>
             <div class="cell scenario">
-                <div class="scenario-title">ESCENARIO 4</div>
+                <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_4') }}</div>
                 <b-input type="textarea" v-model="escenarios[3].texto" @input="setEscenario(3, escenarios[3].texto)" class="scenario-input" />
             </div>
             <div class="cell empty"></div>
             <div class="cell scenario">
-                <div class="scenario-title">ESCENARIO 1</div>
+                <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_1') }}</div>
                 <b-input type="textarea" v-model="escenarios[0].texto" @input="setEscenario(0, escenarios[0].texto)" class="scenario-input" />
             </div>
             <div class="cell empty"></div>
 
             <!-- Fila 3 -->
             <div class="cell hypo left">
-                <div class="cell-title">HIPÓTESIS 2-</div>
+                <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_minus') }}</div>
                 <div class="cell-content">{{ h2H1 }}</div>
             </div>
             <div class="cell empty"></div>
             <div class="cell empty"></div>
             <div class="cell empty"></div>
             <div class="cell hypo right">
-                <div class="cell-title">HIPÓTESIS 2+</div>
+                <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_plus') }}</div>
                 <div class="cell-content">{{ h2H0 }}</div>
             </div>
 
             <!-- Fila 4 -->
             <div class="cell empty"></div>
             <div class="cell scenario">
-                <div class="scenario-title">ESCENARIO 3</div>
+                <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_3') }}</div>
                 <b-input type="textarea" v-model="escenarios[2].texto" @input="setEscenario(2, escenarios[2].texto)" class="scenario-input" />
             </div>
             <div class="cell empty"></div>
             <div class="cell scenario">
-                <div class="scenario-title">ESCENARIO 2</div>
+                <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_2') }}</div>
                 <b-input type="textarea" v-model="escenarios[1].texto" @input="setEscenario(1, escenarios[1].texto)" class="scenario-input" />
             </div>
             <div class="cell empty"></div>
@@ -99,7 +102,7 @@ export default {
             <div class="cell empty"></div>
             <div class="cell empty"></div>
             <div class="cell hypo bottom">
-                <div class="cell-title">HIPÓTESIS 1-</div>
+                <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_minus') }}</div>
                 <div class="cell-content">{{ h1H1 }}</div>
             </div>
             <div class="cell empty"></div>
