@@ -135,4 +135,51 @@ class VariableController extends Controller
             ]);
         }
     }
+
+    /**
+     * Devuelve todas las variables del usuario con sus condiciones iniciales
+     */
+    public function getInitialConditions(): JsonResponse
+    {
+        $variables = Variable::where('user_id', Auth::id())
+            ->orderBy('id_variable', 'asc')
+            ->get(['id', 'id_variable', 'name_variable', 'now_condition', 'state']);
+        return response()->json([
+            'data' => $variables,
+            'status' => 200,
+            'message' => 'Condiciones iniciales obtenidas correctamente'
+        ]);
+    }
+
+    /**
+     * Actualiza el campo now_condition de una variable específica
+     */
+    public function updateInitialCondition(Request $request, $id): JsonResponse
+    {
+        try {
+            $variable = Variable::where('user_id', Auth::id())->findOrFail($id);
+            if ($variable->state === '1') {
+                return response()->json([
+                    'data' => $variable,
+                    'status' => 200,
+                    'message' => 'Esta variable ya está bloqueada y no se puede editar.'
+                ]);
+            }
+            $validated = $request->validate([
+                'now_condition' => 'nullable|string|max:1000'
+            ]);
+            $variable->now_condition = $validated['now_condition'] ?? '';
+            $variable->save();
+            return response()->json([
+                'status' => 200,
+                'message' => 'Condición inicial actualizada correctamente',
+                'data' => $variable
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al actualizar la condición inicial: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

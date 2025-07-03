@@ -62,7 +62,6 @@
         watch: {
             'storeSession.contentActive': {
                 handler(newVal) {
-                    console.log('Contenido activo cambiado:', newVal);
                     this.contentActive = newVal;
                 },
                 deep: true

@@ -19,53 +19,42 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
     },
     actions: {
         async fetchDrivers() {
-            console.log('=== STORE FETCH DRIVERS START ===');
             this.isLoading = true;
             try {
-                console.log('Store fetchDrivers - Starting fetch...');
                 const response = await axios.get('/hypothesis');
-                console.log('Store fetchDrivers - Response received');
-                console.log('Store fetchDrivers - Response data:', response.data);
-                
                 if (response.data.status === 200) {
-                    console.log('Store fetchDrivers - Status is 200, setting drivers...');
                     this.drivers = response.data.data;
-                    console.log('Store fetchDrivers - Drivers set successfully');
-                } else {
-                    console.error('Store fetchDrivers - Unexpected status:', response.data.status);
                 }
             } catch (error) {
-                console.error('Store fetchDrivers - ERROR:', error);
                 this.error = error.message;
             } finally {
                 this.isLoading = false;
-                console.log('=== STORE FETCH DRIVERS END ===');
             }
         },
-        async saveDriver(index, payload) {
+        async saveDriver(variableId, nameHypothesis, description, secondaryHypothesis, zoneId, state) {
+            const payload = {
+                variable_id: variableId,
+                name_hypothesis: nameHypothesis, // 'H1' o 'H2'
+                description: description,         // texto del textarea
+                secondary_hypothesis: secondaryHypothesis, // 'H0' o 'H1'
+                zone_id: zoneId,
+                state: state
+            };
+            console.log('Payload enviado:', payload);
             try {
-                console.log('Store saveDriver - Index:', index);
-                console.log('Store saveDriver - Payload:', payload);
-                console.log('Store saveDriver - Variable ID:', payload.variable_id);
-                
-                const response = await axios.post('/hypothesis', payload);
-                console.log('Store saveDriver - Response:', response.data);
-                
-                if (response.data.status === 201) {
-                    let data = response.data.data;
-                    // Normalizar el campo variable_id
-                    if (data.id_variable && !data.variable_id) {
-                        data.variable_id = data.id_variable;
-                    }
-                    this.drivers[index] = data;
-                    return { success: true, message: response.data.message };
-                }
-                return { success: false, message: response.data.message };
+                await axios.post('/hypothesis', payload);
+                return { success: true };
             } catch (error) {
-                console.error('Store saveDriver - Error:', error.response?.data || error.message);
                 this.error = error.response?.data?.message || error.message;
                 return { success: false, message: this.error };
             }
+        },
+        async saveBothHypotheses(variableId, nameHypothesis, h0Text, h1Text, zoneId, state) {
+            // Guarda H0
+            await this.saveDriver(variableId, nameHypothesis, h0Text, 'H0', zoneId, state);
+            // Guarda H1
+            await this.saveDriver(variableId, nameHypothesis, h1Text, 'H1', zoneId, state);
+            await this.fetchDrivers();
         },
         clearError() {
             this.error = null;

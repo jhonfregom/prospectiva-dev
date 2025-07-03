@@ -12,8 +12,9 @@ class Hypothesis extends Model
         'id',
         'id_variable',
         'zone_id',
-        'descriptionH0',
-        'descriptionH1',
+        'name_hypothesis',
+        'description',
+        'secondary_hypotheses',
         'user_id',
         'state',
     ];

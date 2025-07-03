@@ -81,6 +81,33 @@ export const useTextsStore = defineStore('texts', {
             },
             note: 'Las hipótesis se bloquean después de dos ediciones manuales. Cada textarea tiene un límite de 40 palabras. Ambos campos (H0 y H1) se editan juntos.'
         },
+        initialConditions: {
+            title: 'Condiciones Iniciales',
+            subtitle: 'Registra la condición actual de cada variable. Puedes editar cada campo hasta dos veces antes de que se bloquee.',
+            table: {
+                variable: 'VARIABLES',
+                name: 'NOMBRES',
+                nowCondition: 'CONDICION ACTUAL DE LA VARIABLE',
+                actions: 'ACCIONES',
+                edit: 'Editar',
+                save: 'Guardar',
+                locked: 'Bloqueado'
+            }
+        },
+        scenarios: {
+            title: 'Escenarios',
+            table: {
+                description: 'Descripción',
+                hypothesis: 'Hipótesis más cercanas',
+                year1: 'AÑO 1',
+                year2: 'AÑO 2',
+                year3: 'AÑO 3',
+                actions: 'Acciones',
+                edit: 'Editar',
+                save: 'Guardar',
+                locked: 'Bloqueado'
+            }
+        },
     }),
     getters: {
         /**

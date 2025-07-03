@@ -159,17 +159,26 @@ class HypothesisController extends Controller
 
             Log::info('HypothesisController::index - Existing hypotheses count: ' . $hypotheses->count());
 
-            // Preparar respuesta
+            // Preparar respuesta - mapear H0 y H1 según la nueva estructura
             $result = collect($seleccionados)->map(function ($v) use ($hypotheses) {
-                $hypo = $hypotheses->firstWhere('id_variable', $v['id']);
+                // Buscar hipótesis H0 y H1 para esta variable
+                $h0 = $hypotheses->firstWhere(function($h) use ($v) {
+                    return $h->id_variable == $v['id'] && $h->secondary_hypotheses == 'H0';
+                });
+                $h1 = $hypotheses->firstWhere(function($h) use ($v) {
+                    return $h->id_variable == $v['id'] && $h->secondary_hypotheses == 'H1';
+                });
+                
                 return [
-                    'id' => $hypo ? $hypo->id : null,
+                    'idH0' => $h0 ? $h0->id : null,
+                    'idH1' => $h1 ? $h1->id : null,
                     'variable_id' => $v['id'],
                     'variable_name' => $v['name'],
-                    'zone_id' => $hypo ? $hypo->zone_id : $v['zone_id'],
-                    'descriptionH0' => $hypo ? $hypo->descriptionH0 : '',
-                    'descriptionH1' => $hypo ? $hypo->descriptionH1 : '',
-                    'state' => $hypo ? $hypo->state : '0',
+                    'zone_id' => $h0 ? $h0->zone_id : $v['zone_id'],
+                    'descriptionH0' => $h0 ? $h0->description : '',
+                    'descriptionH1' => $h1 ? $h1->description : '',
+                    'stateH0' => $h0 ? $h0->state : '0',
+                    'stateH1' => $h1 ? $h1->state : '0',
                 ];
             });
 
@@ -205,131 +214,67 @@ class HypothesisController extends Controller
             $userId = Auth::id();
             $data = $request->validate([
                 'variable_id' => 'required|integer',
-                'descriptionH0' => 'nullable|string',
-                'descriptionH1' => 'nullable|string',
-                'is_manual_save' => 'boolean',
+                'name_hypothesis' => 'required|string',         // 'H1' o 'H2'
+                'secondary_hypothesis' => 'required|string',    // 'H0' o 'H1'
+                'description' => 'nullable|string',
+                'zone_id' => 'nullable|integer',
+                'state' => 'nullable',
             ]);
 
+            Log::info('Payload recibido en store:', $data);
+
             $data['user_id'] = $userId;
-            $isManualSave = $data['is_manual_save'] ?? false;
 
-            // Calcular la zona de la variable automáticamente
-            $matriz = Matriz::where('user_id', $userId)->get();
-            $variables = Variable::where('user_id', $userId)->get();
-
-            // Calcular dependencia e influencia de la variable
-            $variable = $variables->find($data['variable_id']);
-            if (!$variable) {
-                return response()->json([
-                    'data' => null,
-                    'status' => 400,
-                    'message' => 'Variable no encontrada.'
-                ], 400);
-            }
-
-            $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
-            $influencia = $matriz->where('id_resp_depen', $variable->id)->sum('id_resp_influ');
-
-            // Calcular zona usando la misma lógica
-            $allVars = [];
-            foreach ($variables as $var) {
-                $dep = $matriz->where('id_variable', $var->id)->sum('id_resp_influ');
-                $inf = $matriz->where('id_resp_depen', $var->id)->sum('id_resp_influ');
-                $allVars[] = ['dependencia' => $dep, 'influencia' => $inf];
-            }
-
-            $dependencias = array_column($allVars, 'dependencia');
-            $influencias = array_column($allVars, 'influencia');
-            $maxX = max($dependencias);
-            $maxY = max($influencias);
-            $maxX = max($maxX, 10); // Mínimo 10
-            $maxY = max($maxY, 12); // Mínimo 12
-            $centroX = $maxX / 2;
-            $centroY = $maxY / 2;
-
-            $zona = '';
-            if ($dependencia == $centroX || $influencia == $centroY) {
-                if ($dependencia > $centroX && $influencia >= $centroY) $zona = 'conflicto';
-                elseif ($dependencia <= $centroX && $influencia > $centroY) $zona = 'poder';
-                elseif ($dependencia > $centroX && $influencia < $centroY) $zona = 'salida';
-                else $zona = 'indiferencia';
-            } else {
-                if ($dependencia <= $centroX && $influencia > $centroY) $zona = 'poder';
-                elseif ($dependencia > $centroX && $influencia >= $centroY) $zona = 'conflicto';
-                elseif ($dependencia <= $centroX && $influencia <= $centroY) $zona = 'indiferencia';
-                elseif ($dependencia > $centroX && $influencia < $centroY) $zona = 'salida';
-            }
-
-            $zoneMapping = [
-                'poder' => 'ZONA DE PODER',
-                'conflicto' => 'ZONA DE CONFLICTO',
-                'salida' => 'ZONA DE SALIDA',
-                'indiferencia' => 'ZONA DE INDIFERENCIA'
-            ];
-
-            $zoneName = $zoneMapping[$zona] ?? 'ZONA DE PODER';
-            $zone = Zones::where('name_zones', $zoneName)->first();
-            $data['zone_id'] = $zone ? $zone->id : 1;
+            Log::info('Intentando guardar:', [
+                'user_id' => $userId,
+                'id_variable' => $data['variable_id'],
+                'name_hypothesis' => $data['name_hypothesis'],
+                'secondary_hypotheses' => $data['secondary_hypothesis'],
+            ]);
 
             // Buscar hipótesis existente
             $hypothesis = Hypothesis::where('user_id', $userId)
                 ->where('id_variable', $data['variable_id'])
+                ->where('name_hypothesis', $data['name_hypothesis'])
+                ->where('secondary_hypotheses', $data['secondary_hypothesis'])
                 ->first();
 
+            Log::info('Resultado búsqueda:', [
+                'found' => $hypothesis ? true : false,
+                'id' => $hypothesis ? $hypothesis->id : null,
+                'secondary_hypotheses' => $data['secondary_hypothesis'],
+            ]);
+
             if ($hypothesis) {
-                // Si ya está bloqueada, no permitir editar
-                if ($hypothesis->state === '1') {
-                    return response()->json([
-                        'data' => $hypothesis,
-                        'status' => 200,
-                        'message' => 'Esta hipótesis ya está bloqueada y no se puede editar.'
-                    ]);
-                }
-
-                // Contador de ediciones en sesión (por usuario e hipótesis)
-                $sessionKey = 'hypothesis_edit_count_' . $hypothesis->id . '_user_' . $userId;
-                $editCount = session($sessionKey, 0) + 1;
-                session([$sessionKey => $editCount]);
-
-                // Forzar actualización de updated_at SIEMPRE
-                $updateData = $data;
-                $updateData['id_variable'] = $data['variable_id'];
-                unset($updateData['variable_id']);
-                $updateData['updated_at'] = now();
-
-                // Si es la segunda edición, bloquear
-                if ($editCount >= 2) {
-                    $updateData['state'] = '1';
-                }
-
-                $hypothesis->update($updateData);
-
-                return response()->json([
-                    'data' => $hypothesis->fresh(),
-                    'status' => 201,
-                    'message' => 'Hipótesis guardada correctamente.'
-                ], 201);
+                $hypothesis->update([
+                    'zone_id' => $data['zone_id'] ?? $hypothesis->zone_id,
+                    'description' => $data['description'],
+                    'state' => isset($data['state']) ? (string)$data['state'] : $hypothesis->state,
+                ]);
+                Log::info('Actualizado registro existente', ['id' => $hypothesis->id]);
             } else {
-                // Si es nuevo, encontrar el primer ID disponible
                 $nextId = $this->findNextAvailableId();
-                $data['id'] = $nextId;
-                $data['state'] = '0';
-                
-                // Mapear variable_id a id_variable para la tabla
-                $data['id_variable'] = $data['variable_id'];
-                unset($data['variable_id']); // Remover el campo que no existe en la tabla
-                
-                // Crear el registro con el ID específico
-                $hypothesis = Hypothesis::create($data);
-
-                return response()->json([
-                    'data' => $hypothesis,
-                    'status' => 201,
-                    'message' => 'Hipótesis guardada correctamente.'
-                ], 201);
+                $hypothesis = Hypothesis::create([
+                    'id' => $nextId,
+                    'id_variable' => $data['variable_id'],
+                    'name_hypothesis' => $data['name_hypothesis'],
+                    'secondary_hypotheses' => $data['secondary_hypothesis'],
+                    'description' => $data['description'],
+                    'zone_id' => $data['zone_id'] ?? 1,
+                    'user_id' => $userId,
+                    'state' => isset($data['state']) ? (string)$data['state'] : '0',
+                ]);
+                Log::info('Creado nuevo registro', ['id' => $hypothesis->id, 'secondary_hypotheses' => $data['secondary_hypothesis']]);
             }
+
+            return response()->json([
+                'data' => $hypothesis,
+                'status' => 201,
+                'message' => 'Hipótesis guardada correctamente.'
+            ], 201);
+
         } catch (\Exception $e) {
-            Log::error('Error al guardar hipótesis: ' . $e->getMessage());
+            \Log::error('Error al guardar hipótesis: ' . $e->getMessage());
             return response()->json([
                 'data' => null,
                 'status' => 500,

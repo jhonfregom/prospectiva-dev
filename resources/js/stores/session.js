@@ -31,7 +31,6 @@ export const useSessionStore = defineStore('session',{
     actions: {
         // Activa un componente específico y desactiva los demás
         setActiveContent(section) {
-            console.log('Activando contenido:', section);
             // Desactiva todos los contenidos
             for (const key in this.contentActive) {
                 this.contentActive[key] = false;
@@ -40,7 +39,6 @@ export const useSessionStore = defineStore('session',{
             if (this.contentActive.hasOwnProperty(section)) {
                 this.contentActive[section] = true;
             }
-            console.log('Estado final:', this.contentActive);
         },
         // Vuelve a la vista principal
         toBack(){

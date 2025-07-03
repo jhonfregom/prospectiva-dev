@@ -43,7 +43,8 @@ class Variable extends Model
         'description',
         'score',
         'state',
-        'user_id'
+        'user_id',
+        'now_condition',
     ];
 
     /**

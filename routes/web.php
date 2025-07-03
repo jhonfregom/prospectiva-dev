@@ -9,6 +9,7 @@ use App\Http\Controllers\MatrizController;
 use App\Http\Controllers\GraphicsController;
 use App\Http\Controllers\VariablesMapController;
 use App\Http\Controllers\HypothesisController;
+use App\Http\Controllers\ScenariosController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -68,6 +69,14 @@ Route::group(['middleware' => ['auth']], function(){
             'user' => auth()->user()
         ]);
     });
+
+    // Condiciones iniciales del sistema
+    Route::get('/initial-conditions', [\App\Http\Controllers\VariableController::class, 'getInitialConditions']);
+    Route::put('/initial-conditions/{id}', [\App\Http\Controllers\VariableController::class, 'updateInitialCondition']);
+
+    // Rutas de escenarios protegidas por autenticación
+    Route::get('/scenarios', [\App\Http\Controllers\ScenariosController::class, 'index']);
+    Route::put('/scenarios/{id}', [\App\Http\Controllers\ScenariosController::class, 'update']);
 });
 
 // Sesion
