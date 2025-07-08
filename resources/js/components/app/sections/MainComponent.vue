@@ -23,6 +23,8 @@
             setActiveSection(moduleName){
                 if(moduleName === 'graphics'){
                     this.storeSession.setActiveContent('graphics');
+                } else if(moduleName === 'schwartz'){
+                    this.storeSession.setActiveContent('schwartz');
                 } else {
                     this.storeSession.setActiveContent(moduleName);
                 }
@@ -65,6 +67,16 @@
                         </header>
                         <div class="card-content">
                             <p>Visualiza la gráfica de análisis estructural de variables.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-6">
+                    <div class="card" v-on:click.prevent="setActiveSection('schwartz')">
+                        <header class="card-header">
+                            <p class="card-header-title">Ejes de Peter Schwartz</p>
+                        </header>
+                        <div class="card-content">
+                            <p>Analiza los ejes de incertidumbre y crea escenarios futuros.</p>
                         </div>
                     </div>
                 </div>
