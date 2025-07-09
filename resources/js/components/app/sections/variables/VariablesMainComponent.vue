@@ -1,6 +1,79 @@
+<template>
+    <div class="variables-container">
+        <b-table
+            :data="variables"
+            :loading="isLoading"
+            :striped="true"
+            :hoverable="true"
+            default-sort="id"
+            default-sort-direction="desc"
+            sort-icon="arrow-up"
+            icon-pack="fas">
+
+            <b-table-column field="id" :label="textsStore.getText('variables_section.table.variable')" v-slot="props" width="100" sortable>
+                {{ props.row.id_variable }}
+            </b-table-column>
+
+            <b-table-column field="name_variable" :label="textsStore.getText('variables_section.table.name')" v-slot="props" width="150">
+                {{ props.row.name_variable }}
+            </b-table-column>
+
+            <b-table-column field="description" :label="textsStore.getText('variables_section.table.description')" v-slot="props" class="description-column">
+                <b-input
+                    type="textarea"
+                    v-model="props.row.description"
+                    @input="(event) => handleDescriptionChange(event, props.row)"
+                    :disabled="editingRow !== props.row.id"
+                    :placeholder="textsStore.getText('variables_section.description_placeholder')">
+                </b-input>
+            </b-table-column>
+
+            <b-table-column field="score" :label="textsStore.getText('variables_section.table.score')" v-slot="props" numeric width="100">
+                {{ props.row.score || 0 }}
+            </b-table-column>
+
+            <b-table-column field="score" :label="textsStore.getText('variables_section.table.state')" v-slot="props" width="150">
+                <span :class="getStatusClass(props.row.score || 0)">
+                    {{ getStateText(props.row.score || 0) }}
+                </span>
+            </b-table-column>
+
+            <b-table-column :label="textsStore.getText('variables_section.table.actions')" v-slot="props" width="200" centered>
+                <div class="buttons is-centered">
+                    <b-button 
+                        :type="editingRow === props.row.id ? 'is-success' : 'is-info'"
+                        size="is-small"
+                        :icon-left="editingRow === props.row.id ? 'save' : 'edit'"
+                        @click="handleEditSave(props.row)"
+                        outlined
+                        :disabled="props.row.state === '1'"
+                    >
+                        {{ editingRow === props.row.id ? textsStore.getText('variables_section.table.save') : textsStore.getText('variables_section.table.edit') }}
+                    </b-button>
+
+                    <b-button 
+                        type="is-danger"
+                        size="is-small"
+                        icon-left="delete"
+                        @click="confirmDelete(props.row)"
+                        outlined>
+                        {{ textsStore.getText('variables_section.table.delete') }}
+                    </b-button>
+                </div>
+            </b-table-column>
+        </b-table>
+
+        <variable-form-modal
+            v-if="showModal"
+            @close="closeModal">
+        </variable-form-modal>
+    </div>
+</template>
+
 <script>
 import { useVariablesStore } from '../../../../stores/variables';
 import { useSectionStore } from '../../../../stores/section';
+import { useTextsStore } from '../../../../stores/texts';
 import VariableFormModal from './VariableFormModal.vue';
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
@@ -13,11 +86,13 @@ export default {
     setup() {
         const variablesStore = useVariablesStore();
         const sectionStore = useSectionStore();
+        const textsStore = useTextsStore();
         const { variables, isLoading } = storeToRefs(variablesStore);
 
         return { 
             variablesStore, 
             sectionStore,
+            textsStore,
             variables,
             isLoading
         };
@@ -42,8 +117,8 @@ export default {
     },
 
     mounted() {
-        this.sectionStore.setTitleSection('Variables');
-        this.sectionStore.addDynamicButton('Nuevo', () => {
+        this.sectionStore.setTitleSection(this.textsStore.getText('variables_section.title'));
+        this.sectionStore.addDynamicButton(this.textsStore.getText('variables_section.table.new'), () => {
             this.showModal = true;
         });
         this.loadVariables();
@@ -94,7 +169,7 @@ export default {
                 await this.variablesStore.updateVariable(variable);
             } catch (error) {
                 this.$buefy.toast.open({
-                    message: 'Error al actualizar la variable',
+                    message: this.textsStore.getText('variables_section.messages.update_error'),
                     type: 'is-danger'
                 });
             }
@@ -102,10 +177,10 @@ export default {
 
         confirmDelete(row) {
             this.$buefy.dialog.confirm({
-                title: 'Eliminar Variable',
-                message: '¿Está seguro de eliminar esta variable?',
-                confirmText: 'Eliminar',
-                cancelText: 'Cancelar',
+                title: this.textsStore.getText('variables_section.messages.delete_confirm_title'),
+                message: this.textsStore.getText('variables_section.messages.delete_confirm_message'),
+                confirmText: this.textsStore.getText('variables_section.messages.delete_confirm_yes'),
+                cancelText: this.textsStore.getText('variables_section.messages.delete_confirm_no'),
                 type: 'is-danger',
                 onConfirm: () => this.deleteVariable(row)
             });
@@ -116,120 +191,40 @@ export default {
                 const success = await this.variablesStore.deleteVariable(row.id);
                 if (success) {
                     this.$buefy.toast.open({
-                        message: 'Variable eliminada correctamente',
+                        message: this.textsStore.getText('variables_section.messages.delete_success'),
                         type: 'is-success'
                     });
                 }
             } catch (error) {
                 this.$buefy.toast.open({
-                    message: 'Error al eliminar la variable',
+                    message: this.textsStore.getText('variables_section.messages.delete_error'),
                     type: 'is-danger'
                 });
             }
         },
 
-        closeModal() {
-            this.showModal = false;
-        },
-
         getStatusClass(score) {
-            if (score <= 25) {
-                return 'has-text-danger';
-            } else if (score <= 50) {
-                return 'has-text-warning';
-            } else if (score <= 100) {
-                return 'has-text-info';
-            } else {
-                return 'has-text-success';
-            }
+            if (score >= 0 && score <= 40) return 'has-text-danger';
+            if (score >= 41 && score <= 80) return 'has-text-warning';
+            if (score >= 81 && score <= 120) return 'has-text-info';
+            return 'has-text-success';
         },
 
         getStateText(score) {
-            if (score <= 25) {
-                return 'DEBES MEJORAR';
-            } else if (score <= 50) {
-                return 'FALTA ALGO MAS';
-            } else if (score <= 100) {
-                return 'UN ESFUERZO MAS';
-            } else {
-                return 'LO LOGRASTE';
-            }
+            if (score >= 0 && score <= 40) return 'DEBES MEJORAR';
+            if (score >= 41 && score <= 80) return 'FALTA ALGO MAS';
+            if (score >= 81 && score <= 120) return 'UN ESFUERZO MAS';
+            return 'LO LOGRASTE';
+        },
+
+        closeModal() {
+            this.showModal = false;
         }
     }
 };
 </script>
 
-<template>
-    <div class="variables-container">
-        <b-table
-            :data="variables"
-            :loading="isLoading"
-            :striped="true"
-            :hoverable="true"
-            default-sort="id"
-            default-sort-direction="desc"
-            sort-icon="arrow-up"
-            icon-pack="fas">
 
-            <b-table-column field="id" label="VARIABLE" v-slot="props" width="100" sortable>
-                {{ props.row.id_variable }}
-            </b-table-column>
-
-            <b-table-column field="name_variable" label="NOMBRE" v-slot="props" width="150">
-                {{ props.row.name_variable }}
-            </b-table-column>
-
-            <b-table-column field="description" label="DESCRIPCIÓN" v-slot="props" class="description-column">
-                <b-input
-                    type="textarea"
-                    v-model="props.row.description"
-                    @input="(event) => handleDescriptionChange(event, props.row)"
-                    :disabled="editingRow !== props.row.id"
-                    placeholder="Escriba la descripción de la variable">
-                </b-input>
-            </b-table-column>
-
-            <b-table-column field="score" label="SCORE" v-slot="props" numeric width="100">
-                {{ props.row.score || 0 }}
-            </b-table-column>
-
-            <b-table-column field="score" label="ESTADO" v-slot="props" width="150">
-                <span :class="getStatusClass(props.row.score || 0)">
-                    {{ getStateText(props.row.score || 0) }}
-                </span>
-            </b-table-column>
-
-            <b-table-column label="ACCIONES" v-slot="props" width="200" centered>
-                <div class="buttons is-centered">
-                    <b-button 
-                        :type="editingRow === props.row.id ? 'is-success' : 'is-info'"
-                        size="is-small"
-                        :icon-left="editingRow === props.row.id ? 'save' : 'edit'"
-                        @click="handleEditSave(props.row)"
-                        outlined
-                        :disabled="props.row.state === '1'"
-                    >
-                        {{ editingRow === props.row.id ? 'Guardar' : 'Editar' }}
-                    </b-button>
-
-                    <b-button 
-                        type="is-danger"
-                        size="is-small"
-                        icon-left="delete"
-                        @click="confirmDelete(props.row)"
-                        outlined>
-                        Eliminar
-                    </b-button>
-                </div>
-            </b-table-column>
-        </b-table>
-
-        <variable-form-modal
-            v-if="showModal"
-            @close="closeModal">
-        </variable-form-modal>
-    </div>
-</template>
 
 <style lang="scss" scoped>
 .variables-container {

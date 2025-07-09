@@ -75,6 +75,70 @@
             'scenario_3' => 'ESCENARIO 3',
             'scenario_4' => 'ESCENARIO 4',
         ],
+        'actions' => [
+            'edit' => 'Editar',
+            'save' => 'Guardar'
+        ],
+        'messages' => [
+            'save_error' => 'Error al guardar: ',
+            'try_again' => 'Intenta de nuevo.',
+            'edit_limit_reached' => 'Has alcanzado el límite de ediciones para este escenario.'
+        ]
+    ];
+
+    //Texts variables section
+    $text_variables_section = [
+        'title' => 'Variables',
+        'subtitle' => 'Gestiona las variables del proyecto',
+        'table' => [
+            'variable' => 'VARIABLE',
+            'name' => 'NOMBRE',
+            'description' => 'DESCRIPCIÓN',
+            'score' => 'SCORE',
+            'state' => 'ESTADO',
+            'actions' => 'ACCIONES',
+            'edit' => 'Editar',
+            'save' => 'Guardar',
+            'delete' => 'Eliminar',
+            'new' => 'Nuevo'
+        ],
+        'modal' => [
+            'title' => 'Nueva Variable',
+            'name_label' => 'Nombre de la Variable',
+            'name_placeholder' => 'Ingrese el nombre de la variable',
+            'save' => 'Guardar',
+            'cancel' => 'Cancelar'
+        ],
+        'messages' => [
+            'create_success' => 'Variable creada exitosamente',
+            'create_error' => 'Error al crear la variable',
+            'update_error' => 'Error al actualizar la variable',
+            'delete_success' => 'Variable eliminada correctamente',
+            'delete_error' => 'Error al eliminar la variable',
+            'delete_confirm_title' => 'Eliminar Variable',
+            'delete_confirm_message' => '¿Está seguro de eliminar esta variable?',
+            'delete_confirm_yes' => 'Eliminar',
+            'delete_confirm_no' => 'Cancelar',
+            'limit_reached' => 'Se ha alcanzado el límite máximo de 15 variables permitidas'
+        ],
+        'description_placeholder' => 'Escriba la descripción de la variable'
+    ];
+
+    //Texts hypothesis section
+    $text_hypothesis = [
+        'title' => 'Direccionadores de futuro',
+        'subtitle' => 'En esta sección se generan las hipótesis para las dos variables más cercanas a la zona de poder.',
+        'table' => [
+            'h' => 'H',
+            'variable' => 'VARIABLE',
+            'descriptionH0' => 'HIPÓTESIS H0',
+            'descriptionH1' => 'HIPÓTESIS H1',
+            'edit' => 'Editar',
+            'save' => 'Guardar',
+            'locked' => 'BLOQUEADO',
+            'actions' => 'ACCIONES'
+        ],
+        'note' => 'Las hipótesis se bloquean después de dos ediciones manuales. Cada textarea tiene un límite de 40 palabras. Ambos campos (H0 y H1) se editan juntos.'
     ];
 
     // Textos para la sección estratégica (StrategicScenarioTable.vue)
@@ -209,6 +273,8 @@
         "matriz" => $text_matriz,
         "schwartz" => $text_schwartz,
         "strategic" => $text_strategic,
+        "variables_section" => $text_variables_section,
+        "hypothesis" => $text_hypothesis,
     ];
 
     //List urls to use global in store from pinia/vue

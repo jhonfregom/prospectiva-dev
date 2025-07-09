@@ -1,3 +1,8 @@
+<template>
+    <div class="main-content">
+        <StrategicScenarioTable />
+    </div>
+</template>
 <script>
 
 import { useSectionStore } from '../../../../stores/section';
@@ -23,8 +28,3 @@ export default {
 }
 
 </script>
-<template>
-    <div class="main-content">
-        <StrategicScenarioTable />
-    </div>
-</template>

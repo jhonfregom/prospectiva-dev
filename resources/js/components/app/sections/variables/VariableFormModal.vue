@@ -10,13 +10,13 @@
         <template #default="props">
             <div class="modal-card" style="width: auto">
                 <header class="modal-card-head">
-                    <p class="modal-card-title">Nueva Variable</p>
+                    <p class="modal-card-title">{{ textsStore.getText('variables_section.modal.title') }}</p>
                 </header>
                 <section class="modal-card-body">
-                    <b-field label="Nombre de la Variable">
+                    <b-field :label="textsStore.getText('variables_section.modal.name_label')">
                         <b-input
                             v-model="form.name_variable"
-                            placeholder="Ingrese el nombre de la variable"
+                            :placeholder="textsStore.getText('variables_section.modal.name_placeholder')"
                             required>
                         </b-input>
                     </b-field>
@@ -26,12 +26,12 @@
                         :loading="isLoading"
                         type="is-primary"
                         @click="handleSubmit">
-                        Guardar
+                        {{ textsStore.getText('variables_section.modal.save') }}
                     </b-button>
                     <b-button
                         type="is-danger"
                         @click="handleClose">
-                        Cancelar
+                        {{ textsStore.getText('variables_section.modal.cancel') }}
                     </b-button>
                 </footer>
             </div>
@@ -41,13 +41,15 @@
 
 <script>
 import { useVariablesStore } from '@/stores/variables';
+import { useTextsStore } from '@/stores/texts';
 
 export default {
     emits: ['close'],
     
     setup() {
         const variablesStore = useVariablesStore();
-        return { variablesStore };
+        const textsStore = useTextsStore();
+        return { variablesStore, textsStore };
     },
 
     data() {
@@ -68,7 +70,7 @@ export default {
                 if (success) {
                     await this.variablesStore.fetchVariables();
                     this.$buefy.toast.open({
-                        message: 'Variable creada exitosamente',
+                        message: this.textsStore.getText('variables_section.messages.create_success'),
                         type: 'is-success'
                     });
                     this.handleClose();
@@ -76,9 +78,9 @@ export default {
                     throw new Error('No se pudo crear la variable');
                 }
             } catch (error) {
-                let errorMessage = 'Error al crear la variable';
+                let errorMessage = this.textsStore.getText('variables_section.messages.create_error');
                 if (error.response && error.response.status === 400) {
-                    errorMessage = error.response.data.message || 'Se ha alcanzado el límite máximo de 15 variables permitidas';
+                    errorMessage = error.response.data.message || this.textsStore.getText('variables_section.messages.limit_reached');
                 }
                 this.$buefy.toast.open({
                     message: errorMessage,

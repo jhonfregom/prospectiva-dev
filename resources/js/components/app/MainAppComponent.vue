@@ -1,3 +1,21 @@
+<template>
+    <div class="main">
+        <b-loading class="main-app" :is-full-page="true" v-model="isLoading" :can-cancel="false" />
+        <!--Navbar top -->
+        <navbar-top
+            v-if="isLoadedResources"
+            v-bind:dataParticipantsUser="dataParticipantsUser"
+            v-on:actionReloadGeneralData="reloadGeneralData"/>
+        <!-- /Navbar top -->
+
+        <!-- Content Main -->
+        <content-main
+            v-if="isLoadedResources"
+            />
+        <!-- /Content Main -->
+    </div>
+</template>
+
 <script>
     //Import general functions
     import {
@@ -156,20 +174,3 @@
         },
     }
 </script>
-<template>
-    <div class="main">
-        <b-loading class="main-app" :is-full-page="true" v-model="isLoading" :can-cancel="false" />
-        <!--Navbar top -->
-        <navbar-top
-            v-if="isLoadedResources"
-            v-bind:dataParticipantsUser="dataParticipantsUser"
-            v-on:actionReloadGeneralData="reloadGeneralData"/>
-        <!-- /Navbar top -->
-
-        <!-- Content Main -->
-        <content-main
-            v-if="isLoadedResources"
-            />
-        <!-- /Content Main -->
-    </div>
-</template>

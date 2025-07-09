@@ -58,6 +58,82 @@ export const useTextsStore = defineStore('texts', {
                 { min: 121, max: 9999, text: 'LO LOGRASTE', color: 'green' }
             ]
         },
+        variables: {
+            title: 'Variables',
+            subtitle: 'Gestiona las variables del proyecto',
+            table: {
+                variable: 'VARIABLE',
+                name: 'NOMBRE',
+                description: 'DESCRIPCIÓN',
+                score: 'SCORE',
+                state: 'ESTADO',
+                actions: 'ACCIONES',
+                edit: 'Editar',
+                save: 'Guardar',
+                delete: 'Eliminar',
+                new: 'Nuevo'
+            },
+            modal: {
+                title: 'Nueva Variable',
+                name_label: 'Nombre de la Variable',
+                name_placeholder: 'Ingrese el nombre de la variable',
+                save: 'Guardar',
+                cancel: 'Cancelar'
+            },
+            messages: {
+                create_success: 'Variable creada exitosamente',
+                create_error: 'Error al crear la variable',
+                update_error: 'Error al actualizar la variable',
+                delete_success: 'Variable eliminada correctamente',
+                delete_error: 'Error al eliminar la variable',
+                delete_confirm_title: 'Eliminar Variable',
+                delete_confirm_message: '¿Está seguro de eliminar esta variable?',
+                delete_confirm_yes: 'Eliminar',
+                delete_confirm_no: 'Cancelar',
+                limit_reached: 'Se ha alcanzado el límite máximo de 15 variables permitidas'
+            },
+            description_placeholder: 'Escriba la descripción de la variable'
+        },
+        schwartz: {
+            title: 'Ejes de Peter Schwartz',
+            subtitle: 'Define los escenarios según los ejes de Peter Schwartz',
+            hypothesis: {
+                h1_plus: 'H1+',
+                h1_minus: 'H1-',
+                h2_plus: 'H2+',
+                h2_minus: 'H2-'
+            },
+            scenarios: {
+                scenario_1: 'ESCENARIO 1',
+                scenario_2: 'ESCENARIO 2',
+                scenario_3: 'ESCENARIO 3',
+                scenario_4: 'ESCENARIO 4'
+            },
+            actions: {
+                edit: 'Editar',
+                save: 'Guardar'
+            },
+            messages: {
+                save_error: 'Error al guardar: ',
+                try_again: 'Intenta de nuevo.',
+                edit_limit_reached: 'Has alcanzado el límite de ediciones para este escenario.'
+            }
+        },
+        strategic: {
+            main_title: 'Escenarios Estratégicos',
+            scenario_label: 'Escenario:',
+            plan_label: 'PLAN',
+            name: 'NOMBRE',
+            hypothesis1: 'Hipótesis 1',
+            hypothesis2: 'Hipótesis 2',
+            year1: 'AÑO 1',
+            year2: 'AÑO 2',
+            year3: 'AÑO 3',
+            edit: 'Editar',
+            save: 'Guardar',
+            edit_limit: 'Has alcanzado el límite de ediciones para este año.',
+            save_error: 'Error al guardar el escenario.'
+        },
         common: {
             loading: 'Cargando...',
             save_success: 'Guardado correctamente',
@@ -78,6 +154,7 @@ export const useTextsStore = defineStore('texts', {
                 edit: 'Editar',
                 save: 'Guardar',
                 locked: 'BLOQUEADO',
+                actions: 'ACCIONES'
             },
             note: 'Las hipótesis se bloquean después de dos ediciones manuales. Cada textarea tiene un límite de 40 palabras. Ambos campos (H0 y H1) se editan juntos.'
         },

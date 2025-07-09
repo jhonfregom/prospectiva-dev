@@ -1,3 +1,78 @@
+<template>
+    <div class="variables-container">
+        <b-message type="is-info" has-icon>
+            {{ textsStore.getText('hypothesis.subtitle') }}
+        </b-message>
+        <b-table :data="drivers" :striped="true" :hoverable="true" :bordered="false" :narrowed="true" :loading="futureDriversStore.isLoading" icon-pack="fas">
+            <b-table-column field="h" :label="textsStore.getText('hypothesis.table.h')" width="80" v-slot="props" centered>
+                <span>H{{ props.index + 1 }}</span>
+            </b-table-column>
+            <b-table-column field="variable" :label="textsStore.getText('hypothesis.table.variable')" v-slot="props" centered>
+                <span>{{ props.row.variable_name }}</span>
+            </b-table-column>
+            <b-table-column field="descriptionH0" :label="textsStore.getText('hypothesis.table.descriptionH0')" v-slot="props" centered header-class="hypothesis-header">
+                <div class="edit-area">
+                    <div class="textarea-container">
+                        <b-input
+                            v-model="localDescriptionsH0[props.row.variable_id]"
+                            type="textarea"
+                            :disabled="isLocked(props.row) || editingRow !== props.row.variable_id"
+                            :placeholder="textsStore.getText('hypothesis.table.descriptionH0')"
+                            :rows="3"
+                            style="min-width:180px; max-width:350px; resize:vertical;"
+                            @input="handleInput($event, props.row, 'H0')"
+                            @keydown="handleKeyDown($event, props.row, 'H0')"
+                            @paste="handlePaste($event, props.row, 'H0')"
+                        />
+                        <div class="word-counter" :class="getWordCountClass(countWords(localDescriptionsH0[props.row.variable_id]))">
+                            {{ countWords(localDescriptionsH0[props.row.variable_id]) }}/40 palabras
+                        </div>
+                    </div>
+                </div>
+            </b-table-column>
+            <b-table-column field="descriptionH1" :label="textsStore.getText('hypothesis.table.descriptionH1')" v-slot="props" centered header-class="hypothesis-header">
+                <div class="edit-area">
+                    <div class="textarea-container">
+                        <b-input
+                            v-model="localDescriptionsH1[props.row.variable_id]"
+                            type="textarea"
+                            :disabled="isLocked(props.row) || editingRow !== props.row.variable_id"
+                            :placeholder="textsStore.getText('hypothesis.table.descriptionH1')"
+                            :rows="3"
+                            style="min-width:180px; max-width:350px; resize:vertical;"
+                            @input="handleInput($event, props.row, 'H1')"
+                            @keydown="handleKeyDown($event, props.row, 'H1')"
+                            @paste="handlePaste($event, props.row, 'H1')"
+                        />
+                        <div class="word-counter" :class="getWordCountClass(countWords(localDescriptionsH1[props.row.variable_id]))">
+                            {{ countWords(localDescriptionsH1[props.row.variable_id]) }}/40 palabras
+                        </div>
+                    </div>
+                </div>
+            </b-table-column>
+            <b-table-column field="actions" :label="textsStore.getText('hypothesis.table.actions')" v-slot="props" centered>
+                <div class="actions-column">
+                    <b-button
+                        type="is-info"
+                        size="is-small"
+                        icon-left="edit"
+                        @click="handleEditSave(props.row, props.index)"
+                        outlined
+                        :disabled="isLocked(props.row)"
+                    >
+                        {{ editingRow === props.row.variable_id ? textsStore.getText('hypothesis.table.save') : textsStore.getText('hypothesis.table.edit') }}
+                    </b-button>
+                    <span v-if="isLocked(props.row)" class="tag is-warning ml-2">{{ textsStore.getText('hypothesis.table.locked') }}</span>
+                </div>
+            </b-table-column>
+        </b-table>
+        <div class="note-box mt-4">
+            <b-message type="is-warning" has-icon>
+                <strong>Nota:</strong> {{ textsStore.getText('hypothesis.note') }}
+            </b-message>
+        </div>
+    </div>
+</template>
 <script>
 import { useSectionStore } from '../../../../stores/section';
 import { useFutureDriversStore } from '../../../../stores/futureDrivers';
@@ -184,81 +259,7 @@ export default {
 }
 </script>
 
-<template>
-    <div class="variables-container">
-        <b-message type="is-info" has-icon>
-            {{ textsStore.getText('hypothesis.subtitle') }}
-        </b-message>
-        <b-table :data="drivers" :striped="true" :hoverable="true" :bordered="false" :narrowed="true" :loading="futureDriversStore.isLoading" icon-pack="fas">
-            <b-table-column field="h" :label="textsStore.getText('hypothesis.table.h')" width="80" v-slot="props" centered>
-                <span>H{{ props.index + 1 }}</span>
-            </b-table-column>
-            <b-table-column field="variable" :label="textsStore.getText('hypothesis.table.variable')" v-slot="props" centered>
-                <span>{{ props.row.variable_name }}</span>
-            </b-table-column>
-            <b-table-column field="descriptionH0" :label="textsStore.getText('hypothesis.table.descriptionH0')" v-slot="props" centered header-class="hypothesis-header">
-                <div class="edit-area">
-                    <div class="textarea-container">
-                        <b-input
-                            v-model="localDescriptionsH0[props.row.variable_id]"
-                            type="textarea"
-                            :disabled="isLocked(props.row) || editingRow !== props.row.variable_id"
-                            :placeholder="textsStore.getText('hypothesis.table.descriptionH0')"
-                            :rows="3"
-                            style="min-width:180px; max-width:350px; resize:vertical;"
-                            @input="handleInput($event, props.row, 'H0')"
-                            @keydown="handleKeyDown($event, props.row, 'H0')"
-                            @paste="handlePaste($event, props.row, 'H0')"
-                        />
-                        <div class="word-counter" :class="getWordCountClass(countWords(localDescriptionsH0[props.row.variable_id]))">
-                            {{ countWords(localDescriptionsH0[props.row.variable_id]) }}/40 palabras
-                        </div>
-                    </div>
-                </div>
-            </b-table-column>
-            <b-table-column field="descriptionH1" :label="textsStore.getText('hypothesis.table.descriptionH1')" v-slot="props" centered header-class="hypothesis-header">
-                <div class="edit-area">
-                    <div class="textarea-container">
-                        <b-input
-                            v-model="localDescriptionsH1[props.row.variable_id]"
-                            type="textarea"
-                            :disabled="isLocked(props.row) || editingRow !== props.row.variable_id"
-                            :placeholder="textsStore.getText('hypothesis.table.descriptionH1')"
-                            :rows="3"
-                            style="min-width:180px; max-width:350px; resize:vertical;"
-                            @input="handleInput($event, props.row, 'H1')"
-                            @keydown="handleKeyDown($event, props.row, 'H1')"
-                            @paste="handlePaste($event, props.row, 'H1')"
-                        />
-                        <div class="word-counter" :class="getWordCountClass(countWords(localDescriptionsH1[props.row.variable_id]))">
-                            {{ countWords(localDescriptionsH1[props.row.variable_id]) }}/40 palabras
-                        </div>
-                    </div>
-                </div>
-            </b-table-column>
-            <b-table-column field="actions" :label="'ACCIONES'" v-slot="props" centered>
-                <div class="actions-column">
-                    <b-button
-                        type="is-info"
-                        size="is-small"
-                        icon-left="edit"
-                        @click="handleEditSave(props.row, props.index)"
-                        outlined
-                        :disabled="isLocked(props.row)"
-                    >
-                        {{ editingRow === props.row.variable_id ? textsStore.getText('hypothesis.table.save') : textsStore.getText('hypothesis.table.edit') }}
-                    </b-button>
-                    <span v-if="isLocked(props.row)" class="tag is-warning ml-2">{{ textsStore.getText('hypothesis.table.locked') }}</span>
-                </div>
-            </b-table-column>
-        </b-table>
-        <div class="note-box mt-4">
-            <b-message type="is-warning" has-icon>
-                <strong>Nota:</strong> {{ textsStore.getText('hypothesis.note') }}
-            </b-message>
-        </div>
-    </div>
-</template>
+
 
 <style scoped>
 .variables-container {

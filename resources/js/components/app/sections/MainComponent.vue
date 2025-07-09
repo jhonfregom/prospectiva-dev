@@ -1,37 +1,3 @@
-<script>
-    //Import texts from store
-    import { useTextsStore } from '../../../stores/texts';
-    //Import session from store
-    import { useSessionStore } from '../../../stores/session';
-    import VariablesMainComponent from './variables/VariablesMainComponent.vue';
-    import MatrizMainComponent from './matriz/MatrizMainComponent.vue';
-
-    export default {
-        components: {
-            VariablesMainComponent,
-            MatrizMainComponent
-        },
-        setup(){
-            const storeTexts = useTextsStore();
-            const storeSession = useSessionStore();
-            console.log('MainComponent', storeTexts.main_section);
-            console.log('MainComponent', storeTexts);
-            // Set the active content to the first module by default
-            return { storeTexts, storeSession };
-        },
-        methods: {
-            setActiveSection(moduleName){
-                if(moduleName === 'graphics'){
-                    this.storeSession.setActiveContent('graphics');
-                } else if(moduleName === 'schwartz'){
-                    this.storeSession.setActiveContent('schwartz');
-                } else {
-                    this.storeSession.setActiveContent(moduleName);
-                }
-            },
-        }
-    }
-</script>
 <template>
     <div class="main-content">
     <section class="intro-section">
@@ -105,6 +71,42 @@
         </section>
     </div>
 </template>
+
+<script>
+    //Import texts from store
+    import { useTextsStore } from '../../../stores/texts';
+    //Import session from store
+    import { useSessionStore } from '../../../stores/session';
+    import VariablesMainComponent from './variables/VariablesMainComponent.vue';
+    import MatrizMainComponent from './matriz/MatrizMainComponent.vue';
+
+    export default {
+        components: {
+            VariablesMainComponent,
+            MatrizMainComponent
+        },
+        setup(){
+            const storeTexts = useTextsStore();
+            const storeSession = useSessionStore();
+            console.log('MainComponent', storeTexts.main_section);
+            console.log('MainComponent', storeTexts);
+            // Set the active content to the first module by default
+            return { storeTexts, storeSession };
+        },
+        methods: {
+            setActiveSection(moduleName){
+                if(moduleName === 'graphics'){
+                    this.storeSession.setActiveContent('graphics');
+                } else if(moduleName === 'schwartz'){
+                    this.storeSession.setActiveContent('schwartz');
+                } else {
+                    this.storeSession.setActiveContent(moduleName);
+                }
+            },
+        }
+    }
+</script>
+
 <style lang="scss" scoped>
 .modules, .queries {
     display: flex;
