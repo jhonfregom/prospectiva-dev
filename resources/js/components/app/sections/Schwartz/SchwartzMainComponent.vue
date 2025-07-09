@@ -1,5 +1,5 @@
 <script>
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, ref } from 'vue';
 import { useSectionStore } from '../../../../stores/section';
 import { useFutureDriversStore } from '../../../../stores/futureDrivers';
 import { useSchwartzStore } from '../../../../stores/schwartz';
@@ -18,6 +18,8 @@ export default {
             if (futureDriversStore.drivers.length === 0) {
                 await futureDriversStore.fetchDrivers();
             }
+            // Cargar escenarios guardados
+            await schwartzStore.fetchScenarios();
         });
 
         // Computed para obtener los textos de hipótesis
@@ -30,6 +32,31 @@ export default {
         const escenarios = computed(() => schwartzStore.escenarios);
         const setEscenario = (index, texto) => schwartzStore.setEscenario(index, texto);
 
+        // Nueva función para manejar edición/guardado
+        const handleEditSave = async (index, numScenario) => {
+            const escenario = schwartzStore.escenarios[index];
+            if (escenario.state === 1) return;
+            if (editingScenario.value[index]) {
+                // Guardar
+                schwartzStore.incrementEdit(index);
+                editingScenario.value[index] = false;
+                // Guardar en backend
+                const result = await schwartzStore.saveScenario(index, numScenario);
+                if (!result.success) {
+                    editMessage.value[index] = 'Error al guardar: ' + (result.message || 'Intenta de nuevo.');
+                } else if (schwartzStore.escenarios[index].state === 1) {
+                    editMessage.value[index] = 'Has alcanzado el límite de ediciones para este escenario.';
+                } else {
+                    editMessage.value[index] = '';
+                }
+            } else {
+                editingScenario.value[index] = true;
+            }
+        };
+
+        const editingScenario = ref([false, false, false, false]);
+        const editMessage = ref(['', '', '', '']);
+
         return {
             h1H0,
             h1H1,
@@ -37,7 +64,10 @@ export default {
             h2H1,
             escenarios,
             setEscenario,
-            textsStore
+            textsStore,
+            editingScenario,
+            handleEditSave,
+            editMessage,
         };
     }
 };
@@ -63,12 +93,44 @@ export default {
             <div class="cell empty"></div>
             <div class="cell scenario">
                 <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_4') }}</div>
-                <b-input type="textarea" v-model="escenarios[3].texto" @input="setEscenario(3, escenarios[3].texto)" class="scenario-input" />
+                <b-input type="textarea"
+                    v-model="escenarios[3].texto"
+                    :disabled="!editingScenario[3] || escenarios[3].state === 1"
+                    class="scenario-input" />
+                <div class="edit-btn-container">
+                    <b-button
+                        type="is-info"
+                        size="is-small"
+                        icon-left="edit"
+                        @click="handleEditSave(3, 4)"
+                        outlined
+                        :disabled="escenarios[3].state === 1"
+                    >
+                        {{ editingScenario[3] ? 'Guardar' : 'Editar' }}
+                    </b-button>
+                    <div v-if="editMessage[3]" class="edit-limit-message">{{ editMessage[3] }}</div>
+                </div>
             </div>
             <div class="cell empty"></div>
             <div class="cell scenario">
                 <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_1') }}</div>
-                <b-input type="textarea" v-model="escenarios[0].texto" @input="setEscenario(0, escenarios[0].texto)" class="scenario-input" />
+                <b-input type="textarea"
+                    v-model="escenarios[0].texto"
+                    :disabled="!editingScenario[0] || escenarios[0].state === 1"
+                    class="scenario-input" />
+                <div class="edit-btn-container">
+                    <b-button
+                        type="is-info"
+                        size="is-small"
+                        icon-left="edit"
+                        @click="handleEditSave(0, 1)"
+                        outlined
+                        :disabled="escenarios[0].state === 1"
+                    >
+                        {{ editingScenario[0] ? 'Guardar' : 'Editar' }}
+                    </b-button>
+                    <div v-if="editMessage[0]" class="edit-limit-message">{{ editMessage[0] }}</div>
+                </div>
             </div>
             <div class="cell empty"></div>
 
@@ -89,12 +151,44 @@ export default {
             <div class="cell empty"></div>
             <div class="cell scenario">
                 <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_3') }}</div>
-                <b-input type="textarea" v-model="escenarios[2].texto" @input="setEscenario(2, escenarios[2].texto)" class="scenario-input" />
+                <b-input type="textarea"
+                    v-model="escenarios[2].texto"
+                    :disabled="!editingScenario[2] || escenarios[2].state === 1"
+                    class="scenario-input" />
+                <div class="edit-btn-container">
+                    <b-button
+                        type="is-info"
+                        size="is-small"
+                        icon-left="edit"
+                        @click="handleEditSave(2, 3)"
+                        outlined
+                        :disabled="escenarios[2].state === 1"
+                    >
+                        {{ editingScenario[2] ? 'Guardar' : 'Editar' }}
+                    </b-button>
+                    <div v-if="editMessage[2]" class="edit-limit-message">{{ editMessage[2] }}</div>
+                </div>
             </div>
             <div class="cell empty"></div>
             <div class="cell scenario">
                 <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_2') }}</div>
-                <b-input type="textarea" v-model="escenarios[1].texto" @input="setEscenario(1, escenarios[1].texto)" class="scenario-input" />
+                <b-input type="textarea"
+                    v-model="escenarios[1].texto"
+                    :disabled="!editingScenario[1] || escenarios[1].state === 1"
+                    class="scenario-input" />
+                <div class="edit-btn-container">
+                    <b-button
+                        type="is-info"
+                        size="is-small"
+                        icon-left="edit"
+                        @click="handleEditSave(1, 2)"
+                        outlined
+                        :disabled="escenarios[1].state === 1"
+                    >
+                        {{ editingScenario[1] ? 'Guardar' : 'Editar' }}
+                    </b-button>
+                    <div v-if="editMessage[1]" class="edit-limit-message">{{ editMessage[1] }}</div>
+                </div>
             </div>
             <div class="cell empty"></div>
 
@@ -322,5 +416,27 @@ export default {
 }
 .cell.hypo .cell-content {
     text-align: justify;
+}
+.edit-btn-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 8px;
+    width: 100%;
+}
+.edit-btn-container .b-button {
+    min-width: 80px;
+    max-width: 100px;
+    width: auto;
+    font-size: 12px;
+    padding: 2px 10px;
+    margin-bottom: 2px;
+}
+.edit-limit-message {
+    color: #e53e3e;
+    font-size: 13px;
+    margin-top: 4px;
+    text-align: right;
+    width: 100%;
 }
 </style>

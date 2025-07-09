@@ -77,6 +77,9 @@ Route::group(['middleware' => ['auth']], function(){
     // Rutas de escenarios protegidas por autenticación
     Route::get('/scenarios', [\App\Http\Controllers\ScenariosController::class, 'index']);
     Route::put('/scenarios/{id}', [\App\Http\Controllers\ScenariosController::class, 'update']);
+    Route::post('/scenarios', [\App\Http\Controllers\ScenariosController::class, 'store']);
+    Route::get('/scenarios/strategic', [\App\Http\Controllers\StrategicScenarioController::class, 'show']);
+    Route::put('/scenarios/strategic', [\App\Http\Controllers\StrategicScenarioController::class, 'update']);
 });
 
 // Sesion

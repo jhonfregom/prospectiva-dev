@@ -37,7 +37,7 @@ export default {
             }
         };
 
-        return {
+        return { 
             sectionStore,
             initialConditionsStore,
             textsStore,

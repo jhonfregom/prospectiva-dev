@@ -77,6 +77,23 @@
         ],
     ];
 
+    // Textos para la sección estratégica (StrategicScenarioTable.vue)
+    $text_strategic = [
+        'main_title' => 'PROSPECTIVA ESTRATÉGICA PARA LA GENERACIÓN DE COMPETITIVIDAD EMPRESARIAL',
+        'scenario_label' => 'escenario:',
+        'plan_label' => 'PLAN PROSPECTIVO CONSTRUCCIÓN DE ESCENARIOS',
+        'name' => 'NOMBRE',
+        'hypothesis1' => 'Hipótesis 1+',
+        'hypothesis2' => 'Hipótesis 2+',
+        'year1' => 'AÑO 1',
+        'year2' => 'AÑO 2',
+        'year3' => 'AÑO 3',
+        'save' => 'Guardar',
+        'edit' => 'Editar',
+        'edit_limit' => 'Este campo ya no se puede editar más.',
+        'save_error' => 'Error al guardar. Intenta de nuevo.'
+    ];
+
     //Fields participan
     $fields_participant =   [
         'first_name' =>  [
@@ -191,6 +208,7 @@
         "variables" => $text_variables,
         "matriz" => $text_matriz,
         "schwartz" => $text_schwartz,
+        "strategic" => $text_strategic,
     ];
 
     //List urls to use global in store from pinia/vue

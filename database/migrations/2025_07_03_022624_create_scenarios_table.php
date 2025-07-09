@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('scenarios', function (Blueprint $table) {
             $table->id();
+            $table->integer('user_id');
+            $table->string('titulo')->nullable();
+            $table->integer('edits')->default(0);
+            $table->enum('state', ['0', '1'])->default('0');
+            $table->integer('num_scenario')->default(1); // Nuevo campo para identificar el escenario
             $table->timestamps();
         });
     }

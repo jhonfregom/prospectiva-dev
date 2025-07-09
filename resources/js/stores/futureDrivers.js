@@ -50,11 +50,25 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
             }
         },
         async saveBothHypotheses(variableId, nameHypothesis, h0Text, h1Text, zoneId, state) {
-            // Guarda H0
-            await this.saveDriver(variableId, nameHypothesis, h0Text, 'H0', zoneId, state);
-            // Guarda H1
-            await this.saveDriver(variableId, nameHypothesis, h1Text, 'H1', zoneId, state);
-            await this.fetchDrivers();
+            try {
+                // Guarda H0
+                const resultH0 = await this.saveDriver(variableId, nameHypothesis, h0Text, 'H0', zoneId, state);
+                if (!resultH0.success) {
+                    return resultH0;
+                }
+                
+                // Guarda H1
+                const resultH1 = await this.saveDriver(variableId, nameHypothesis, h1Text, 'H1', zoneId, state);
+                if (!resultH1.success) {
+                    return resultH1;
+                }
+                
+                await this.fetchDrivers();
+                return { success: true, message: 'Hipótesis guardadas correctamente' };
+            } catch (error) {
+                this.error = error.response?.data?.message || error.message;
+                return { success: false, message: this.error };
+            }
         },
         clearError() {
             this.error = null;

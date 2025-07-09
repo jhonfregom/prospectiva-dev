@@ -74,15 +74,21 @@ export default {
             if (isLocked(row)) return;
 
             if (editingRow.value === row.variable_id) {
-                // Guardar
-                const payload = {
-                    variable_id: row.variable_id,
-                    descriptionH0: localDescriptionsH0.value[row.variable_id] || '',
-                    descriptionH1: localDescriptionsH1.value[row.variable_id] || '',
-                    is_manual_save: true
-                };
-                const result = await futureDriversStore.saveDriver(index, payload);
-                if (result.success) {
+                // Guardar ambas hipótesis (H0 y H1) para esta variable
+                const h0Text = localDescriptionsH0.value[row.variable_id] || '';
+                const h1Text = localDescriptionsH1.value[row.variable_id] || '';
+                
+                // Usar saveBothHypotheses que guarda H0 y H1 automáticamente
+                const result = await futureDriversStore.saveBothHypotheses(
+                    row.variable_id,  // variableId
+                    'H' + (index + 1), // nameHypothesis (H1 o H2)
+                    h0Text,           // h0Text
+                    h1Text,           // h1Text
+                    row.zone_id || 1, // zoneId
+                    row.state || '0'  // state
+                );
+                
+                if (result && result.success) {
                     editingRow.value = null;
                     // Recargar los datos para obtener el estado actualizado
                     await futureDriversStore.fetchDrivers();

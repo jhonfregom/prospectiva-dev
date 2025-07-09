@@ -212,6 +212,13 @@ class HypothesisController extends Controller
     {
         try {
             $userId = Auth::id();
+            
+            // Limpiar datos antes de validar
+            $input = $request->all();
+            $input = array_filter($input, function($value) {
+                return $value !== null && $value !== 'undefined' && $value !== '';
+            });
+            
             $data = $request->validate([
                 'variable_id' => 'required|integer',
                 'name_hypothesis' => 'required|string',         // 'H1' o 'H2'
@@ -220,6 +227,11 @@ class HypothesisController extends Controller
                 'zone_id' => 'nullable|integer',
                 'state' => 'nullable',
             ]);
+
+            // Asegurar que description no sea null si no se proporciona
+            if (!isset($data['description']) || $data['description'] === null) {
+                $data['description'] = '';
+            }
 
             Log::info('Payload recibido en store:', $data);
 
