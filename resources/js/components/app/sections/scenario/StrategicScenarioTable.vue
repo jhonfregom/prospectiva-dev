@@ -539,18 +539,18 @@ onMounted(async () => {
     const res = await axios.get('/hypothesis');
     const data = res.data.data;
     if (Array.isArray(data) && data.length > 0) {
-      // Escenario 1
-      hypothesis1_1.value = data[0]?.descriptionH0 || '';
-      hypothesis1_2.value = data[1]?.descriptionH0 || '';
-      // Escenario 2
-      hypothesis2_1.value = data[1]?.descriptionH0 || '';
-      hypothesis2_2.value = data[0]?.descriptionH1 || '';
-      // Escenario 3
-      hypothesis3_1.value = data[0]?.descriptionH1 || '';
-      hypothesis3_2.value = data[1]?.descriptionH1 || '';
-      // Escenario 4
-      hypothesis4_1.value = data[1]?.descriptionH1 || '';
-      hypothesis4_2.value = data[0]?.descriptionH0 || '';
+      // Escenario 1 (antes: H0, H0) → ahora: H1, H1
+      hypothesis1_1.value = data[0]?.descriptionH1 || '';
+      hypothesis1_2.value = data[1]?.descriptionH1 || '';
+      // Escenario 2 (antes: H0, H1) → ahora: H1, H0
+      hypothesis2_1.value = data[1]?.descriptionH1 || '';
+      hypothesis2_2.value = data[0]?.descriptionH0 || '';
+      // Escenario 3 (antes: H1, H1) → ahora: H0, H0
+      hypothesis3_1.value = data[0]?.descriptionH0 || '';
+      hypothesis3_2.value = data[1]?.descriptionH0 || '';
+      // Escenario 4 (antes: H1, H0) → ahora: H0, H1
+      hypothesis4_1.value = data[1]?.descriptionH0 || '';
+      hypothesis4_2.value = data[0]?.descriptionH1 || '';
     }
   } catch (e) {
     hypothesis1_1.value = '';

@@ -14,7 +14,8 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
         },
         isLocked: (state) => (index) => {
             const driver = state.drivers[index];
-            return driver ? driver.state === '1' : false;
+            // Verificar si cualquiera de las dos hipótesis está bloqueada
+            return driver ? (driver.stateH0 === '1' || driver.stateH1 === '1') : false;
         }
     },
     actions: {
@@ -63,6 +64,7 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
                     return resultH1;
                 }
                 
+                // Recargar datos para obtener el estado actualizado
                 await this.fetchDrivers();
                 return { success: true, message: 'Hipótesis guardadas correctamente' };
             } catch (error) {

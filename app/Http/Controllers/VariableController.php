@@ -94,8 +94,8 @@ class VariableController extends Controller
             $variable->description = $validated['description'] ?? '';
             $variable->score = $validated['score'];
 
-            // Si es la segunda edición o más, bloquear (después de la primera)
-            if ($editCount >= 2) {
+            // Si es la tercera edición o más, bloquear (después de la segunda)
+            if ($editCount >= 3) {
                 $variable->state = '1';
                 \Log::info('Variable update - Blocking variable ID: ' . $variable->id);
             }
@@ -158,6 +158,9 @@ class VariableController extends Controller
     {
         try {
             $variable = Variable::where('user_id', Auth::id())->findOrFail($id);
+            $userId = Auth::id();
+
+            // Si ya está bloqueada, no permitir editar
             if ($variable->state === '1') {
                 return response()->json([
                     'data' => $variable,
@@ -165,11 +168,30 @@ class VariableController extends Controller
                     'message' => 'Esta variable ya está bloqueada y no se puede editar.'
                 ]);
             }
+
             $validated = $request->validate([
                 'now_condition' => 'nullable|string|max:1000'
             ]);
+
+            // Contador de ediciones en sesión (por usuario y variable para condiciones iniciales)
+            $sessionKey = 'initial_condition_edit_count_' . $variable->id . '_user_' . $userId;
+            $editCount = session($sessionKey, 0) + 1;
+            session([$sessionKey => $editCount]);
+
+            \Log::info('Initial condition update - ID: ' . $variable->id . ', Edit count: ' . $editCount . ', Current state: ' . $variable->state);
+
             $variable->now_condition = $validated['now_condition'] ?? '';
+
+            // Si es la tercera edición o más, bloquear (después de la segunda)
+            if ($editCount >= 3) {
+                $variable->state = '1';
+                \Log::info('Initial condition update - Blocking variable ID: ' . $variable->id);
+            }
+
             $variable->save();
+
+            \Log::info('Initial condition update - Final state: ' . $variable->state . ', Response data: ' . json_encode($variable));
+
             return response()->json([
                 'status' => 200,
                 'message' => 'Condición inicial actualizada correctamente',

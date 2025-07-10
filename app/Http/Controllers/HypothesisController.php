@@ -258,12 +258,35 @@ class HypothesisController extends Controller
             ]);
 
             if ($hypothesis) {
+                // Contador de ediciones en sesión (por usuario y hipótesis)
+                $sessionKey = 'hypothesis_edit_count_' . $hypothesis->id . '_user_' . $userId;
+                $editCount = session($sessionKey, 0) + 1;
+                session([$sessionKey => $editCount]);
+
+                Log::info('Hypothesis update - ID: ' . $hypothesis->id . ', Edit count: ' . $editCount . ', Current state: ' . $hypothesis->state);
+
+                // Si ya está bloqueada, no permitir editar
+                if ($hypothesis->state === '1') {
+                    return response()->json([
+                        'data' => $hypothesis,
+                        'status' => 200,
+                        'message' => 'Esta hipótesis ya está bloqueada y no se puede editar.'
+                    ]);
+                }
+
                 $hypothesis->update([
                     'zone_id' => $data['zone_id'] ?? $hypothesis->zone_id,
                     'description' => $data['description'],
-                    'state' => isset($data['state']) ? (string)$data['state'] : $hypothesis->state,
                 ]);
-                Log::info('Actualizado registro existente', ['id' => $hypothesis->id]);
+
+                // Si es la tercera edición o más, bloquear (después de la segunda)
+                if ($editCount >= 3) {
+                    $hypothesis->state = '1';
+                    $hypothesis->save();
+                    Log::info('Hypothesis update - Blocking hypothesis ID: ' . $hypothesis->id);
+                }
+
+                Log::info('Actualizado registro existente', ['id' => $hypothesis->id, 'final_state' => $hypothesis->state]);
             } else {
                 $nextId = $this->findNextAvailableId();
                 $hypothesis = Hypothesis::create([

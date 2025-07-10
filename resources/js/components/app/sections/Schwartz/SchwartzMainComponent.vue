@@ -9,7 +9,7 @@
             <div class="cell empty"></div>
             <div class="cell hypo top">
                 <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_plus') }}</div>
-                <div class="cell-content">{{ h1H0 }}</div>
+                <div class="cell-content">{{ h1H1 }}</div>
             </div>
             <div class="cell empty"></div>
             <div class="cell empty"></div>
@@ -62,14 +62,14 @@
             <!-- Fila 3 -->
             <div class="cell hypo left">
                 <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_minus') }}</div>
-                <div class="cell-content">{{ h2H1 }}</div>
+                <div class="cell-content">{{ h2H0 }}</div>
             </div>
             <div class="cell empty"></div>
             <div class="cell empty"></div>
             <div class="cell empty"></div>
             <div class="cell hypo right">
                 <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_plus') }}</div>
-                <div class="cell-content">{{ h2H0 }}</div>
+                <div class="cell-content">{{ h2H1 }}</div>
             </div>
 
             <!-- Fila 4 -->
@@ -122,7 +122,7 @@
             <div class="cell empty"></div>
             <div class="cell hypo bottom">
                 <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_minus') }}</div>
-                <div class="cell-content">{{ h1H1 }}</div>
+                <div class="cell-content">{{ h1H0 }}</div>
             </div>
             <div class="cell empty"></div>
             <div class="cell empty"></div>

@@ -63,16 +63,36 @@ export default {
         });
 
         const handleEditSave = async (row, index) => {
-            if (row.state === '1') return;
+            console.log('handleEditSave called:', { 
+                variable_id: row.id_variable, 
+                id: row.id, 
+                index: index, 
+                state: row.state,
+                isLocked: row.state === '1'
+            });
+            
+            if (row.state === '1') {
+                console.log('Row is locked, cannot edit');
+                return;
+            }
+            
             if (editingRow.value === row.id) {
-                await initialConditionsStore.updateCondition(row.id, localNowConditions.value[row.id] || '');
-                await initialConditionsStore.fetchConditions();
-                const updated = initialConditionsStore.conditions.find(c => c.id === row.id);
-                if (updated) {
-                    localNowConditions.value[row.id] = updated.now_condition || '';
+                // Guardar
+                console.log('Saving initial condition for variable ID:', row.id);
+                const result = await initialConditionsStore.updateCondition(row.id, localNowConditions.value[row.id] || '');
+                
+                if (result && result.success) {
+                    // Recargar datos para obtener el estado actualizado
+                    await initialConditionsStore.fetchConditions();
+                    const updated = initialConditionsStore.conditions.find(c => c.id === row.id);
+                    if (updated) {
+                        localNowConditions.value[row.id] = updated.now_condition || '';
+                    }
+                    editingRow.value = null;
+                    console.log('After save - Variable ID:', row.id, 'New state:', updated?.state);
                 }
-                editingRow.value = null;
             } else {
+                // Entrar en modo edición
                 editingRow.value = row.id;
             }
         };

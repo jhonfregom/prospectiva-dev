@@ -142,11 +142,32 @@ export default {
             }
         }, { immediate: true, deep: true });
 
-        // Saber si está bloqueado
-        const isLocked = (row) => row.state === '1';
+        // Saber si está bloqueado - verificar tanto stateH0 como stateH1
+        const isLocked = (row) => {
+            // Si cualquiera de las dos hipótesis está bloqueada, toda la fila se bloquea
+            const locked = (row.stateH0 === '1' || row.stateH1 === '1');
+            console.log('isLocked check:', { 
+                variable_id: row.variable_id, 
+                stateH0: row.stateH0, 
+                stateH1: row.stateH1, 
+                locked: locked 
+            });
+            return locked;
+        };
 
         const handleEditSave = async (row, index) => {
-            if (isLocked(row)) return;
+            console.log('handleEditSave called:', { 
+                variable_id: row.variable_id, 
+                index: index, 
+                stateH0: row.stateH0, 
+                stateH1: row.stateH1,
+                isLocked: isLocked(row)
+            });
+            
+            if (isLocked(row)) {
+                console.log('Row is locked, cannot edit');
+                return;
+            }
 
             if (editingRow.value === row.variable_id) {
                 // Guardar ambas hipótesis (H0 y H1) para esta variable
@@ -160,7 +181,7 @@ export default {
                     h0Text,           // h0Text
                     h1Text,           // h1Text
                     row.zone_id || 1, // zoneId
-                    row.state || '0'  // state
+                    '0'  // state - siempre enviar '0' para que el backend maneje el conteo
                 );
                 
                 if (result && result.success) {

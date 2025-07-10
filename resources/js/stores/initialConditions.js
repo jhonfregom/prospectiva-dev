@@ -34,8 +34,14 @@ export const useInitialConditionsStore = defineStore('initialConditions', {
         async updateCondition(id, nowCondition) {
             try {
                 const payload = { now_condition: nowCondition };
-                await axios.put(`/initial-conditions/${id}`, payload);
-                return { success: true };
+                const response = await axios.put(`/initial-conditions/${id}`, payload);
+                
+                if (response.data.status === 200) {
+                    // Recargar datos para obtener el estado actualizado
+                    await this.fetchConditions();
+                    return { success: true };
+                }
+                return { success: false, message: 'Error al actualizar' };
             } catch (error) {
                 this.error = error.response?.data?.message || error.message;
                 return { success: false, message: this.error };
