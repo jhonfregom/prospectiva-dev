@@ -23,6 +23,10 @@
     import initialConditions from '../sections/initialConditions/InitialConditionsMainComponent.vue';
     // Importa el componente que maneja los escenarios
     import scenarios from '../sections/scenery/SceneryMainComponent.vue';
+    // Importar el componente de conslusiones
+    import conclusions from '../sections/conclusions/ConclusionsMainComponent.vue';
+    // Importar el componente de resultados
+    import results from '../sections/results/ResultsMainComponent.vue';
 
     export default {
         // Setup es un hook de composition API que inicializa los stores
@@ -43,7 +47,9 @@
             hypothesis, // Componente para los direccionadores de futuro
             schwartz,         // Componente para los ejes de Peter Schwartz
             initialConditions, // Componente para las condiciones iniciales
-            scenarios         // Componente para los escenarios
+            scenarios,         // Componente para los escenarios
+            conclusions,       // Componente para las conclusiones
+            results
         },
 
         data() {
@@ -129,6 +135,14 @@
                     <scenarios v-if="contentActive.scenarios"
                         v-bind:key="11"
                     /> 
+                    <!-- Muestra el componente conclusions si contentActive.conclusions es true -->
+                    <conclusions v-if="contentActive.conclusions"   
+                        v-bind:key="12"
+                    />
+                    <!-- Muestra el componente results si contentActive.results es true -->
+                    <results v-if="contentActive.results"
+                        v-bind:key="13"
+                    />
                 </transition-group>
             </section>
         </div>
