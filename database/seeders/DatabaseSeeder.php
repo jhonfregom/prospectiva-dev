@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             TestDataSeeder::class,
             TestVariablesSeeder::class,
             TestMatrizSeeder::class,
+            TestZonesSeeder::class,
         ]);
         
     }
