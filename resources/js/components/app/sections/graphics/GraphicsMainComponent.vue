@@ -1,5 +1,6 @@
 <template>
   <div class="graphics-container">
+    <MiniStepper :steps="steps" :currentIndex="2" />
     <canvas ref="chartCanvas" width="800" height="560"></canvas>
   </div>
 </template>
@@ -12,10 +13,14 @@ import { useSectionStore } from '../../../../stores/section';
 import { storeToRefs } from 'pinia';
 import Chart from 'chart.js/auto';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import MiniStepper from '../../ui/MiniStepper.vue';
 
 Chart.register(annotationPlugin);
 
 export default {
+  components: {
+    MiniStepper
+  },
   setup() {
     const graphicsStore = useGraphicsStore();
     const textsStore = useTextsStore();
@@ -23,6 +28,20 @@ export default {
     const { data, isLoading } = storeToRefs(graphicsStore);
     const chartCanvas = ref(null);
     let chartInstance = null;
+
+    const steps = [
+      { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
+      { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
+      { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
+      { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
+      { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
+      { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
+      { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
+      { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
+      { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
+      { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
+      { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
+    ];
 
     // Función para calcular los límites de los ejes
     function getAxisLimits(points, minX = 10, minY = 12) {
@@ -234,7 +253,7 @@ export default {
       renderChart();
     });
 
-    return { chartCanvas, isLoading, textsStore };
+    return { chartCanvas, isLoading, textsStore, steps };
   }
 };
 </script>

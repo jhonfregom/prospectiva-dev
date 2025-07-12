@@ -27,6 +27,7 @@
     import conclusions from '../sections/conclusions/ConclusionsMainComponent.vue';
     // Importar el componente de resultados
     import results from '../sections/results/ResultsMainComponent.vue';
+    // También elimino la importación y el registro del componente si no se usa en otro lugar
 
     export default {
         // Setup es un hook de composition API que inicializa los stores
@@ -49,7 +50,8 @@
             initialConditions, // Componente para las condiciones iniciales
             scenarios,         // Componente para los escenarios
             conclusions,       // Componente para las conclusiones
-            results
+            results,
+            // También elimino la importación y el registro del componente si no se usa en otro lugar
         },
 
         data() {
@@ -83,7 +85,6 @@
         <div class="action-main">
             <!-- Componente que muestra el título de la sección -->
             <title-section />
-
             <!-- Sección principal que contiene el contenido -->
             <section class="section-content">
                 <!-- Grupo de transiciones para animar los cambios entre componentes -->

@@ -1,5 +1,6 @@
 <template>
-    <div class="variables-container">
+    <div class="analisis-mapa-variables-container">
+        <MiniStepper :steps="steps" :currentIndex="3" />
         <b-message type="is-info" has-icon>
             {{ descriptionWithCount }}
         </b-message>
@@ -80,10 +81,15 @@ import { useSessionStore } from '../../../../stores/session';
 import { onMounted, watch, computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { debounce } from 'lodash';
+import MiniStepper from '../../ui/MiniStepper.vue';
 
 export default {
     name: 'AnalisisMapaVariablesMainComponent',
     
+    components: {
+        MiniStepper
+    },
+
     setup() {
         const analysisStore = useAnalysisStore();
         const textsStore = useTextsStore();
@@ -356,7 +362,20 @@ export default {
             getDiagnosis,
             getDiagnosisClass,
             onCommentInput,
-            updateVariablesByZone
+            updateVariablesByZone,
+            steps: [
+                { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
+                { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
+                { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
+                { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
+                { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
+                { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
+                { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
+                { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
+                { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
+                { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
+                { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
+            ]
         };
     }
 };

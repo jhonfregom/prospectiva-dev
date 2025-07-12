@@ -1,41 +1,44 @@
 <template>
-    <div class="main-content">
-        <b-message type="is-info" has-icon>
-            {{ textsStore.getText('initialConditions.subtitle') }}
-        </b-message>
-        <b-table :data="initialConditionsStore.conditions" :striped="true" :hoverable="true" :bordered="true" :narrowed="true" :loading="initialConditionsStore.isLoading" icon-pack="fas">
-            <b-table-column field="id_variable" :label="textsStore.getText('initialConditions.table.variable')" v-slot="props" centered>
-                <span>{{ props.row.id_variable }}</span>
-            </b-table-column>
-            <b-table-column field="name_variable" :label="textsStore.getText('initialConditions.table.name')" v-slot="props" centered>
-                <span>{{ props.row.name_variable }}</span>
-            </b-table-column>
-            <b-table-column field="now_condition" :label="textsStore.getText('initialConditions.table.nowCondition')" v-slot="props" centered>
-                <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
-                    <b-input
-                        v-model="localNowConditions[props.row.id]"
-                        type="textarea"
-                        :disabled="props.row.state === '1' || editingRow !== props.row.id"
-                        :placeholder="textsStore.getText('initialConditions.table.nowCondition')"
-                        :rows="3"
-                        style="min-width:700px; max-width:1200px; resize:vertical; text-align:center;"
-                    />
-                </div>
-            </b-table-column>
-            <b-table-column field="actions" :label="textsStore.getText('initialConditions.table.actions')" v-slot="props" centered>
-                <b-button
-                    type="is-info"
-                    size="is-small"
-                    icon-left="edit"
-                    @click="handleEditSave(props.row, props.index)"
-                    outlined
-                    :disabled="props.row.state === '1'"
-                >
-                    {{ editingRow === props.row.id ? textsStore.getText('initialConditions.table.save') : textsStore.getText('initialConditions.table.edit') }}
-                </b-button>
-                <span v-if="props.row.state === '1'" class="tag is-warning ml-2">{{ textsStore.getText('initialConditions.table.locked') }}</span>
-            </b-table-column>
-        </b-table>
+    <div class="initial-conditions-container">
+        <MiniStepper :steps="steps" :currentIndex="6" />
+        <div class="main-content">
+            <b-message type="is-info" has-icon>
+                {{ textsStore.getText('initialConditions.subtitle') }}
+            </b-message>
+            <b-table :data="initialConditionsStore.conditions" :striped="true" :hoverable="true" :bordered="true" :narrowed="true" :loading="initialConditionsStore.isLoading" icon-pack="fas">
+                <b-table-column field="id_variable" :label="textsStore.getText('initialConditions.table.variable')" v-slot="props" centered>
+                    <span>{{ props.row.id_variable }}</span>
+                </b-table-column>
+                <b-table-column field="name_variable" :label="textsStore.getText('initialConditions.table.name')" v-slot="props" centered>
+                    <span>{{ props.row.name_variable }}</span>
+                </b-table-column>
+                <b-table-column field="now_condition" :label="textsStore.getText('initialConditions.table.nowCondition')" v-slot="props" centered>
+                    <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                        <b-input
+                            v-model="localNowConditions[props.row.id]"
+                            type="textarea"
+                            :disabled="props.row.state === '1' || editingRow !== props.row.id"
+                            :placeholder="textsStore.getText('initialConditions.table.nowCondition')"
+                            :rows="3"
+                            style="min-width:700px; max-width:1200px; resize:vertical; text-align:center;"
+                        />
+                    </div>
+                </b-table-column>
+                <b-table-column field="actions" :label="textsStore.getText('initialConditions.table.actions')" v-slot="props" centered>
+                    <b-button
+                        type="is-info"
+                        size="is-small"
+                        icon-left="edit"
+                        @click="handleEditSave(props.row, props.index)"
+                        outlined
+                        :disabled="props.row.state === '1'"
+                    >
+                        {{ editingRow === props.row.id ? textsStore.getText('initialConditions.table.save') : textsStore.getText('initialConditions.table.edit') }}
+                    </b-button>
+                    <span v-if="props.row.state === '1'" class="tag is-warning ml-2">{{ textsStore.getText('initialConditions.table.locked') }}</span>
+                </b-table-column>
+            </b-table>
+        </div>
     </div>
 </template>
 <script>
@@ -43,9 +46,13 @@ import { ref, onMounted } from 'vue';
 import { useSectionStore } from '../../../../stores/section';
 import { useInitialConditionsStore } from '../../../../stores/initialConditions';
 import { useTextsStore } from '../../../../stores/texts';
+import MiniStepper from '../../ui/MiniStepper.vue';
 
 export default {
     name: 'InitialConditionsMainComponent',
+    components: {
+        MiniStepper
+    },
     setup() {
         const sectionStore = useSectionStore();
         const initialConditionsStore = useInitialConditionsStore();
@@ -103,7 +110,20 @@ export default {
             textsStore,
             editingRow,
             localNowConditions,
-            handleEditSave
+            handleEditSave,
+            steps: [
+                { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
+                { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
+                { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
+                { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
+                { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
+                { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
+                { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
+                { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
+                { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
+                { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
+                { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
+            ]
         };
     }
 };

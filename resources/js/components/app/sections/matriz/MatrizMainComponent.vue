@@ -1,5 +1,6 @@
 <template>
     <div class="matriz-container">
+        <MiniStepper :steps="steps" :currentIndex="1" />
         <div class="matriz-header">
             <b-button
                 type="is-primary"
@@ -129,8 +130,12 @@ import { useMatrizStore } from '../../../../stores/matriz';
 import { useSectionStore } from '../../../../stores/section';
 import { useTextsStore } from '../../../../stores/texts';
 import { storeToRefs } from 'pinia';
+import MiniStepper from '../../ui/MiniStepper.vue';
 
 export default {
+    components: {
+        MiniStepper
+    },
     setup() {
         const matrizStore = useMatrizStore();
         const sectionStore = useSectionStore();
@@ -153,6 +158,19 @@ export default {
             origenIdPopover: null,
             destinoIdPopover: null,
             popoverStyle: {},
+            steps: [
+                { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
+                { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
+                { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
+                { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
+                { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
+                { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
+                { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
+                { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
+                { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
+                { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
+                { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
+            ]
         };
     },
 

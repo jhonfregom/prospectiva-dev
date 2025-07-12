@@ -1,144 +1,147 @@
 <template>
-    <div class="schwartz-matrix-container">
-        <div class="schwartz-matrix">
-            <!-- Ejes rojos -->
-            <div class="schwartz-axis schwartz-axis-x"></div>
-            <div class="schwartz-axis schwartz-axis-y"></div>
-            <!-- Fila 1 -->
-            <div class="cell empty"></div>
-            <div class="cell empty"></div>
-            <div class="cell hypo top">
-                <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_plus') }}</div>
-                <div class="cell-content">{{ h1H0 }}</div>
-            </div>
-            <div class="cell empty"></div>
-            <div class="cell empty"></div>
-
-            <!-- Fila 2 -->
-            <div class="cell empty"></div>
-            <div class="cell scenario">
-                <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_4') }}</div>
-                <b-input type="textarea"
-                    v-model="escenarios[3].texto"
-                    :disabled="!editingScenario[3] || schwartzStore.isScenarioBlocked(3)"
-                    class="scenario-input"
-                    @input="handleTextInput(3, $event)"
-                    @paste="handleTextPaste(3, $event)"
-                    @keyup="handleTextKeyup(3, $event)" />
-                <div class="edit-btn-container">
-                    <b-button
-                        type="is-info"
-                        size="is-small"
-                        icon-left="edit"
-                        @click="handleEditSave(3, 4)"
-                        outlined
-                        :disabled="schwartzStore.isEditLocked(3)"
-                    >
-                        {{ editingScenario[3] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                    </b-button>
-                    <div v-if="editMessage[3]" class="edit-limit-message">{{ editMessage[3] }}</div>
-                    <span v-if="schwartzStore.isScenarioBlocked(3)" class="tag is-warning ml-2">{{ textsStore.getText('schwartz.table.locked') }}</span>
+    <div class="schwartz-container">
+        <MiniStepper :steps="steps" :currentIndex="5" />
+        <div class="schwartz-matrix-container">
+            <div class="schwartz-matrix">
+                <!-- Ejes rojos -->
+                <div class="schwartz-axis schwartz-axis-x"></div>
+                <div class="schwartz-axis schwartz-axis-y"></div>
+                <!-- Fila 1 -->
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell hypo top">
+                    <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_plus') }}</div>
+                    <div class="cell-content">{{ h1H0 }}</div>
                 </div>
-            </div>
-            <div class="cell empty"></div>
-            <div class="cell scenario">
-                <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_1') }}</div>
-                <b-input type="textarea"
-                    v-model="escenarios[0].texto"
-                    :disabled="!editingScenario[0] || escenarios[0].state === 1"
-                    class="scenario-input"
-                    @input="handleTextInput(0, $event)"
-                    @paste="handleTextPaste(0, $event)"
-                    @keyup="handleTextKeyup(0, $event)" />
-                <div class="edit-btn-container">
-                    <b-button
-                        type="is-info"
-                        size="is-small"
-                        icon-left="edit"
-                        @click="handleEditSave(0, 1)"
-                        outlined
-                        :disabled="schwartzStore.isEditLocked(0)"
-                    >
-                        {{ editingScenario[0] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                    </b-button>
-                    <div v-if="editMessage[0]" class="edit-limit-message">{{ editMessage[0] }}</div>
-                </div>
-            </div>
-            <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
 
-            <!-- Fila 3 -->
-            <div class="cell hypo left">
-                <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_minus') }}</div>
-                <div class="cell-content">{{ h2H0 }}</div>
-            </div>
-            <div class="cell empty"></div>
-            <div class="cell empty"></div>
-            <div class="cell empty"></div>
-            <div class="cell hypo right">
-                <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_plus') }}</div>
-                <div class="cell-content">{{ h2H1 }}</div>
-            </div>
-
-            <!-- Fila 4 -->
-            <div class="cell empty"></div>
-            <div class="cell scenario">
-                <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_3') }}</div>
-                <b-input type="textarea"
-                    v-model="escenarios[2].texto"
-                    :disabled="!editingScenario[2] || escenarios[2].state === 1"
-                    class="scenario-input"
-                    @input="handleTextInput(2, $event)"
-                    @paste="handleTextPaste(2, $event)"
-                    @keyup="handleTextKeyup(2, $event)" />
-                <div class="edit-btn-container">
-                    <b-button
-                        type="is-info"
-                        size="is-small"
-                        icon-left="edit"
-                        @click="handleEditSave(2, 3)"
-                        outlined
-                        :disabled="schwartzStore.isEditLocked(2)"
-                    >
-                        {{ editingScenario[2] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                    </b-button>
-                    <div v-if="editMessage[2]" class="edit-limit-message">{{ editMessage[2] }}</div>
+                <!-- Fila 2 -->
+                <div class="cell empty"></div>
+                <div class="cell scenario">
+                    <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_4') }}</div>
+                    <b-input type="textarea"
+                        v-model="escenarios[3].texto"
+                        :disabled="!editingScenario[3] || schwartzStore.isScenarioBlocked(3)"
+                        class="scenario-input"
+                        @input="handleTextInput(3, $event)"
+                        @paste="handleTextPaste(3, $event)"
+                        @keyup="handleTextKeyup(3, $event)" />
+                    <div class="edit-btn-container">
+                        <b-button
+                            type="is-info"
+                            size="is-small"
+                            icon-left="edit"
+                            @click="handleEditSave(3, 4)"
+                            outlined
+                            :disabled="schwartzStore.isEditLocked(3)"
+                        >
+                            {{ editingScenario[3] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
+                        </b-button>
+                        <div v-if="editMessage[3]" class="edit-limit-message">{{ editMessage[3] }}</div>
+                        <span v-if="schwartzStore.isScenarioBlocked(3)" class="tag is-warning ml-2">{{ textsStore.getText('schwartz.table.locked') }}</span>
+                    </div>
                 </div>
-            </div>
-            <div class="cell empty"></div>
-            <div class="cell scenario">
-                <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_2') }}</div>
-                <b-input type="textarea"
-                    v-model="escenarios[1].texto"
-                    :disabled="!editingScenario[1] || escenarios[1].state === 1"
-                    class="scenario-input"
-                    @input="handleTextInput(1, $event)"
-                    @paste="handleTextPaste(1, $event)"
-                    @keyup="handleTextKeyup(1, $event)" />
-                <div class="edit-btn-container">
-                    <b-button
-                        type="is-info"
-                        size="is-small"
-                        icon-left="edit"
-                        @click="handleEditSave(1, 2)"
-                        outlined
-                        :disabled="schwartzStore.isEditLocked(1)"
-                    >
-                        {{ editingScenario[1] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                    </b-button>
-                    <div v-if="editMessage[1]" class="edit-limit-message">{{ editMessage[1] }}</div>
+                <div class="cell empty"></div>
+                <div class="cell scenario">
+                    <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_1') }}</div>
+                    <b-input type="textarea"
+                        v-model="escenarios[0].texto"
+                        :disabled="!editingScenario[0] || escenarios[0].state === 1"
+                        class="scenario-input"
+                        @input="handleTextInput(0, $event)"
+                        @paste="handleTextPaste(0, $event)"
+                        @keyup="handleTextKeyup(0, $event)" />
+                    <div class="edit-btn-container">
+                        <b-button
+                            type="is-info"
+                            size="is-small"
+                            icon-left="edit"
+                            @click="handleEditSave(0, 1)"
+                            outlined
+                            :disabled="schwartzStore.isEditLocked(0)"
+                        >
+                            {{ editingScenario[0] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
+                        </b-button>
+                        <div v-if="editMessage[0]" class="edit-limit-message">{{ editMessage[0] }}</div>
+                    </div>
                 </div>
-            </div>
-            <div class="cell empty"></div>
+                <div class="cell empty"></div>
 
-            <!-- Fila 5 -->
-            <div class="cell empty"></div>
-            <div class="cell empty"></div>
-            <div class="cell hypo bottom">
-                <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_minus') }}</div>
-                <div class="cell-content">{{ h1H0 }}</div>
+                <!-- Fila 3 -->
+                <div class="cell hypo left">
+                    <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_minus') }}</div>
+                    <div class="cell-content">{{ h2H0 }}</div>
+                </div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell hypo right">
+                    <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_plus') }}</div>
+                    <div class="cell-content">{{ h2H1 }}</div>
+                </div>
+
+                <!-- Fila 4 -->
+                <div class="cell empty"></div>
+                <div class="cell scenario">
+                    <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_3') }}</div>
+                    <b-input type="textarea"
+                        v-model="escenarios[2].texto"
+                        :disabled="!editingScenario[2] || escenarios[2].state === 1"
+                        class="scenario-input"
+                        @input="handleTextInput(2, $event)"
+                        @paste="handleTextPaste(2, $event)"
+                        @keyup="handleTextKeyup(2, $event)" />
+                    <div class="edit-btn-container">
+                        <b-button
+                            type="is-info"
+                            size="is-small"
+                            icon-left="edit"
+                            @click="handleEditSave(2, 3)"
+                            outlined
+                            :disabled="schwartzStore.isEditLocked(2)"
+                        >
+                            {{ editingScenario[2] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
+                        </b-button>
+                        <div v-if="editMessage[2]" class="edit-limit-message">{{ editMessage[2] }}</div>
+                    </div>
+                </div>
+                <div class="cell empty"></div>
+                <div class="cell scenario">
+                    <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_2') }}</div>
+                    <b-input type="textarea"
+                        v-model="escenarios[1].texto"
+                        :disabled="!editingScenario[1] || escenarios[1].state === 1"
+                        class="scenario-input"
+                        @input="handleTextInput(1, $event)"
+                        @paste="handleTextPaste(1, $event)"
+                        @keyup="handleTextKeyup(1, $event)" />
+                    <div class="edit-btn-container">
+                        <b-button
+                            type="is-info"
+                            size="is-small"
+                            icon-left="edit"
+                            @click="handleEditSave(1, 2)"
+                            outlined
+                            :disabled="schwartzStore.isEditLocked(1)"
+                        >
+                            {{ editingScenario[1] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
+                        </b-button>
+                        <div v-if="editMessage[1]" class="edit-limit-message">{{ editMessage[1] }}</div>
+                    </div>
+                </div>
+                <div class="cell empty"></div>
+
+                <!-- Fila 5 -->
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
+                <div class="cell hypo bottom">
+                    <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_minus') }}</div>
+                    <div class="cell-content">{{ h1H0 }}</div>
+                </div>
+                <div class="cell empty"></div>
+                <div class="cell empty"></div>
             </div>
-            <div class="cell empty"></div>
-            <div class="cell empty"></div>
         </div>
     </div>
 </template>
@@ -149,9 +152,13 @@ import { useSectionStore } from '../../../../stores/section';
 import { useFutureDriversStore } from '../../../../stores/futureDrivers';
 import { useSchwartzStore } from '../../../../stores/schwartz';
 import { useTextsStore } from '../../../../stores/texts';
+import MiniStepper from '../../ui/MiniStepper.vue';
 
 export default {
     name: 'SchwartzMainComponent',
+    components: {
+        MiniStepper
+    },
     setup() {
         const sectionStore = useSectionStore();
         const futureDriversStore = useFutureDriversStore();
@@ -282,6 +289,19 @@ export default {
             handleTextInput,
             handleTextPaste,
             handleTextKeyup,
+            steps: [
+                { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
+                { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
+                { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
+                { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
+                { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
+                { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
+                { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
+                { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
+                { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
+                { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
+                { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
+            ]
         };
     }
 };

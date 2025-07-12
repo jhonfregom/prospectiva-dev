@@ -1,163 +1,40 @@
 <template>
     <div class="main-content">
-    <section class="intro-section">
-    <h2>{{ storeTexts.variables.title_introduction }}</h2>
-        <p>
-            {{ storeTexts.variables.content_introduction }}
-        </p>
-</section>
-        <section class="dashboard columns">
-            <section class="modules column columns is-multiline">
-                <div v-for="( module, index ) in storeTexts.main_section.modules"
-                    :key="index"
-                    class="column is-6">
-                    <div class="card"
-                        v-on:click.prevent="setActiveSection(index)">
-                        <header class="card-header">
-                            <p class="card-header-title">
-                                {{ module.title }}
-                            </p>
-                        </header>
-                        <div class="card-content">
-                            <p v-for="(descp, index) in module.description"
-                                :key="index">
-                                {{ descp }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="column is-6">
-                    <div class="card" v-on:click.prevent="setActiveSection('graphics')">
-                        <header class="card-header">
-                            <p class="card-header-title">Gráfica Variables</p>
-                        </header>
-                        <div class="card-content">
-                            <p>Visualiza la gráfica de análisis estructural de variables.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="column is-6">
-                    <div class="card" v-on:click.prevent="setActiveSection('schwartz')">
-                        <header class="card-header">
-                            <p class="card-header-title">Ejes de Peter Schwartz</p>
-                        </header>
-                        <div class="card-content">
-                            <p>Analiza los ejes de incertidumbre y crea escenarios futuros.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <!--<section class="separator column is-1" />
-            <section class="queries column columns is-multiline">
-                <div v-for="( query, index ) in storeTexts.main_section.queries"
-                    :key="index"
-                    class="column is-6">
-                    <div class="card"
-                        v-on:click.prevent="setActiveSection(index)">
-                        <header class="card-header">
-                            <p class="card-header-title">
-                                {{ query.title }}
-                            </p>
-                        </header>
-                        <div class="card-content">
-                            <p v-for="(descp, index) in query.description"
-                                :key="index">
-                                {{ descp }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>-->
+        <section class="intro-section">
+            <h2>{{ storeTexts.variables.title_introduction }}</h2>
+            <p>
+                {{ storeTexts.variables.content_introduction }}
+            </p>
         </section>
+        <!-- Stepper principal grande debajo de la introducción -->
+        <StepperPrincipal class="stepper-main-large" />
     </div>
 </template>
 
 <script>
-    //Import texts from store
     import { useTextsStore } from '../../../stores/texts';
-    //Import session from store
     import { useSessionStore } from '../../../stores/session';
-    import VariablesMainComponent from './variables/VariablesMainComponent.vue';
-    import MatrizMainComponent from './matriz/MatrizMainComponent.vue';
+    import StepperPrincipal from '../ui/StepperPrincipal.vue';
 
     export default {
         components: {
-            VariablesMainComponent,
-            MatrizMainComponent
+            StepperPrincipal
         },
         setup(){
             const storeTexts = useTextsStore();
             const storeSession = useSessionStore();
-            console.log('MainComponent', storeTexts.main_section);
-            console.log('MainComponent', storeTexts);
-            // Set the active content to the first module by default
             return { storeTexts, storeSession };
-        },
-        methods: {
-            setActiveSection(moduleName){
-                if(moduleName === 'graphics'){
-                    this.storeSession.setActiveContent('graphics');
-                } else if(moduleName === 'schwartz'){
-                    this.storeSession.setActiveContent('schwartz');
-                } else {
-                    this.storeSession.setActiveContent(moduleName);
-                }
-            },
         }
     }
 </script>
 
 <style lang="scss" scoped>
-.modules, .queries {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: center;
-    padding: 20px 0;
-}
-
-.modules .column, .queries .column {
-    flex: 0 1 auto;
-    width: auto;
-}
-
-.modules .card, .queries .card {
-    min-width: 200px;
-    max-width: 250px;
-    padding: 20px;
-    border-radius: 12px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: none;
-    text-align: center;
-}
-
-.modules .card:hover, .queries .card:hover {
-    background-color: #6a1b9a; /* color morado */
-    color: white;
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-}
-
-.modules .card-header-title, .queries .card-header-title {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: inherit;
-}
-
-.modules .card-content p, .queries .card-content p {
-    font-size: 0.95rem;
-    color: inherit;
-}
-
 .intro-section {
-    background-color: #5090c0; /* el rojo que tienes en la imagen */
+    background-color: #5090c0;
     color: white;
     border-radius: 8px;
     padding: 20px 30px;
-    margin: 20px 0; /* separación con el navbar y con el menú */
+    margin: 20px 0;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     line-height: 1.6;
 }
@@ -174,5 +51,32 @@
     font-size: 1rem;
 }
 
-
+.stepper-main-large {
+    margin-top: 40px;
+    margin-bottom: 40px;
+    /* Tamaño mucho más grande para el stepper */
+    ::v-deep .stepper-circle {
+        width: 120px !important;
+        height: 120px !important;
+        font-size: 4.2rem !important;
+    }
+    ::v-deep .stepper-label {
+        font-size: 2.2rem !important;
+        min-width: 160px;
+        max-width: 260px;
+    }
+    ::v-deep .stepper-track {
+        max-width: 98vw !important;
+        min-width: 0;
+        width: 98vw !important;
+        justify-content: space-between !important;
+    }
+    ::v-deep .stepper-step {
+        flex: 1 1 0 !important;
+    }
+    ::v-deep .stepper-line {
+        height: 6px !important;
+        top: 60px !important;
+    }
+}
 </style>

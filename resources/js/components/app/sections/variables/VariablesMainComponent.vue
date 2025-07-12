@@ -1,5 +1,8 @@
 <template>
     <div class="variables-container">
+        <!-- NOTA: El stepper principal no debe mostrarse en los módulos, solo el mini stepper.
+             Si el stepper principal está en un layout global, condicionar su renderizado por ruta o prop. -->
+        <MiniStepper :steps="steps" :currentIndex="0" />
         <b-table
             :data="variables"
             :loading="isLoading"
@@ -77,10 +80,12 @@ import { useTextsStore } from '../../../../stores/texts';
 import VariableFormModal from './VariableFormModal.vue';
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
+import MiniStepper from '../../ui/MiniStepper.vue';
 
 export default {
     components: {
-        VariableFormModal
+        VariableFormModal,
+        MiniStepper
     },
 
     setup() {
@@ -102,7 +107,20 @@ export default {
         return {
             showModal: false,
             editingRow: null,
-            debouncedUpdate: null
+            debouncedUpdate: null,
+            steps: [
+                { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
+                { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
+                { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
+                { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
+                { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
+                { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
+                { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
+                { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
+                { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
+                { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
+                { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
+            ]
         };
     },
 

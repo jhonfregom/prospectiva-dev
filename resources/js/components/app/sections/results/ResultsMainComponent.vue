@@ -1,3 +1,386 @@
+<template>
+  <div class="main-content">
+    <MiniStepper :steps="steps" :currentIndex="9" />
+  <!-- Barra de filtros alineada con las columnas -->
+  <div class="filters-bar" v-if="isAdmin">
+    <div class="columns is-multiline">
+      <div class="column is-2">
+        <b-field label="Buscar por ID">
+          <b-input
+            v-model="filterId"
+            placeholder="Ingrese ID..."
+            @input="onIdInput"
+            type="text"
+            icon="fas fa-search"
+          />
+        </b-field>
+      </div>
+      <div class="column is-2">
+        <b-field label="Buscar por Nombre">
+          <b-input
+            v-model="filterFirstName"
+            placeholder="Ingrese nombre..."
+            type="text"
+            icon="fas fa-search"
+          />
+        </b-field>
+      </div>
+      <div class="column is-2">
+        <b-field label="Buscar por Apellido">
+          <b-input
+            v-model="filterLastName"
+            placeholder="Ingrese apellido..."
+            type="text"
+            icon="fas fa-search"
+          />
+        </b-field>
+      </div>
+      <div class="column is-2">
+        <b-field label="Buscar por Identificación">
+          <b-input
+            v-model="filterDocumentId"
+            placeholder="Ingrese identificación..."
+            @input="onDocumentIdInput"
+            type="text"
+            icon="fas fa-search"
+          />
+        </b-field>
+      </div>
+      <div class="column is-4">
+        <!-- Espacio para la columna de email (sin filtro) -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de resultados con columnas alineadas -->
+  <div class="table-container">
+    <b-table :data="filteredUsers" :loading="isLoading" :striped="true" :hoverable="true" icon-pack="fas">
+      <b-table-column v-if="isAdmin" field="id" :label="textsStore.getText('results_section.table.id')" width="10%" centered v-slot="props">
+        {{ props.row.id }}
+      </b-table-column>
+      <b-table-column field="first_name" :label="textsStore.getText('results_section.table.first_name')" width="12%" centered v-slot="props">
+        {{ props.row.first_name }}
+      </b-table-column>
+      <b-table-column field="last_name" :label="textsStore.getText('results_section.table.last_name')" width="12%" centered v-slot="props">
+        {{ props.row.last_name }}
+      </b-table-column>
+      <b-table-column field="document_id" :label="textsStore.getText('results_section.table.document_id')" width="12%" centered v-slot="props">
+        {{ props.row.document_id }}
+      </b-table-column>
+      <b-table-column
+        field="user"
+        :label="textsStore.getText('results_section.table.email')"
+        width="18%"
+        centered
+        class="email-column"
+      >
+        <template #default="props">
+          {{ props.row.user }}
+        </template>
+      </b-table-column>
+      <b-table-column field="variables_count" :label="textsStore.getText('results_section.table.variables_count') || 'Total Variables'" width="8%" centered v-slot="props">
+        <div class="centered-cell">
+          <b-tag type="is-info" size="is-medium">{{ props.row.variables_count || 0 }}</b-tag>
+        </div>
+      </b-table-column>
+      <b-table-column field="variables_list" :label="textsStore.getText('results_section.table.variables_list') || 'Variables Creadas'" width="20%" centered v-slot="props">
+        <div v-if="props.row.variables_list && props.row.variables_list.length > 0" class="variables-container">
+          <div v-for="(variable, index) in props.row.variables_list" :key="variable.id_variable" class="variable-item">
+            <span class="variable-link" @click="showVariableDescription(variable)">
+              <strong>{{ variable.id_variable }}:</strong> {{ variable.name_variable }}
+            </span>
+          </div>
+        </div>
+        <span v-else class="has-text-grey-light">Sin variables</span>
+      </b-table-column>
+      <b-table-column field="zone_analyses" :label="textsStore.getText('results_section.table.zone_analyses') || 'Análisis Mapa de Variables'" width="20%" centered v-slot="props">
+        <div v-if="props.row.zone_analyses && props.row.zone_analyses.length > 0" class="zone-analyses-container">
+          <div v-for="(analysis, index) in props.row.zone_analyses" :key="analysis.zone_id" class="zone-analysis-item">
+            <span class="zone-analysis-link" @click="showZoneAnalysisDescription(analysis)">
+              <strong>{{ analysis.zone_name }}:</strong> 
+              <span class="analysis-score">Puntaje: {{ analysis.score }}</span>
+            </span>
+          </div>
+        </div>
+        <span v-else class="has-text-grey-light">Sin análisis</span>
+      </b-table-column>
+      <b-table-column field="future_drivers" :label="textsStore.getText('results_section.table.future_drivers') || 'Direccionadores de Futuro'" width="20%" centered v-slot="props">
+        <div v-if="props.row.future_drivers && props.row.future_drivers.length > 0" class="future-drivers-container">
+          <div v-for="(driver, index) in props.row.future_drivers" :key="driver.id" class="future-driver-item">
+            <span class="future-driver-link" @click="showFutureDriverDescription(driver)">
+              <strong>Hipótesis {{ driver.name_hypothesis }}:</strong> 
+              <span class="driver-variable">{{ driver.variable_name }} - {{ driver.secondary_hypotheses }}</span>
+            </span>
+          </div>
+        </div>
+        <span v-else class="has-text-grey-light">Sin direccionadores</span>
+      </b-table-column>
+      <b-table-column field="initial_conditions" :label="textsStore.getText('results_section.table.initial_conditions') || 'Condiciones Iniciales'" width="20%" centered v-slot="props">
+        <div v-if="props.row.initial_conditions && props.row.initial_conditions.length > 0" class="initial-conditions-container">
+          <div v-for="(condition, index) in props.row.initial_conditions" :key="condition.id" class="initial-condition-item">
+            <span class="initial-condition-link" @click="showInitialConditionDescription(condition)">
+              <strong>{{ condition.variable_id }}:</strong> 
+              <span class="condition-variable">{{ condition.variable_name }}</span>
+            </span>
+          </div>
+        </div>
+        <span v-else class="has-text-grey-light">Sin condiciones</span>
+      </b-table-column>
+      <b-table-column field="scenarios" :label="textsStore.getText('results_section.table.scenarios') || 'Escenarios'" width="20%" centered v-slot="props">
+        <div v-if="props.row.scenarios && props.row.scenarios.length > 0" class="scenarios-container">
+          <div v-for="(scenario, index) in props.row.scenarios" :key="scenario.id" class="scenario-item">
+            <span class="scenario-link" @click="showScenarioDescription(scenario)">
+              <strong>Escenario {{ scenario.num_scenario }}:</strong> 
+              <span class="scenario-title">{{ scenario.titulo || 'Sin título' }}</span>
+            </span>
+          </div>
+        </div>
+        <span v-else class="has-text-grey-light">Sin escenarios</span>
+      </b-table-column>
+
+      <b-table-column field="conclusions" :label="textsStore.getText('results_section.table.conclusions') || 'Conclusiones'" width="20%" centered v-slot="props">
+        <div v-if="props.row.conclusions && props.row.conclusions.length > 0" class="conclusions-container">
+          <div v-for="(conclusion, index) in props.row.conclusions" :key="conclusion.id" class="conclusion-item">
+            <span class="conclusion-link" @click="showConclusionDescription(conclusion)">
+              <strong>Conclusión {{ index + 1 }}:</strong> 
+              <span class="conclusion-title">{{ conclusion.component_practice ? 'Con datos' : 'Sin datos' }}</span>
+            </span>
+          </div>
+        </div>
+        <span v-else class="has-text-grey-light">Sin conclusiones</span>
+      </b-table-column>
+    </b-table>
+  </div>
+
+  <!-- Modal funcional de Bulma para descripción de variable -->
+  <div v-if="showVariableModal" class="modal is-active">
+    <div class="modal-background" @click="showVariableModal = false"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Detalles de la Variable</p>
+        <button class="delete" aria-label="close" @click="showVariableModal = false"></button>
+      </header>
+      <section class="modal-card-body">
+        <div class="modal-info">
+          <p><strong>ID:</strong> {{ selectedVariable?.id_variable }}</p>
+          <p><strong>Nombre:</strong> {{ selectedVariable?.name_variable }}</p>
+          <p><strong>Descripción:</strong></p>
+          <div class="modal-content">
+            {{ selectedVariable?.description || 'Sin descripción' }}
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-danger" @click="showVariableModal = false">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal funcional de Bulma para descripción de análisis de zona -->
+  <div v-if="showZoneAnalysisModal" class="modal is-active">
+    <div class="modal-background" @click="showZoneAnalysisModal = false"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Detalles del Análisis de Zona</p>
+        <button class="delete" aria-label="close" @click="showZoneAnalysisModal = false"></button>
+      </header>
+      <section class="modal-card-body">
+        <div class="modal-info">
+          <p><strong>Zona:</strong> {{ selectedZoneAnalysis?.zone_name }}</p>
+          <p><strong>Puntaje:</strong> {{ selectedZoneAnalysis?.score }}</p>
+          
+          <div v-if="selectedZoneAnalysis?.variables_in_zone && selectedZoneAnalysis.variables_in_zone.length > 0">
+            <p><strong>Variables en esta zona:</strong></p>
+            <div class="modal-content">
+              <div v-for="variable in selectedZoneAnalysis.variables_in_zone" :key="variable.id_variable" class="zone-variable-item">
+                <span class="zone-variable-code" :class="{ 'frontera': variable.frontera }">
+                  {{ variable.id_variable }}
+                </span>
+                <span class="zone-variable-name">{{ variable.name_variable }}</span>
+                <span class="zone-variable-coords">
+                  (D: {{ variable.dependencia }}, I: {{ variable.influencia }})
+                </span>
+                <span v-if="variable.frontera" class="frontera-indicator" title="Variable en frontera">⚡</span>
+              </div>
+            </div>
+          </div>
+          <div v-else>
+            <p><strong>Variables en esta zona:</strong> <span class="has-text-grey-light">Sin variables</span></p>
+          </div>
+          
+          <p><strong>Análisis:</strong></p>
+          <div class="modal-content">
+            {{ selectedZoneAnalysis?.description || 'Sin análisis disponible' }}
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-danger" @click="showZoneAnalysisModal = false">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal funcional de Bulma para descripción de direccionador de futuro -->
+  <div v-if="showFutureDriverModal" class="modal is-active">
+    <div class="modal-background" @click="showFutureDriverModal = false"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Detalles del Direccionador de Futuro</p>
+        <button class="delete" aria-label="close" @click="showFutureDriverModal = false"></button>
+      </header>
+      <section class="modal-card-body">
+        <div class="modal-info">
+          <p><strong>Hipótesis:</strong> {{ selectedFutureDriver?.name_hypothesis }}</p>
+          <p><strong>Variable:</strong> {{ selectedFutureDriver?.variable_name }}</p>
+          <p><strong>Tipo:</strong> {{ selectedFutureDriver?.secondary_hypotheses }}</p>
+          
+          <p><strong>Descripción:</strong></p>
+          <div class="modal-content">
+            {{ selectedFutureDriver?.description || 'Sin descripción disponible' }}
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-danger" @click="showFutureDriverModal = false">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal funcional de Bulma para descripción de condición inicial -->
+  <div v-if="showInitialConditionModal" class="modal is-active">
+    <div class="modal-background" @click="showInitialConditionModal = false"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Detalles de la Condición Inicial</p>
+        <button class="delete" aria-label="close" @click="showInitialConditionModal = false"></button>
+      </header>
+      <section class="modal-card-body">
+        <div class="modal-info">
+          <p><strong>Variable:</strong> {{ selectedInitialCondition?.variable_id }} - {{ selectedInitialCondition?.variable_name }}</p>
+          
+          <p><strong>Condición Actual:</strong></p>
+          <div class="modal-content">
+            {{ selectedInitialCondition?.now_condition || 'Sin condición disponible' }}
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-danger" @click="showInitialConditionModal = false">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal funcional de Bulma para descripción de escenario -->
+  <div v-if="showScenarioModal" class="modal is-active">
+    <div class="modal-background" @click="showScenarioModal = false"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Detalles del Escenario {{ selectedScenario?.num_scenario }}</p>
+        <button class="delete" aria-label="close" @click="showScenarioModal = false"></button>
+      </header>
+      <section class="modal-card-body">
+        <div class="modal-info">
+          <p><strong>Número de Escenario:</strong> {{ selectedScenario?.num_scenario }}</p>
+          <p><strong>Título:</strong> {{ selectedScenario?.titulo || 'Sin título' }}</p>
+        </div>
+        
+        <div class="modal-section">
+          <h4 class="modal-section-title">Hipótesis Asociadas</h4>
+          <div v-if="selectedScenario?.hypotheses && selectedScenario.hypotheses.length > 0" class="modal-content">
+            <div v-for="hypothesis in selectedScenario.hypotheses" :key="hypothesis.id" class="hypothesis-item">
+              <div class="hypothesis-header">
+                <span class="hypothesis-name">{{ hypothesis.name_hypothesis }}</span>
+                <span class="hypothesis-variable">{{ hypothesis.variable_name }}</span>
+              </div>
+              <div class="hypothesis-description">
+                {{ hypothesis.description || 'Sin descripción disponible' }}
+              </div>
+            </div>
+          </div>
+          <div v-else class="no-content">
+            <p class="has-text-grey-light">Sin hipótesis asociadas</p>
+          </div>
+        </div>
+        
+        <div class="modal-section">
+          <h4 class="modal-section-title">Contenido por Años</h4>
+          <div v-if="selectedScenario?.year1" class="year-section">
+            <h5 class="year-title">Año 1</h5>
+            <div class="modal-content">
+              {{ selectedScenario.year1 }}
+            </div>
+          </div>
+          
+          <div v-if="selectedScenario?.year2" class="year-section">
+            <h5 class="year-title">Año 2</h5>
+            <div class="modal-content">
+              {{ selectedScenario.year2 }}
+            </div>
+          </div>
+          
+          <div v-if="selectedScenario?.year3" class="year-section">
+            <h5 class="year-title">Año 3</h5>
+            <div class="modal-content">
+              {{ selectedScenario.year3 }}
+            </div>
+          </div>
+          
+          <div v-if="!selectedScenario?.year1 && !selectedScenario?.year2 && !selectedScenario?.year3" class="no-content">
+            <p class="has-text-grey-light">Sin contenido de años disponible</p>
+          </div>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-danger" @click="showScenarioModal = false">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal funcional de Bulma para descripción de conclusión -->
+  <div v-if="showConclusionModal" class="modal is-active">
+    <div class="modal-background" @click="showConclusionModal = false"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title">Detalles de la Conclusión</p>
+        <button class="delete" aria-label="close" @click="showConclusionModal = false"></button>
+      </header>
+      <section class="modal-card-body">
+        <div class="modal-info">
+          <p><strong>Título:</strong> {{ selectedConclusion?.title || 'Sin título' }}</p>
+        </div>
+        
+        <div v-if="selectedConclusion?.component_practice" class="modal-section">
+          <h4 class="modal-section-title">Componente Práctico</h4>
+          <div class="modal-content">
+            {{ selectedConclusion.component_practice }}
+          </div>
+        </div>
+        
+        <div v-if="selectedConclusion?.actuality" class="modal-section">
+          <h4 class="modal-section-title">Actualidad</h4>
+          <div class="modal-content">
+            {{ selectedConclusion.actuality }}
+          </div>
+        </div>
+        
+        <div v-if="selectedConclusion?.aplication" class="modal-section">
+          <h4 class="modal-section-title">Aplicación</h4>
+          <div class="modal-content">
+            {{ selectedConclusion.aplication }}
+          </div>
+        </div>
+        
+        <div v-if="!selectedConclusion?.component_practice && !selectedConclusion?.actuality && !selectedConclusion?.aplication" class="no-content">
+          <p class="has-text-grey-light">Sin contenido disponible</p>
+        </div>
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-danger" @click="showConclusionModal = false">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+  </div>
+</template>
 <script>
 
 import { useSectionStore } from '../../../../stores/section';
@@ -5,8 +388,12 @@ import { useTextsStore } from '../../../../stores/texts';
 import { useResultsStore } from '../../../../stores/results';
 import { storeToRefs } from 'pinia';
 import { ref, computed } from 'vue';
+import MiniStepper from '../../ui/MiniStepper.vue';
 
 export default {
+    components: {
+        MiniStepper
+    },
     setup() {
         const sectionStore = useSectionStore();
         const textsStore = useTextsStore();
@@ -134,6 +521,23 @@ export default {
             showInitialConditionDescription
         };
     },
+    data() {
+        return {
+            steps: [
+                { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
+                { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
+                { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
+                { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
+                { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
+                { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
+                { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
+                { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
+                { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
+                { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
+                { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
+            ]
+        };
+    },
     mounted() {
         this.sectionStore.setTitleSection(this.textsStore.getText('results_section.title'));
         this.resultsStore.fetchUsers();
@@ -192,388 +596,7 @@ export default {
 }
 
 </script>
-<template>
-    <div class="main-content">
-    <!-- Barra de filtros alineada con las columnas -->
-    <div class="filters-bar" v-if="isAdmin">
-      <div class="columns is-multiline">
-        <div class="column is-2">
-          <b-field label="Buscar por ID">
-            <b-input
-              v-model="filterId"
-              placeholder="Ingrese ID..."
-              @input="onIdInput"
-              type="text"
-              icon="fas fa-search"
-            />
-          </b-field>
-        </div>
-        <div class="column is-2">
-          <b-field label="Buscar por Nombre">
-            <b-input
-              v-model="filterFirstName"
-              placeholder="Ingrese nombre..."
-              type="text"
-              icon="fas fa-search"
-            />
-          </b-field>
-        </div>
-        <div class="column is-2">
-          <b-field label="Buscar por Apellido">
-            <b-input
-              v-model="filterLastName"
-              placeholder="Ingrese apellido..."
-              type="text"
-              icon="fas fa-search"
-            />
-          </b-field>
-        </div>
-        <div class="column is-2">
-          <b-field label="Buscar por Identificación">
-            <b-input
-              v-model="filterDocumentId"
-              placeholder="Ingrese identificación..."
-              @input="onDocumentIdInput"
-              type="text"
-              icon="fas fa-search"
-            />
-          </b-field>
-        </div>
-        <div class="column is-4">
-          <!-- Espacio para la columna de email (sin filtro) -->
-        </div>
-      </div>
-    </div>
 
-    <!-- Tabla de resultados con columnas alineadas -->
-    <div class="table-container">
-      <b-table :data="filteredUsers" :loading="isLoading" :striped="true" :hoverable="true" icon-pack="fas">
-        <b-table-column v-if="isAdmin" field="id" :label="textsStore.getText('results_section.table.id')" width="10%" centered v-slot="props">
-          {{ props.row.id }}
-        </b-table-column>
-        <b-table-column field="first_name" :label="textsStore.getText('results_section.table.first_name')" width="12%" centered v-slot="props">
-          {{ props.row.first_name }}
-        </b-table-column>
-        <b-table-column field="last_name" :label="textsStore.getText('results_section.table.last_name')" width="12%" centered v-slot="props">
-          {{ props.row.last_name }}
-        </b-table-column>
-        <b-table-column field="document_id" :label="textsStore.getText('results_section.table.document_id')" width="12%" centered v-slot="props">
-          {{ props.row.document_id }}
-        </b-table-column>
-        <b-table-column
-          field="user"
-          :label="textsStore.getText('results_section.table.email')"
-          width="18%"
-          centered
-          class="email-column"
-        >
-          <template #default="props">
-            {{ props.row.user }}
-          </template>
-        </b-table-column>
-        <b-table-column field="variables_count" :label="textsStore.getText('results_section.table.variables_count') || 'Total Variables'" width="8%" centered v-slot="props">
-          <div class="centered-cell">
-            <b-tag type="is-info" size="is-medium">{{ props.row.variables_count || 0 }}</b-tag>
-          </div>
-        </b-table-column>
-        <b-table-column field="variables_list" :label="textsStore.getText('results_section.table.variables_list') || 'Variables Creadas'" width="20%" centered v-slot="props">
-          <div v-if="props.row.variables_list && props.row.variables_list.length > 0" class="variables-container">
-            <div v-for="(variable, index) in props.row.variables_list" :key="variable.id_variable" class="variable-item">
-              <span class="variable-link" @click="showVariableDescription(variable)">
-                <strong>{{ variable.id_variable }}:</strong> {{ variable.name_variable }}
-              </span>
-            </div>
-          </div>
-          <span v-else class="has-text-grey-light">Sin variables</span>
-        </b-table-column>
-        <b-table-column field="zone_analyses" :label="textsStore.getText('results_section.table.zone_analyses') || 'Análisis Mapa de Variables'" width="20%" centered v-slot="props">
-          <div v-if="props.row.zone_analyses && props.row.zone_analyses.length > 0" class="zone-analyses-container">
-            <div v-for="(analysis, index) in props.row.zone_analyses" :key="analysis.zone_id" class="zone-analysis-item">
-              <span class="zone-analysis-link" @click="showZoneAnalysisDescription(analysis)">
-                <strong>{{ analysis.zone_name }}:</strong> 
-                <span class="analysis-score">Puntaje: {{ analysis.score }}</span>
-              </span>
-            </div>
-          </div>
-          <span v-else class="has-text-grey-light">Sin análisis</span>
-        </b-table-column>
-        <b-table-column field="future_drivers" :label="textsStore.getText('results_section.table.future_drivers') || 'Direccionadores de Futuro'" width="20%" centered v-slot="props">
-          <div v-if="props.row.future_drivers && props.row.future_drivers.length > 0" class="future-drivers-container">
-            <div v-for="(driver, index) in props.row.future_drivers" :key="driver.id" class="future-driver-item">
-              <span class="future-driver-link" @click="showFutureDriverDescription(driver)">
-                <strong>Hipótesis {{ driver.name_hypothesis }}:</strong> 
-                <span class="driver-variable">{{ driver.variable_name }} - {{ driver.secondary_hypotheses }}</span>
-              </span>
-            </div>
-          </div>
-          <span v-else class="has-text-grey-light">Sin direccionadores</span>
-        </b-table-column>
-        <b-table-column field="initial_conditions" :label="textsStore.getText('results_section.table.initial_conditions') || 'Condiciones Iniciales'" width="20%" centered v-slot="props">
-          <div v-if="props.row.initial_conditions && props.row.initial_conditions.length > 0" class="initial-conditions-container">
-            <div v-for="(condition, index) in props.row.initial_conditions" :key="condition.id" class="initial-condition-item">
-              <span class="initial-condition-link" @click="showInitialConditionDescription(condition)">
-                <strong>{{ condition.variable_id }}:</strong> 
-                <span class="condition-variable">{{ condition.variable_name }}</span>
-              </span>
-            </div>
-          </div>
-          <span v-else class="has-text-grey-light">Sin condiciones</span>
-        </b-table-column>
-        <b-table-column field="scenarios" :label="textsStore.getText('results_section.table.scenarios') || 'Escenarios'" width="20%" centered v-slot="props">
-          <div v-if="props.row.scenarios && props.row.scenarios.length > 0" class="scenarios-container">
-            <div v-for="(scenario, index) in props.row.scenarios" :key="scenario.id" class="scenario-item">
-              <span class="scenario-link" @click="showScenarioDescription(scenario)">
-                <strong>Escenario {{ scenario.num_scenario }}:</strong> 
-                <span class="scenario-title">{{ scenario.titulo || 'Sin título' }}</span>
-              </span>
-            </div>
-          </div>
-          <span v-else class="has-text-grey-light">Sin escenarios</span>
-        </b-table-column>
-
-        <b-table-column field="conclusions" :label="textsStore.getText('results_section.table.conclusions') || 'Conclusiones'" width="20%" centered v-slot="props">
-          <div v-if="props.row.conclusions && props.row.conclusions.length > 0" class="conclusions-container">
-            <div v-for="(conclusion, index) in props.row.conclusions" :key="conclusion.id" class="conclusion-item">
-              <span class="conclusion-link" @click="showConclusionDescription(conclusion)">
-                <strong>Conclusión {{ index + 1 }}:</strong> 
-                <span class="conclusion-title">{{ conclusion.component_practice ? 'Con datos' : 'Sin datos' }}</span>
-              </span>
-            </div>
-          </div>
-          <span v-else class="has-text-grey-light">Sin conclusiones</span>
-        </b-table-column>
-      </b-table>
-    </div>
-
-    <!-- Modal funcional de Bulma para descripción de variable -->
-    <div v-if="showVariableModal" class="modal is-active">
-      <div class="modal-background" @click="showVariableModal = false"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Detalles de la Variable</p>
-          <button class="delete" aria-label="close" @click="showVariableModal = false"></button>
-        </header>
-        <section class="modal-card-body">
-          <div class="modal-info">
-            <p><strong>ID:</strong> {{ selectedVariable?.id_variable }}</p>
-            <p><strong>Nombre:</strong> {{ selectedVariable?.name_variable }}</p>
-            <p><strong>Descripción:</strong></p>
-            <div class="modal-content">
-              {{ selectedVariable?.description || 'Sin descripción' }}
-            </div>
-          </div>
-        </section>
-        <footer class="modal-card-foot">
-          <button class="button is-danger" @click="showVariableModal = false">Cerrar</button>
-        </footer>
-      </div>
-    </div>
-
-    <!-- Modal funcional de Bulma para descripción de análisis de zona -->
-    <div v-if="showZoneAnalysisModal" class="modal is-active">
-      <div class="modal-background" @click="showZoneAnalysisModal = false"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Detalles del Análisis de Zona</p>
-          <button class="delete" aria-label="close" @click="showZoneAnalysisModal = false"></button>
-        </header>
-        <section class="modal-card-body">
-          <div class="modal-info">
-            <p><strong>Zona:</strong> {{ selectedZoneAnalysis?.zone_name }}</p>
-            <p><strong>Puntaje:</strong> {{ selectedZoneAnalysis?.score }}</p>
-            
-            <div v-if="selectedZoneAnalysis?.variables_in_zone && selectedZoneAnalysis.variables_in_zone.length > 0">
-              <p><strong>Variables en esta zona:</strong></p>
-              <div class="modal-content">
-                <div v-for="variable in selectedZoneAnalysis.variables_in_zone" :key="variable.id_variable" class="zone-variable-item">
-                  <span class="zone-variable-code" :class="{ 'frontera': variable.frontera }">
-                    {{ variable.id_variable }}
-                  </span>
-                  <span class="zone-variable-name">{{ variable.name_variable }}</span>
-                  <span class="zone-variable-coords">
-                    (D: {{ variable.dependencia }}, I: {{ variable.influencia }})
-                  </span>
-                  <span v-if="variable.frontera" class="frontera-indicator" title="Variable en frontera">⚡</span>
-                </div>
-              </div>
-            </div>
-            <div v-else>
-              <p><strong>Variables en esta zona:</strong> <span class="has-text-grey-light">Sin variables</span></p>
-            </div>
-            
-            <p><strong>Análisis:</strong></p>
-            <div class="modal-content">
-              {{ selectedZoneAnalysis?.description || 'Sin análisis disponible' }}
-            </div>
-          </div>
-        </section>
-        <footer class="modal-card-foot">
-          <button class="button is-danger" @click="showZoneAnalysisModal = false">Cerrar</button>
-        </footer>
-      </div>
-    </div>
-
-    <!-- Modal funcional de Bulma para descripción de direccionador de futuro -->
-    <div v-if="showFutureDriverModal" class="modal is-active">
-      <div class="modal-background" @click="showFutureDriverModal = false"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Detalles del Direccionador de Futuro</p>
-          <button class="delete" aria-label="close" @click="showFutureDriverModal = false"></button>
-        </header>
-        <section class="modal-card-body">
-          <div class="modal-info">
-            <p><strong>Hipótesis:</strong> {{ selectedFutureDriver?.name_hypothesis }}</p>
-            <p><strong>Variable:</strong> {{ selectedFutureDriver?.variable_name }}</p>
-            <p><strong>Tipo:</strong> {{ selectedFutureDriver?.secondary_hypotheses }}</p>
-            
-            <p><strong>Descripción:</strong></p>
-            <div class="modal-content">
-              {{ selectedFutureDriver?.description || 'Sin descripción disponible' }}
-            </div>
-          </div>
-        </section>
-        <footer class="modal-card-foot">
-          <button class="button is-danger" @click="showFutureDriverModal = false">Cerrar</button>
-        </footer>
-      </div>
-    </div>
-
-    <!-- Modal funcional de Bulma para descripción de condición inicial -->
-    <div v-if="showInitialConditionModal" class="modal is-active">
-      <div class="modal-background" @click="showInitialConditionModal = false"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Detalles de la Condición Inicial</p>
-          <button class="delete" aria-label="close" @click="showInitialConditionModal = false"></button>
-        </header>
-        <section class="modal-card-body">
-          <div class="modal-info">
-            <p><strong>Variable:</strong> {{ selectedInitialCondition?.variable_id }} - {{ selectedInitialCondition?.variable_name }}</p>
-            
-            <p><strong>Condición Actual:</strong></p>
-            <div class="modal-content">
-              {{ selectedInitialCondition?.now_condition || 'Sin condición disponible' }}
-            </div>
-          </div>
-        </section>
-        <footer class="modal-card-foot">
-          <button class="button is-danger" @click="showInitialConditionModal = false">Cerrar</button>
-        </footer>
-      </div>
-    </div>
-
-    <!-- Modal funcional de Bulma para descripción de escenario -->
-    <div v-if="showScenarioModal" class="modal is-active">
-      <div class="modal-background" @click="showScenarioModal = false"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Detalles del Escenario {{ selectedScenario?.num_scenario }}</p>
-          <button class="delete" aria-label="close" @click="showScenarioModal = false"></button>
-        </header>
-        <section class="modal-card-body">
-          <div class="modal-info">
-            <p><strong>Número de Escenario:</strong> {{ selectedScenario?.num_scenario }}</p>
-            <p><strong>Título:</strong> {{ selectedScenario?.titulo || 'Sin título' }}</p>
-          </div>
-          
-          <div class="modal-section">
-            <h4 class="modal-section-title">Hipótesis Asociadas</h4>
-            <div v-if="selectedScenario?.hypotheses && selectedScenario.hypotheses.length > 0" class="modal-content">
-              <div v-for="hypothesis in selectedScenario.hypotheses" :key="hypothesis.id" class="hypothesis-item">
-                <div class="hypothesis-header">
-                  <span class="hypothesis-name">{{ hypothesis.name_hypothesis }}</span>
-                  <span class="hypothesis-variable">{{ hypothesis.variable_name }}</span>
-                </div>
-                <div class="hypothesis-description">
-                  {{ hypothesis.description || 'Sin descripción disponible' }}
-                </div>
-              </div>
-            </div>
-            <div v-else class="no-content">
-              <p class="has-text-grey-light">Sin hipótesis asociadas</p>
-            </div>
-          </div>
-          
-          <div class="modal-section">
-            <h4 class="modal-section-title">Contenido por Años</h4>
-            <div v-if="selectedScenario?.year1" class="year-section">
-              <h5 class="year-title">Año 1</h5>
-              <div class="modal-content">
-                {{ selectedScenario.year1 }}
-              </div>
-            </div>
-            
-            <div v-if="selectedScenario?.year2" class="year-section">
-              <h5 class="year-title">Año 2</h5>
-              <div class="modal-content">
-                {{ selectedScenario.year2 }}
-              </div>
-            </div>
-            
-            <div v-if="selectedScenario?.year3" class="year-section">
-              <h5 class="year-title">Año 3</h5>
-              <div class="modal-content">
-                {{ selectedScenario.year3 }}
-              </div>
-            </div>
-            
-            <div v-if="!selectedScenario?.year1 && !selectedScenario?.year2 && !selectedScenario?.year3" class="no-content">
-              <p class="has-text-grey-light">Sin contenido de años disponible</p>
-            </div>
-          </div>
-        </section>
-        <footer class="modal-card-foot">
-          <button class="button is-danger" @click="showScenarioModal = false">Cerrar</button>
-        </footer>
-      </div>
-    </div>
-
-    <!-- Modal funcional de Bulma para descripción de conclusión -->
-    <div v-if="showConclusionModal" class="modal is-active">
-      <div class="modal-background" @click="showConclusionModal = false"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Detalles de la Conclusión</p>
-          <button class="delete" aria-label="close" @click="showConclusionModal = false"></button>
-        </header>
-        <section class="modal-card-body">
-          <div class="modal-info">
-            <p><strong>Título:</strong> {{ selectedConclusion?.title || 'Sin título' }}</p>
-          </div>
-          
-          <div v-if="selectedConclusion?.component_practice" class="modal-section">
-            <h4 class="modal-section-title">Componente Práctico</h4>
-            <div class="modal-content">
-              {{ selectedConclusion.component_practice }}
-            </div>
-          </div>
-          
-          <div v-if="selectedConclusion?.actuality" class="modal-section">
-            <h4 class="modal-section-title">Actualidad</h4>
-            <div class="modal-content">
-              {{ selectedConclusion.actuality }}
-            </div>
-          </div>
-          
-          <div v-if="selectedConclusion?.aplication" class="modal-section">
-            <h4 class="modal-section-title">Aplicación</h4>
-            <div class="modal-content">
-              {{ selectedConclusion.aplication }}
-            </div>
-          </div>
-          
-          <div v-if="!selectedConclusion?.component_practice && !selectedConclusion?.actuality && !selectedConclusion?.aplication" class="no-content">
-            <p class="has-text-grey-light">Sin contenido disponible</p>
-          </div>
-        </section>
-        <footer class="modal-card-foot">
-          <button class="button is-danger" @click="showConclusionModal = false">Cerrar</button>
-        </footer>
-      </div>
-    </div>
-    </div>
-</template>
 
 <style scoped>
 .main-content {

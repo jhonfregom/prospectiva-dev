@@ -1,5 +1,6 @@
 <template>
     <div class="conclusions-container">
+        <MiniStepper :steps="steps" :currentIndex="8" />
         <div class="conclusions-table">
             <div class="table-content">
                 <!-- Primera fila: Título -->
@@ -136,6 +137,7 @@ import { useSectionStore } from '../../../../stores/section';
 import { useTextsStore } from '../../../../stores/texts';
 import { useConclusionsStore } from '../../../../stores/conclusions';
 import axios from 'axios';
+import MiniStepper from '../../ui/MiniStepper.vue';
 
 
 export default {
@@ -205,12 +207,29 @@ export default {
         };
     },
 
+    components: {
+        MiniStepper
+    },
+
     data() {
         return {
             // Estados de edición
             isComponentPracticeEditing: false,
             isActualityEditing: false,
-            isAplicationEditing: false
+            isAplicationEditing: false,
+            steps: [
+                { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
+                { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
+                { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
+                { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
+                { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
+                { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
+                { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
+                { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
+                { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
+                { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
+                { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
+            ]
         };
     },
 
