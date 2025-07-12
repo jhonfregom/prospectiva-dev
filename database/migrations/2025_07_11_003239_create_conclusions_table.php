@@ -17,8 +17,11 @@ return new class extends Migration
             $table->engine = 'InnoDB';
             $table->integer('id')->autoIncrement();
             $table->text('component_practice')->nullable();            
+            $table->integer('component_practice_edits')->default(0);
             $table->text('actuality')->nullable();            
+            $table->integer('actuality_edits')->default(0);
             $table->text('aplication')->nullable();
+            $table->integer('aplication_edits')->default(0);
             $table->integer('user_id');
             $table->enum('state', ['0', '1'])->default('0');
             $table->datetime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));

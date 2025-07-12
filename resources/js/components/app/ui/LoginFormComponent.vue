@@ -77,6 +77,10 @@ export default {
                         this.fields.user.msg = res.data.data[0];
                         this.fields.user.error = true;
                     }else if( res.data.status === 200 ){
+                        // Guardar usuario autenticado en localStorage
+                        if (res.data.user) {
+                            localStorage.setItem('user', JSON.stringify(res.data.user));
+                        }
                         window.location.href = this.storeUrls.home;
                     }
                 });

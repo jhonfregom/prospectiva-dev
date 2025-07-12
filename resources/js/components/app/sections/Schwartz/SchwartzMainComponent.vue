@@ -9,7 +9,7 @@
             <div class="cell empty"></div>
             <div class="cell hypo top">
                 <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_plus') }}</div>
-                <div class="cell-content">{{ h1H1 }}</div>
+                <div class="cell-content">{{ h1H0 }}</div>
             </div>
             <div class="cell empty"></div>
             <div class="cell empty"></div>
@@ -20,8 +20,11 @@
                 <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_4') }}</div>
                 <b-input type="textarea"
                     v-model="escenarios[3].texto"
-                    :disabled="!editingScenario[3] || escenarios[3].state === 1"
-                    class="scenario-input" />
+                    :disabled="!editingScenario[3] || schwartzStore.isScenarioBlocked(3)"
+                    class="scenario-input"
+                    @input="handleTextInput(3, $event)"
+                    @paste="handleTextPaste(3, $event)"
+                    @keyup="handleTextKeyup(3, $event)" />
                 <div class="edit-btn-container">
                     <b-button
                         type="is-info"
@@ -29,11 +32,12 @@
                         icon-left="edit"
                         @click="handleEditSave(3, 4)"
                         outlined
-                        :disabled="escenarios[3].state === 1"
+                        :disabled="schwartzStore.isEditLocked(3)"
                     >
                         {{ editingScenario[3] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
                     </b-button>
                     <div v-if="editMessage[3]" class="edit-limit-message">{{ editMessage[3] }}</div>
+                    <span v-if="schwartzStore.isScenarioBlocked(3)" class="tag is-warning ml-2">{{ textsStore.getText('schwartz.table.locked') }}</span>
                 </div>
             </div>
             <div class="cell empty"></div>
@@ -42,7 +46,10 @@
                 <b-input type="textarea"
                     v-model="escenarios[0].texto"
                     :disabled="!editingScenario[0] || escenarios[0].state === 1"
-                    class="scenario-input" />
+                    class="scenario-input"
+                    @input="handleTextInput(0, $event)"
+                    @paste="handleTextPaste(0, $event)"
+                    @keyup="handleTextKeyup(0, $event)" />
                 <div class="edit-btn-container">
                     <b-button
                         type="is-info"
@@ -50,7 +57,7 @@
                         icon-left="edit"
                         @click="handleEditSave(0, 1)"
                         outlined
-                        :disabled="escenarios[0].state === 1"
+                        :disabled="schwartzStore.isEditLocked(0)"
                     >
                         {{ editingScenario[0] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
                     </b-button>
@@ -79,7 +86,10 @@
                 <b-input type="textarea"
                     v-model="escenarios[2].texto"
                     :disabled="!editingScenario[2] || escenarios[2].state === 1"
-                    class="scenario-input" />
+                    class="scenario-input"
+                    @input="handleTextInput(2, $event)"
+                    @paste="handleTextPaste(2, $event)"
+                    @keyup="handleTextKeyup(2, $event)" />
                 <div class="edit-btn-container">
                     <b-button
                         type="is-info"
@@ -87,7 +97,7 @@
                         icon-left="edit"
                         @click="handleEditSave(2, 3)"
                         outlined
-                        :disabled="escenarios[2].state === 1"
+                        :disabled="schwartzStore.isEditLocked(2)"
                     >
                         {{ editingScenario[2] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
                     </b-button>
@@ -100,7 +110,10 @@
                 <b-input type="textarea"
                     v-model="escenarios[1].texto"
                     :disabled="!editingScenario[1] || escenarios[1].state === 1"
-                    class="scenario-input" />
+                    class="scenario-input"
+                    @input="handleTextInput(1, $event)"
+                    @paste="handleTextPaste(1, $event)"
+                    @keyup="handleTextKeyup(1, $event)" />
                 <div class="edit-btn-container">
                     <b-button
                         type="is-info"
@@ -108,7 +121,7 @@
                         icon-left="edit"
                         @click="handleEditSave(1, 2)"
                         outlined
-                        :disabled="escenarios[1].state === 1"
+                        :disabled="schwartzStore.isEditLocked(1)"
                     >
                         {{ editingScenario[1] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
                     </b-button>
@@ -145,6 +158,9 @@ export default {
         const schwartzStore = useSchwartzStore();
         const textsStore = useTextsStore();
 
+        // Constante para el límite de caracteres
+        const MAX_CHARACTERS = 255;
+
         onMounted(async () => {
             sectionStore.setTitleSection(textsStore.getText('schwartz.title'));
             if (futureDriversStore.drivers.length === 0) {
@@ -164,10 +180,72 @@ export default {
         const escenarios = computed(() => schwartzStore.escenarios);
         const setEscenario = (index, texto) => schwartzStore.setEscenario(index, texto);
 
+        // Función para manejar input de texto
+        const handleTextInput = (index, event) => {
+            const text = event.target.value;
+            if (text.length > MAX_CHARACTERS) {
+                // Truncar el texto al límite
+                schwartzStore.setEscenario(index, text.substring(0, MAX_CHARACTERS));
+                // Mostrar mensaje de límite alcanzado
+                editMessage.value[index] = `Límite de ${MAX_CHARACTERS} caracteres alcanzado`;
+                setTimeout(() => {
+                    editMessage.value[index] = '';
+                }, 2000);
+            } else {
+                schwartzStore.setEscenario(index, text);
+                editMessage.value[index] = '';
+            }
+        };
+
+        // Función para manejar pegado de texto
+        const handleTextPaste = (index, event) => {
+            const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+            const currentText = schwartzStore.escenarios[index].texto;
+            const combinedText = currentText + pastedText;
+            
+            if (combinedText.length <= MAX_CHARACTERS) {
+                // Permitir el pegado normal
+                return;
+            } else {
+                // Prevenir el pegado por defecto y manejar manualmente
+                event.preventDefault();
+                // Calcular cuántos caracteres se pueden agregar
+                const availableSpace = MAX_CHARACTERS - currentText.length;
+                if (availableSpace > 0) {
+                    const truncatedPastedText = pastedText.substring(0, availableSpace);
+                    schwartzStore.setEscenario(index, currentText + truncatedPastedText);
+                    editMessage.value[index] = `Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`;
+                    setTimeout(() => {
+                        editMessage.value[index] = '';
+                    }, 2000);
+                } else {
+                    editMessage.value[index] = `No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`;
+                    setTimeout(() => {
+                        editMessage.value[index] = '';
+                    }, 2000);
+                }
+            }
+        };
+
+        // Función para manejar keyup (prevenir escritura adicional)
+        const handleTextKeyup = (index, event) => {
+            const text = event.target.value;
+            if (text.length >= MAX_CHARACTERS) {
+                // Prevenir escritura adicional
+                if (event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
+                    event.preventDefault();
+                    editMessage.value[index] = `Límite de ${MAX_CHARACTERS} caracteres alcanzado`;
+                    setTimeout(() => {
+                        editMessage.value[index] = '';
+                    }, 2000);
+                }
+            }
+        };
+
         // Nueva función para manejar edición/guardado
         const handleEditSave = async (index, numScenario) => {
             const escenario = schwartzStore.escenarios[index];
-            if (escenario.state === 1) return;
+            if (schwartzStore.isEditLocked(index)) return;
             if (editingScenario.value[index]) {
                 // Guardar
                 schwartzStore.incrementEdit(index);
@@ -200,6 +278,10 @@ export default {
             editingScenario,
             handleEditSave,
             editMessage,
+            schwartzStore,
+            handleTextInput,
+            handleTextPaste,
+            handleTextKeyup,
         };
     }
 };

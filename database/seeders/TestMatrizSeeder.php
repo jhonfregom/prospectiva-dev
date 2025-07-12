@@ -14,11 +14,13 @@ class TestMatrizSeeder extends Seeder
      */
     public function run(): void
     {
+        // Limpiar datos existentes y reiniciar auto-incremento
         DB::statement('DELETE FROM matriz WHERE id > 0');
-        DB::statement('ALTER TABLE matriz AUTO_INCREMENT = 0');
+        DB::statement('ALTER TABLE matriz AUTO_INCREMENT = 1');
 
     $matriz = ([
         [
+            'id' => 1,
             'id_matriz' => 1,
             'id_variable' => 1,
             'id_resp_depen' => 3,
@@ -27,6 +29,7 @@ class TestMatrizSeeder extends Seeder
             'state' => '0'
         ],
         [
+            'id' => 2,
             'id_matriz' => 1,
             'id_variable' => 2,
             'id_resp_depen' => 3,
@@ -35,6 +38,7 @@ class TestMatrizSeeder extends Seeder
             'state' => '0'
         ],
         [
+            'id' => 3,
             'id_matriz' => 1,
             'id_variable' => 3,
             'id_resp_depen' => 3,
@@ -43,6 +47,7 @@ class TestMatrizSeeder extends Seeder
             'state' => '0'
         ],
         [
+            'id' => 4,
             'id_matriz' => 1,
             'id_variable' => 4,
             'id_resp_depen' => 1,
@@ -51,6 +56,7 @@ class TestMatrizSeeder extends Seeder
             'state' => '0'
         ],
         [
+            'id' => 5,
             'id_matriz' => 1,
             'id_variable' => 1,
             'id_resp_depen' => 4,
@@ -59,6 +65,7 @@ class TestMatrizSeeder extends Seeder
             'state' => '0'
         ],
         [
+            'id' => 6,
             'id_matriz' => 1,
             'id_variable' => 2,
             'id_resp_depen' => 4,
@@ -67,6 +74,7 @@ class TestMatrizSeeder extends Seeder
             'state' => '0'
         ],
         [
+            'id' => 7,
             'id_matriz' => 1,
             'id_variable' => 3,
             'id_resp_depen' => 4,
@@ -75,8 +83,9 @@ class TestMatrizSeeder extends Seeder
             'state' => '0'
         ]
     ]);
+    
     foreach ($matriz as $data) {
-    Matriz::create($data);
-}
+        Matriz::create($data);
+    }
     }
 }

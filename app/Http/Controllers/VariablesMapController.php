@@ -92,11 +92,15 @@ class VariablesMapController extends Controller
                 if ($isManualSave) {
                     // Contador de ediciones en sesión (por usuario y análisis)
                     $sessionKey = 'analysis_edit_count_' . $analysis->id . '_user_' . $data['user_id'];
-                    $editCount = session($sessionKey, 0) + 1;
+                    $editCount = session($sessionKey, null);
+                    if ($editCount === null) {
+                        $editCount = 0;
+                    }
+                    $editCount++;
                     session([$sessionKey => $editCount]);
 
-                    // Si es la segunda edición o más, bloquear
-                    if ($editCount >= 2) {
+                    // Si es la tercera edición o más, bloquear
+                    if ($editCount >= 3) {
                         $data['state'] = '1';
                     }
                 }
@@ -110,6 +114,9 @@ class VariablesMapController extends Controller
                 
                 // Crear el registro con el ID específico
                 $analysis = VariableMapAnalisys::create($data);
+                // Inicializar el contador de ediciones en 0 al crear
+                $sessionKey = 'analysis_edit_count_' . $analysis->id . '_user_' . $data['user_id'];
+                session([$sessionKey => 0]);
             }
 
             return response()->json([

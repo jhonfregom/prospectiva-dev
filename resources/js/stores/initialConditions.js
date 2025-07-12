@@ -39,7 +39,7 @@ export const useInitialConditionsStore = defineStore('initialConditions', {
                 if (response.data.status === 200) {
                     // Recargar datos para obtener el estado actualizado
                     await this.fetchConditions();
-                    return { success: true };
+                return { success: true };
                 }
                 return { success: false, message: 'Error al actualizar' };
             } catch (error) {

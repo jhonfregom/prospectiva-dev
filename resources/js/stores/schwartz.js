@@ -10,6 +10,14 @@ export const useSchwartzStore = defineStore('schwartz', {
             { id: null, titulo: 'ESCENARIO 4', texto: '', edits: 0, state: 0 },
         ]
     }),
+    getters: {
+        isEditLocked: (state) => (index) => {
+            return state.escenarios[index]?.edits >= 3;
+        },
+        isScenarioBlocked: (state) => (index) => {
+            return state.escenarios[index]?.state === 1 || state.escenarios[index]?.state === '1';
+        }
+    },
     actions: {
         setEscenario(index, texto) {
             if (this.escenarios[index]) {
@@ -24,9 +32,6 @@ export const useSchwartzStore = defineStore('schwartz', {
         incrementEdit(index) {
             if (this.escenarios[index] && this.escenarios[index].edits < 3) {
                 this.escenarios[index].edits++;
-                if (this.escenarios[index].edits >= 3) {
-                    this.escenarios[index].state = 1;
-                }
             }
         },
         setState(index, value) {
@@ -47,6 +52,7 @@ export const useSchwartzStore = defineStore('schwartz', {
                 const res = await axios.post('/scenarios', payload);
                 if (res.data && res.data.data) {
                     this.escenarios[index].id = res.data.data.id;
+                    this.escenarios[index].state = res.data.data.state;
                 }
                 return { success: true };
             } catch (error) {

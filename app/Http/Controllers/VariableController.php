@@ -48,6 +48,9 @@ class VariableController extends Controller
                 'state' => '0',
                 'user_id' => $user->id
             ]);
+            // Al crear, inicializar el contador de ediciones en 0
+            $sessionKey = 'variable_edit_count_' . $variable->id . '_user_' . $user->id;
+            session([$sessionKey => 0]);
 
             return response()->json([
                 'data' => $variable,
@@ -86,7 +89,11 @@ class VariableController extends Controller
 
             // Contador de ediciones en sesión (por usuario y variable)
             $sessionKey = 'variable_edit_count_' . $variable->id . '_user_' . $userId;
-            $editCount = session($sessionKey, 0) + 1;
+            $editCount = session($sessionKey, null);
+            if ($editCount === null) {
+                $editCount = 0;
+            }
+            $editCount++;
             session([$sessionKey => $editCount]);
 
             \Log::info('Variable update - ID: ' . $variable->id . ', Edit count: ' . $editCount . ', Current state: ' . $variable->state);

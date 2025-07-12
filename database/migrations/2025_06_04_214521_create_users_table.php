@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration
             $table->string('last_name',200);
             $table->string('user',100);
             $table->text('password');
+            $table->tinyInteger('role')->default(0); // 0: Usuario, 1: Administrador
             $table->integer('status_users_id');
             $table->dateTime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->dateTime('updated_at')->default(new Expression('CURRENT_TIMESTAMP'));

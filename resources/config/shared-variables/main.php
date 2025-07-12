@@ -141,6 +141,33 @@
         'note' => 'Las hipótesis se bloquean después de dos ediciones manuales. Cada textarea tiene un límite de 40 palabras. Ambos campos (H0 y H1) se editan juntos.'
     ];
 
+    //Texts results section
+    $text_results_section = [
+        'title' => 'Resultados',
+        'subtitle' => 'Listado de usuarios y sus datos',
+        'filters' => [
+            'id' => 'ID',
+            'first_name' => 'Nombre',
+            'last_name' => 'Apellido',
+            'document_id' => 'Identificación',
+            'search_placeholder' => 'Buscar...'
+        ],
+        'table' => [
+            'id' => 'ID',
+            'first_name' => 'Nombre',
+            'last_name' => 'Apellido',
+            'document_id' => 'Identificación',
+            'email' => 'Email',
+            'variables_count' => 'Total Variables',
+            'variables_list' => 'Variables Creadas',
+            'zone_analyses' => 'Análisis Mapa de Variables',
+            'future_drivers' => 'Direccionadores de Futuro',
+            'initial_conditions' => 'Condiciones Iniciales',
+            'scenarios' => 'Escenarios',
+            'conclusions' => 'Conclusiones'
+        ]
+    ];
+
     // Textos para la sección estratégica (StrategicScenarioTable.vue)
     $text_strategic = [
         'main_title' => 'PROSPECTIVA ESTRATÉGICA PARA LA GENERACIÓN DE COMPETITIVIDAD EMPRESARIAL',
@@ -275,6 +302,7 @@
         "strategic" => $text_strategic,
         "variables_section" => $text_variables_section,
         "hypothesis" => $text_hypothesis,
+        "results" => $text_results_section,
     ];
 
     //List urls to use global in store from pinia/vue

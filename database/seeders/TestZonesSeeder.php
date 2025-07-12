@@ -14,20 +14,25 @@ class TestZonesSeeder extends Seeder
      */
     public function run(): void
     {
+        // Limpiar datos existentes y reiniciar auto-incremento
         DB::statement('DELETE FROM zones WHERE id > 0');
-        DB::statement('ALTER TABLE zones AUTO_INCREMENT = 0');
+        DB::statement('ALTER TABLE zones AUTO_INCREMENT = 1');
 
    $Zona = [
     [
+        'id' => 1,
         'name_zones' => 'ZONA DE PODER',
     ],
     [
+        'id' => 2,
         'name_zones' => 'ZONA DE CONFLICTO',
     ],
     [
+        'id' => 3,
         'name_zones' => 'ZONA DE SALIDA',
     ],
     [
+        'id' => 4,
         'name_zones' => 'ZONA DE INDIFERENCIA',
     ]
 ];

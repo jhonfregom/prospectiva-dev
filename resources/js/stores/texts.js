@@ -185,6 +185,40 @@ export const useTextsStore = defineStore('texts', {
                 locked: 'Bloqueado'
             }
         },
+        conclusions_section: {
+            title: 'Conclusiones de aprendizaje',
+            component_practice_subtitle: 'DESDE EL COMPONENTE PRACTICO(Analisis del proceso, practicidad, comprensible, se adapta al proceso de aprendizaje y al objetivo del curso)',
+            actuality_subtitle: 'Actualidad(Consideraciones del proceso para que sea implementado en las organizaciones, ¿deben las empresas hacer ejercicios de este tipo?)',
+            aplication_subtitle: 'APLICACIÓN(Que tanto se adapta a la organizacion para la que trabajas, o para tu emprendimiento, o para tu vida personal y profesional)',
+            table: {
+                edit: 'Editar',
+                save: 'Guardar',
+                locked: 'Bloqueado'
+            },
+            component_practice_placeholder: 'Describe el componente práctico de tu aprendizaje...',
+            actuality_placeholder: 'Reflexiona sobre la actualidad y relevancia de lo aprendido...',
+            aplication_placeholder: 'Explica cómo aplicarás lo aprendido en el futuro...',
+            messages: {
+                load_error: 'Error al cargar las conclusiones',
+                save_success: 'Conclusiones guardadas correctamente',
+                save_error: 'Error al guardar las conclusiones',
+                update_success: 'Conclusiones actualizadas correctamente',
+                update_error: 'Error al actualizar las conclusiones'
+            }
+        },
+        results_section: {
+            title: 'Resultados',
+            table: {
+                id: 'ID',
+                first_name: 'Nombre',
+                last_name: 'Apellido',
+                document_id: 'Identificación',
+                email: 'Correo',
+                initial_conditions: 'Condiciones Iniciales',
+                scenarios: 'Escenarios',
+                conclusions: 'Conclusiones'
+            }
+        },
     }),
     getters: {
         /**

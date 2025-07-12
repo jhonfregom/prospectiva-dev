@@ -85,8 +85,6 @@ class ScenariosController extends Controller
             // Actualizar
             $scenario->titulo = $data['titulo'];
             $scenario->edits = $data['edits'];
-            $scenario->state = $data['state'];
-            
             // Actualizar campos de año si vienen en el request
             if (array_key_exists('year1', $data)) {
                 $scenario->year1 = $data['year1'];
@@ -100,7 +98,6 @@ class ScenariosController extends Controller
                 $scenario->year3 = $data['year3'];
                 \Log::info('ScenariosController@store - Updating year3:', ['year3' => $data['year3']]);
             }
-            
             // Actualizar contadores de edición si vienen en el request
             if (array_key_exists('edits_year1', $data)) {
                 $scenario->edits_year1 = $data['edits_year1'];
@@ -114,7 +111,17 @@ class ScenariosController extends Controller
                 $scenario->edits_year3 = $data['edits_year3'];
                 \Log::info('ScenariosController@store - Updating edits_year3:', ['edits_year3' => $data['edits_year3']]);
             }
-            
+            // Lógica de bloqueo: state = 1 solo si todos los contadores están en 3
+            if (
+                $scenario->edits >= 3 &&
+                $scenario->edits_year1 >= 3 &&
+                $scenario->edits_year2 >= 3 &&
+                $scenario->edits_year3 >= 3
+            ) {
+                $scenario->state = '1';
+            } else {
+                $scenario->state = '0';
+            }
             $scenario->save();
             \Log::info('ScenariosController@store - Scenario saved successfully');
             $status = 200;

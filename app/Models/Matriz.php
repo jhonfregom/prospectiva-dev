@@ -12,6 +12,7 @@ class Matriz extends Model
     protected $table = 'matriz';
     
     protected $fillable = [
+        'id',
         'id_matriz',
         'id_variable',
         'id_resp_depen',

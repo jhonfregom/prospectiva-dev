@@ -32,18 +32,20 @@
                 </div>
             </b-table-column>
             <b-table-column field="comment" label="ANÁLISIS" v-slot="props" centered>
-                <b-input
-                    v-model="props.row.comment"
-                    type="textarea"
-                    :disabled="props.row.state === '1' || editingRow !== props.row.key"
-                    placeholder="Escribe tu análisis..."
-                    :rows="4"
-                    style="min-width:220px; max-width:400px; resize:vertical;"
-                    @input="onCommentInput(props.row)"
-                    @keyup="onCommentInput(props.row)"
-                    @paste="onCommentInput(props.row)"
-                    @cut="onCommentInput(props.row)"
-                />
+                <div class="textarea-container">
+                    <b-input
+                        v-model="props.row.comment"
+                        type="textarea"
+                        :disabled="props.row.state === '1' || editingRow !== props.row.key"
+                        placeholder="Escribe tu análisis..."
+                        :rows="4"
+                        style="min-width:495px; max-width:900px; resize:vertical; text-align:center;"
+                        @input="onCommentInput(props.row, $event)"
+                        @keyup="onCommentInput(props.row, $event)"
+                        @paste="onCommentInput(props.row, $event)"
+                        @cut="onCommentInput(props.row, $event)"
+                    />
+                </div>
             </b-table-column>
             <b-table-column field="actions" label="Acciones" v-slot="props" centered>
                 <b-button 
@@ -167,11 +169,6 @@ export default {
                 editingRow.value = null;
             } else {
                 // Entrar en modo edición
-                // Solo crear análisis vacío si no existe ninguno
-                if (!row.comment && !row.score && row.state === '0') {
-                    console.log('Creando análisis vacío para:', row.key);
-                    await saveOrCreateAnalysis(row, true);
-                }
                 editingRow.value = row.key;
             }
         }
@@ -252,11 +249,46 @@ export default {
             saveOrCreateAnalysis(row, false);
         }, 1000);
 
+        // Constante para el límite de caracteres
+        const MAX_CHARACTERS = 255;
+
         // Función para manejar input del comentario
-        function onCommentInput(row) {
+        function onCommentInput(row, event = null) {
             if (row.state === '1') {
                 console.log('Análisis bloqueado, no se permiten cambios:', row.key);
                 return; // No permitir cambios si está bloqueado
+            }
+
+            // Si es un evento de pegado, manejar de forma especial
+            if (event && event.type === 'paste') {
+                const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+                const currentText = row.comment || '';
+                const combinedText = currentText + pastedText;
+                
+                if (combinedText.length <= MAX_CHARACTERS) {
+                    // Permitir el pegado normal
+                    return;
+                } else {
+                    // Prevenir el pegado por defecto y manejar manualmente
+                    event.preventDefault();
+                    // Calcular cuántos caracteres se pueden agregar
+                    const availableSpace = MAX_CHARACTERS - currentText.length;
+                    if (availableSpace > 0) {
+                        const truncatedPastedText = pastedText.substring(0, availableSpace);
+                        row.comment = currentText + truncatedPastedText;
+                        console.log(`Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+                    } else {
+                        console.log(`No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+                    }
+                }
+            } else {
+                // Para input normal y keyup
+                const text = row.comment || '';
+                if (text.length > MAX_CHARACTERS) {
+                    // Truncar el texto al límite
+                    row.comment = text.substring(0, MAX_CHARACTERS);
+                    console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+                }
             }
             
             // Guardado automático
@@ -379,5 +411,29 @@ export default {
 ::v-deep .b-table .table tbody td {
     vertical-align: middle !important;
     height: 80px !important;
+}
+
+/* Centrar textareas en la columna de análisis */
+.textarea-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+/* Centrar el contenido del textarea */
+::v-deep .textarea-container .b-input[type="textarea"] {
+    text-align: center !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Asegurar que el textarea esté centrado dentro de su contenedor */
+::v-deep .textarea-container .b-input[type="textarea"] textarea {
+    text-align: center !important;
+    resize: vertical;
+    min-height: 80px;
 }
 </style>

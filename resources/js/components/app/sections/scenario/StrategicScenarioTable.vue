@@ -7,7 +7,7 @@
       </div>
       <!-- Tabla Escenario 1 -->
       <b-table :data="[{}]" :bordered="true" :striped="false" :hoverable="false">
-        <b-table-column>
+        <b-table-column centered>
           <div class="fixed-label multiline-label">
             {{ textsStore.getText('strategic.plan_label') }}
           </div>
@@ -37,6 +37,9 @@
               type="textarea"
               :disabled="!editingYear1_1 || (scenario1?.edits_year1 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear1_1, $event)"
+              @paste="handleTextPaste(localYear1_1, $event)"
+              @keyup="handleTextKeyup(localYear1_1, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -66,6 +69,9 @@
               type="textarea"
               :disabled="!editingYear1_2 || (scenario1?.edits_year2 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear1_2, $event)"
+              @paste="handleTextPaste(localYear1_2, $event)"
+              @keyup="handleTextKeyup(localYear1_2, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -95,6 +101,9 @@
               type="textarea"
               :disabled="!editingYear1_3 || (scenario1?.edits_year3 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear1_3, $event)"
+              @paste="handleTextPaste(localYear1_3, $event)"
+              @keyup="handleTextKeyup(localYear1_3, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -119,7 +128,7 @@
         {{ textsStore.getText('strategic.scenario_label') }} <strong>{{ scenario2?.titulo || '' }}</strong>
       </div>
       <b-table :data="[{}]" :bordered="true" :striped="false" :hoverable="false">
-        <b-table-column>
+        <b-table-column centered>
           <div class="fixed-label multiline-label">
             {{ textsStore.getText('strategic.plan_label') }}
           </div>
@@ -149,6 +158,9 @@
               type="textarea"
               :disabled="!editingYear2_1 || (scenario2?.edits_year1 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear2_1, $event)"
+              @paste="handleTextPaste(localYear2_1, $event)"
+              @keyup="handleTextKeyup(localYear2_1, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -178,6 +190,9 @@
               type="textarea"
               :disabled="!editingYear2_2 || (scenario2?.edits_year2 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear2_2, $event)"
+              @paste="handleTextPaste(localYear2_2, $event)"
+              @keyup="handleTextKeyup(localYear2_2, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -207,6 +222,9 @@
               type="textarea"
               :disabled="!editingYear2_3 || (scenario2?.edits_year3 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear2_3, $event)"
+              @paste="handleTextPaste(localYear2_3, $event)"
+              @keyup="handleTextKeyup(localYear2_3, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -231,7 +249,7 @@
         {{ textsStore.getText('strategic.scenario_label') }} <strong>{{ scenario3?.titulo || '' }}</strong>
       </div>
       <b-table :data="[{}]" :bordered="true" :striped="false" :hoverable="false">
-        <b-table-column>
+        <b-table-column centered>
           <div class="fixed-label multiline-label">
             {{ textsStore.getText('strategic.plan_label') }}
           </div>
@@ -261,6 +279,9 @@
               type="textarea"
               :disabled="!editingYear3_1 || (scenario3?.edits_year1 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear3_1, $event)"
+              @paste="handleTextPaste(localYear3_1, $event)"
+              @keyup="handleTextKeyup(localYear3_1, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -290,6 +311,9 @@
               type="textarea"
               :disabled="!editingYear3_2 || (scenario3?.edits_year2 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear3_2, $event)"
+              @paste="handleTextPaste(localYear3_2, $event)"
+              @keyup="handleTextKeyup(localYear3_2, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -319,6 +343,9 @@
               type="textarea"
               :disabled="!editingYear3_3 || (scenario3?.edits_year3 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear3_3, $event)"
+              @paste="handleTextPaste(localYear3_3, $event)"
+              @keyup="handleTextKeyup(localYear3_3, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -343,7 +370,7 @@
         {{ textsStore.getText('strategic.scenario_label') }} <strong>{{ scenario4?.titulo || '' }}</strong>
       </div>
       <b-table :data="[{}]" :bordered="true" :striped="false" :hoverable="false">
-        <b-table-column>
+        <b-table-column centered>
           <div class="fixed-label multiline-label">
             {{ textsStore.getText('strategic.plan_label') }}
           </div>
@@ -373,6 +400,9 @@
               type="textarea"
               :disabled="!editingYear4_1 || (scenario4?.edits_year1 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear4_1, $event)"
+              @paste="handleTextPaste(localYear4_1, $event)"
+              @keyup="handleTextKeyup(localYear4_1, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -402,6 +432,9 @@
               type="textarea"
               :disabled="!editingYear4_2 || (scenario4?.edits_year2 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear4_2, $event)"
+              @paste="handleTextPaste(localYear4_2, $event)"
+              @keyup="handleTextKeyup(localYear4_2, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -431,6 +464,9 @@
               type="textarea"
               :disabled="!editingYear4_3 || (scenario4?.edits_year3 || 0) >= 3"
               rows="5"
+              @input="handleTextInput(localYear4_3, $event)"
+              @paste="handleTextPaste(localYear4_3, $event)"
+              @keyup="handleTextKeyup(localYear4_3, $event)"
             />
             <div class="edit-btn-container">
               <div class="buttons is-centered">
@@ -463,6 +499,55 @@ import { useSectionStore } from '../../../../stores/section';
 const store = useStrategicScenarioStore();
 const textsStore = useTextsStore();
 const sectionStore = useSectionStore();
+
+// Constante para el límite de caracteres
+const MAX_CHARACTERS = 255;
+
+// Función para manejar input de texto con límite de caracteres
+const handleTextInput = (localValue, event = null) => {
+    const text = event ? event.target.value : localValue.value;
+    if (text.length > MAX_CHARACTERS) {
+        // Truncar el texto al límite
+        localValue.value = text.substring(0, MAX_CHARACTERS);
+        console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+    }
+};
+
+// Función para manejar pegado de texto
+const handleTextPaste = (localValue, event) => {
+    const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+    const currentText = localValue.value;
+    const combinedText = currentText + pastedText;
+    
+    if (combinedText.length <= MAX_CHARACTERS) {
+        // Permitir el pegado normal
+        return;
+    } else {
+        // Prevenir el pegado por defecto y manejar manualmente
+        event.preventDefault();
+        // Calcular cuántos caracteres se pueden agregar
+        const availableSpace = MAX_CHARACTERS - currentText.length;
+        if (availableSpace > 0) {
+            const truncatedPastedText = pastedText.substring(0, availableSpace);
+            localValue.value = currentText + truncatedPastedText;
+            console.log(`Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+        } else {
+            console.log(`No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+        }
+    }
+};
+
+// Función para manejar keyup
+const handleTextKeyup = (localValue, event) => {
+    const text = event.target.value;
+    if (text.length >= MAX_CHARACTERS) {
+        // Prevenir escritura adicional
+        if (event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
+            event.preventDefault();
+            console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+        }
+    }
+};
 
 // Escenario 1
 const scenario1 = computed(() => store.scenario1);

@@ -60,7 +60,9 @@ class MatrizController extends Controller
 
             // Insertar nuevos registros
             foreach ($data['matriz'] as $item) {
+                $itemId = $this->findNextAvailableId();
                 Matriz::create([
+                    'id' => $itemId,
                     'id_matriz' => $nextIdMatriz, // Usar el nuevo id_matriz
                     'id_variable' => $item['id_variable'],
                     'id_resp_depen' => $item['id_resp_depen'],
@@ -80,5 +82,19 @@ class MatrizController extends Controller
                 'message' => 'Error al guardar la matriz: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    // Función para encontrar el primer ID disponible
+    private function findNextAvailableId(): int
+    {
+        $existingIds = Matriz::orderBy('id')->pluck('id')->toArray();
+        $expectedId = 1;
+        foreach ($existingIds as $existingId) {
+            if ($existingId > $expectedId) {
+                return $expectedId;
+            }
+            $expectedId = $existingId + 1;
+        }
+        return $expectedId;
     }
 } 

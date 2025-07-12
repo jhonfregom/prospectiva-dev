@@ -15,11 +15,13 @@ class TestVariablesSeeder extends Seeder
      */
     public function run(): void
     {
+        // Limpiar datos existentes y reiniciar auto-incremento
         DB::statement('DELETE FROM variables WHERE id > 0');
-        DB::statement('ALTER TABLE variables AUTO_INCREMENT = 0');
+        DB::statement('ALTER TABLE variables AUTO_INCREMENT = 1');
 
    $variables = [
     [
+        'id' => 1,
         'id_variable' => 'V1',
         'name_variable' => 'Variable 1',
         'description' => 'Este es una variable de prueba',
@@ -28,6 +30,7 @@ class TestVariablesSeeder extends Seeder
         'state' => '0'
     ],
     [
+        'id' => 2,
         'id_variable' => 'V2',
         'name_variable' => 'Variable 2',
         'description' => 'Este es una segunda variable de prueba',
@@ -36,6 +39,7 @@ class TestVariablesSeeder extends Seeder
         'state' => '0'
     ],
     [
+        'id' => 3,
         'id_variable' => 'V3',
         'name_variable' => 'Variable 3',
         'description' => 'Este es una tercera variable de prueba',
@@ -44,6 +48,7 @@ class TestVariablesSeeder extends Seeder
         'state' => '0'
     ],
     [
+        'id' => 4,
         'id_variable' => 'V4',
         'name_variable' => 'Variable 4',
         'description' => 'Este es una cuarta variable de prueba',

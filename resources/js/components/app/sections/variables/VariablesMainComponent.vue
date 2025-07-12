@@ -10,15 +10,15 @@
             sort-icon="arrow-up"
             icon-pack="fas">
 
-            <b-table-column field="id" :label="textsStore.getText('variables_section.table.variable')" v-slot="props" width="100" sortable>
+            <b-table-column field="id" :label="textsStore.getText('variables_section.table.variable')" v-slot="props" width="100" sortable centered>
                 {{ props.row.id_variable }}
             </b-table-column>
 
-            <b-table-column field="name_variable" :label="textsStore.getText('variables_section.table.name')" v-slot="props" width="150">
+            <b-table-column field="name_variable" :label="textsStore.getText('variables_section.table.name')" v-slot="props" width="150" centered>
                 {{ props.row.name_variable }}
             </b-table-column>
 
-            <b-table-column field="description" :label="textsStore.getText('variables_section.table.description')" v-slot="props" class="description-column">
+            <b-table-column field="description" :label="textsStore.getText('variables_section.table.description')" v-slot="props" class="description-column" centered>
                 <b-input
                     type="textarea"
                     v-model="props.row.description"
@@ -28,11 +28,11 @@
                 </b-input>
             </b-table-column>
 
-            <b-table-column field="score" :label="textsStore.getText('variables_section.table.score')" v-slot="props" numeric width="100">
+            <b-table-column field="score" :label="textsStore.getText('variables_section.table.score')" v-slot="props" numeric width="100" centered>
                 {{ props.row.score || 0 }}
             </b-table-column>
 
-            <b-table-column field="score" :label="textsStore.getText('variables_section.table.state')" v-slot="props" width="150">
+            <b-table-column field="score" :label="textsStore.getText('variables_section.table.state')" v-slot="props" width="150" centered>
                 <span :class="getStatusClass(props.row.score || 0)">
                     {{ getStateText(props.row.score || 0) }}
                 </span>

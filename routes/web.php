@@ -10,6 +10,7 @@ use App\Http\Controllers\GraphicsController;
 use App\Http\Controllers\VariablesMapController;
 use App\Http\Controllers\HypothesisController;
 use App\Http\Controllers\ScenariosController;
+use App\Http\Controllers\ConclusionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -80,6 +81,19 @@ Route::group(['middleware' => ['auth']], function(){
     Route::post('/scenarios', [\App\Http\Controllers\ScenariosController::class, 'store']);
     Route::get('/scenarios/strategic', [\App\Http\Controllers\StrategicScenarioController::class, 'show']);
     Route::put('/scenarios/strategic', [\App\Http\Controllers\StrategicScenarioController::class, 'update']);
+    
+    // Rutas de conclusiones protegidas por autenticación
+    Route::controller(ConclusionController::class)->group(function(){
+        Route::get('/conclusions', 'index')->name('conclusions.index');
+        Route::post('/conclusions', 'store')->name('conclusions.store');
+        Route::put('/conclusions/{id}', 'update')->name('conclusions.update');
+        Route::delete('/conclusions/{id}', 'destroy')->name('conclusions.destroy');
+        Route::put('/conclusions/{id}/state', 'updateState')->name('conclusions.updateState');
+        Route::put('/conclusions/{id}/block', 'block')->name('conclusions.block');
+        Route::put('/conclusions/{id}/unblock', 'unblock')->name('conclusions.unblock');
+        Route::put('/conclusions/{id}/field', 'updateField')->name('conclusions.updateField');
+        Route::post('/conclusions/reset-auto-increment', 'resetAutoIncrement')->name('conclusions.reset-auto-increment');
+    });
 });
 
 // Sesion
@@ -109,5 +123,6 @@ Route::controller(RegisterController::class)->group(function(){
 });
 
 Route::get('/graphics', [GraphicsController::class, 'index']);
+Route::get('/results/users', [\App\Http\Controllers\UserController::class, 'apiList'])->name('results.users');
 
 

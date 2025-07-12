@@ -34,9 +34,17 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials)) {
             // Authentication passed...
+            $user = Auth::user();
             return response()->json(
                 array(
                     'status'    => 200,
+                    'user'      => [
+                        'id'         => $user->id,
+                        'role'       => $user->role,
+                        'first_name' => $user->first_name,
+                        'last_name'  => $user->last_name,
+                        'user'       => $user->user,
+                    ]
                 ),
                 200
             );

@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             TestVariablesSeeder::class,
             TestMatrizSeeder::class,
             TestZonesSeeder::class,
+            TestCompleteDataSeeder::class,
         ]);
         
     }
