@@ -23,6 +23,7 @@ return new class extends Migration
             $table->integer('user_id')->nullable();
             $table->enum('state', ['0', '1'])->default('0');
             $table->text('now_condition')->nullable(); // Default value for now_condition
+            $table->integer('tried_id')->nullable();
             $table->dateTime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->dateTime('updated_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->primary([ 'id' ]);
@@ -33,7 +34,17 @@ return new class extends Migration
                 'user_id_indexes'
             );
 
+            $table->index([
+                    'tried_id',
+                ],
+                'tried_id_indexes'
+            );
+
             $table->foreign('user_id')->references('id')->on('users')
+                ->onUpdate('NO ACTION')
+                ->onDelete('NO ACTION');
+
+                $table->foreign('tried_id')->references('id')->on('traceability')
                 ->onUpdate('NO ACTION')
                 ->onDelete('NO ACTION');
 

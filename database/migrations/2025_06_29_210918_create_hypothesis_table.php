@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('description')->nullable();   
             $table->integer('user_id');
             $table->enum('state', ['0', '1'])->default('0');
+            $table->integer('tried_id')->nullable();
             $table->datetime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->datetime('updated_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->primary([ 'id', 'zone_id','user_id' ]);
@@ -41,6 +42,10 @@ return new class extends Migration
                 ->onDelete('NO ACTION');
 
                 $table->foreign('user_id')->references('id')->on('users')
+                ->onUpdate('NO ACTION')
+                ->onDelete('NO ACTION');
+
+                $table->foreign('tried_id')->references('id')->on('traceability')
                 ->onUpdate('NO ACTION')
                 ->onDelete('NO ACTION');
         });

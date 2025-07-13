@@ -3,8 +3,9 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Facades\DB;
+
 
 return new class extends Migration
 {
@@ -13,39 +14,36 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conclusions', function (Blueprint $table) {
+        Schema::create('traceability', function (Blueprint $table) {
             $table->engine = 'InnoDB';
-            $table->integer('id')->autoIncrement();
-            $table->text('component_practice')->nullable();            
-            $table->integer('component_practice_edits')->default(0);
-            $table->text('actuality')->nullable();            
-            $table->integer('actuality_edits')->default(0);
-            $table->text('aplication')->nullable();
-            $table->integer('aplication_edits')->default(0);
-            $table->integer('user_id');
+            $table->integer('id')->autoIncrement();            
+            $table->enum('tried', ['1','2'])->default('1');
+            $table->enum('variables', ['0', '1'])->default('0');
+            $table->enum('matriz', ['0', '1'])->default('0');
+            $table->enum('maps', ['0', '1'])->default('0');
+            $table->enum('hypothesis', ['0', '1'])->default('0');
+            $table->enum('shwartz', ['0', '1'])->default('0');
+            $table->enum('conditions', ['0', '1'])->default('0');
+            $table->enum('scenarios', ['0', '1'])->default('0');
+            $table->enum('conclusions', ['0', '1'])->default('0');
+            $table->enum('results', ['0', '1'])->default('0');
             $table->enum('state', ['0', '1'])->default('0');
-            $table->integer('tried_id')->nullable();
+            $table->integer('user_id');
             $table->datetime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->datetime('updated_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->primary([ 'id','user_id' ]);
-
             $table->index([
                     'user_id',
                 ],
                 'user_id_indexes'
             );
-
-
                 $table->foreign('user_id')->references('id')->on('users')
                 ->onUpdate('NO ACTION')
                 ->onDelete('NO ACTION');
 
-                $table->foreign('tried_id')->references('id')->on('traceability')
-                ->onUpdate('NO ACTION')
-                ->onDelete('NO ACTION');
         });
 
-        DB::statement("ALTER TABLE conclusions MODIFY id INT AUTO_INCREMENT");
+        DB::statement("ALTER TABLE traceability MODIFY id INT AUTO_INCREMENT");
     }
 
     /**
@@ -53,6 +51,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('conclusions');
+        Schema::dropIfExists('traceability');
     }
 };

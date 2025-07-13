@@ -18,6 +18,8 @@ return new class extends Migration
             $table->integer('edits')->default(0);
             $table->enum('state', ['0', '1'])->default('0');
             $table->integer('num_scenario')->default(1); // Nuevo campo para identificar el escenario
+           $table->integer('tried_id')->nullable();
+            
             $table->timestamps();
         });
     }
