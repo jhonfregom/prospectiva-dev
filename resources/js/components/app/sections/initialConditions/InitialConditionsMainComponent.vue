@@ -1,6 +1,6 @@
 <template>
     <div class="initial-conditions-container">
-        <MiniStepper :steps="steps" :currentIndex="6" />
+        <!-- MiniStepper eliminado -->
         <div class="main-content">
             <b-message type="is-info" has-icon>
                 {{ textsStore.getText('initialConditions.subtitle') }}
@@ -135,18 +135,18 @@ export default {
 }
 
 /* Centrado vertical EXACTO como en VariablesMainComponent */
-::v-deep .b-table .table tbody td {
+:deep(.b-table .table tbody td) {
     vertical-align: middle !important;
     height: 80px !important;
 }
 
 /* El resto de estilos de borders y backgrounds se mantienen */
-::v-deep .b-table .table,
-::v-deep .b-table .table th,
-::v-deep .b-table .table td,
-::v-deep .b-table .table tr,
-::v-deep .b-table .table thead,
-::v-deep .b-table .table tbody {
+:deep(.b-table .table),
+:deep(.b-table .table th),
+:deep(.b-table .table td),
+:deep(.b-table .table tr),
+:deep(.b-table .table thead),
+:deep(.b-table .table tbody) {
     border: none !important;
     border-bottom: none !important;
     border-right: none !important;

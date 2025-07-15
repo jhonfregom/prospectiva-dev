@@ -1,6 +1,6 @@
 <template>
     <div class="scenery-container">
-        <MiniStepper :steps="steps" :currentIndex="7" />
+        <!-- MiniStepper eliminado -->
         <div class="main-content">
             <StrategicScenarioTable />
         </div>
@@ -10,12 +10,10 @@
 
 import { useSectionStore } from '../../../../stores/section';
 import StrategicScenarioTable from '../scenario/StrategicScenarioTable.vue';
-import MiniStepper from '../../ui/MiniStepper.vue';
 
 
 export default {
     components: {
-        MiniStepper,
         StrategicScenarioTable
     },
     data() {

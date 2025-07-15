@@ -1,6 +1,6 @@
 <template>
     <div class="direction-future-container">
-        <MiniStepper :steps="steps" :currentIndex="4" />
+        <!-- MiniStepper eliminado -->
         <div class="variables-container">
             <b-message type="is-info" has-icon>
                 {{ textsStore.getText('hypothesis.subtitle') }}
@@ -313,7 +313,7 @@ export default {
     font-size: 14px;
 }
 /* Compactar solo la fila de encabezados (thead th) */
-::v-deep .b-table .table thead th {
+:deep(.b-table .table thead th) {
     height: 40px !important;
     min-height: 0 !important;
     padding-top: 6px !important;
@@ -322,8 +322,8 @@ export default {
     padding-right: 8px !important;
 }
 /* Centrado vertical SOLO en celdas de la tabla Buefy */
-::v-deep .b-table .table th,
-::v-deep .b-table .table td {
+:deep(.b-table .table th),
+:deep(.b-table .table td) {
     vertical-align: middle !important;
     height: 100px !important;
 }

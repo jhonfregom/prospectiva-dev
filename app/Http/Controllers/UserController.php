@@ -104,69 +104,126 @@ class UserController extends Controller
                 ];
             });
 
+            // Agregar información de matriz
+            $matriz = \App\Models\Matriz::where('user_id', $userData->id)->get();
+            $variables = \App\Models\Variable::where('user_id', $userData->id)->get();
+            
+            // Calcular dependencia e influencia para cada variable (misma lógica que la gráfica)
+            $matrizData = [];
+            foreach ($variables as $variable) {
+                $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
+                $influencia = $matriz->where('id_resp_depen', $variable->id)->sum('id_resp_influ');
+                
+                // Determinar la zona basada en las coordenadas
+                $zoneId = $this->determineZone($dependencia, $influencia, $variables);
+                
+                $matrizData[] = [
+                    'id_variable' => $variable->id_variable,
+                    'name_variable' => $variable->name_variable,
+                    'dependencia' => $dependencia,
+                    'influencia' => $influencia,
+                    'zone_id' => $zoneId
+                ];
+            }
+            $userData->matriz = $matrizData;
+
+            // --- NUEVO: matriz cruzada ---
+            $matrizCruzada = [];
+            foreach ($variables as $origen) {
+                foreach ($variables as $destino) {
+                    if ($origen->id === $destino->id) continue;
+                    $valor = $matriz->where('id_variable', $origen->id)->where('id_resp_depen', $destino->id)->value('id_resp_influ');
+                    $matrizCruzada[] = [
+                        'origen' => $origen->id_variable,
+                        'destino' => $destino->id_variable,
+                        'valor' => $valor !== null ? intval($valor) : 0
+                    ];
+                }
+            }
+            $userData->matriz_cruzada = $matrizCruzada;
+
             // Agregar información de análisis de variables por zona
             $analyses = \App\Models\VariableMapAnalisys::where('user_id', $userData->id)->get();
-            $userData->zone_analyses = $analyses->map(function($analysis) use ($userData) {
+            $userData->zone_analyses = $analyses->map(function($analysis) use ($userData, $matriz) {
                 // Obtener el nombre de la zona
                 $zone = \App\Models\Zones::find($analysis->zone_id);
                 $zoneName = $zone ? $zone->name_zones : 'Zona Desconocida';
                 
-                // Obtener las variables que están en esta zona para este usuario
-                $variablesInZone = \App\Models\Variable::where('user_id', $userData->id)->get();
+                // Obtener las variables del usuario
+                $variables = \App\Models\Variable::where('user_id', $userData->id)->get();
                 
-                // Calcular en qué zona está cada variable (lógica del mapa de variables)
-                $variablesInThisZone = [];
-                if ($variablesInZone->count() > 0) {
-                    $maxX = $variablesInZone->max('dependencia') ?: 10;
-                    $maxY = $variablesInZone->max('influencia') ?: 12;
-                    $centroX = $maxX / 2;
-                    $centroY = $maxY / 2;
+                // Calcular coordenadas de cada variable usando la matriz
+                $variablesWithCoords = [];
+                foreach ($variables as $variable) {
+                    // Calcular dependencia (suma de la fila donde esta variable es origen)
+                    $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
+                    // Calcular influencia (suma de la columna donde esta variable es destino)
+                    $influencia = $matriz->where('id_resp_depen', $variable->id)->sum('id_resp_influ');
                     
-                    foreach ($variablesInZone as $variable) {
-                        $zona = '';
-                        $esFrontera = false;
-                        
-                        // Lógica para determinar la zona de cada variable
-                        if ($variable->dependencia === $centroX || $variable->influencia === $centroY) {
-                            $esFrontera = true;
-                            if ($variable->dependencia > $centroX && $variable->influencia >= $centroY) $zona = 'conflicto';
-                            else if ($variable->dependencia <= $centroX && $variable->influencia > $centroY) $zona = 'poder';
-                            else if ($variable->dependencia > $centroX && $variable->influencia < $centroY) $zona = 'salida';
-                            else $zona = 'indiferencia';
-                        } else {
-                            if ($variable->dependencia <= $centroX && $variable->influencia > $centroY) $zona = 'poder';
-                            else if ($variable->dependencia > $centroX && $variable->influencia >= $centroY) $zona = 'conflicto';
-                            else if ($variable->dependencia <= $centroX && $variable->influencia <= $centroY) $zona = 'indiferencia';
-                            else if ($variable->dependencia > $centroX && $variable->influencia < $centroY) $zona = 'salida';
-                        }
-                        
-                        // Mapear el nombre de la zona a la clave del análisis
-                        $zoneMapping = [
-                            'ZONA DE PODER' => 'poder',
-                            'ZONA DE CONFLICTO' => 'conflicto',
-                            'ZONA DE SALIDA' => 'salida',
-                            'ZONA DE INDIFERENCIA' => 'indiferencia'
+                    $variablesWithCoords[] = [
+                        'variable' => $variable,
+                        'dependencia' => $dependencia,
+                        'influencia' => $influencia
+                    ];
+                }
+                
+                // Calcular máximos para determinar el centro (igual que en el módulo analysis)
+                $maxX = max(array_column($variablesWithCoords, 'dependencia')) ?: 10;
+                $maxY = max(array_column($variablesWithCoords, 'influencia')) ?: 12;
+                $centroX = $maxX / 2;
+                $centroY = $maxY / 2;
+                
+                // Determinar variables en esta zona específica (lógica exacta del módulo analysis)
+                $variablesInThisZone = [];
+                foreach ($variablesWithCoords as $varData) {
+                    $zona = '';
+                    $esFrontera = false;
+                    
+                    // Lógica exacta del módulo analysis (corregida)
+                    if ($varData['influencia'] === $centroX || $varData['dependencia'] === $centroY) {
+                        $esFrontera = true;
+                        if ($varData['influencia'] > $centroX && $varData['dependencia'] >= $centroY) $zona = 'conflicto';
+                        else if ($varData['influencia'] <= $centroX && $varData['dependencia'] > $centroY) $zona = 'poder';
+                        else if ($varData['influencia'] > $centroX && $varData['dependencia'] < $centroY) $zona = 'salida';
+                        else $zona = 'indiferencia';
+                    } else {
+                        if ($varData['influencia'] <= $centroX && $varData['dependencia'] > $centroY) $zona = 'poder';
+                        else if ($varData['influencia'] > $centroX && $varData['dependencia'] >= $centroY) $zona = 'conflicto';
+                        else if ($varData['influencia'] <= $centroX && $varData['dependencia'] <= $centroY) $zona = 'indiferencia';
+                        else if ($varData['influencia'] > $centroX && $varData['dependencia'] < $centroY) $zona = 'salida';
+                    }
+                    
+                    // Mapear el nombre de la zona a la clave del análisis
+                    $zoneMapping = [
+                        'ZONA DE PODER' => 'poder',
+                        'ZONA DE CONFLICTO' => 'conflicto',
+                        'ZONA DE SALIDA' => 'salida',
+                        'ZONA DE INDIFERENCIA' => 'indiferencia'
+                    ];
+                    
+                    $analysisZoneKey = $zoneMapping[$zoneName] ?? strtolower(str_replace('ZONA DE ', '', $zoneName));
+                    
+                    if ($zona === $analysisZoneKey) {
+                        $variablesInThisZone[] = [
+                            'id_variable' => $varData['variable']->id_variable,
+                            'name_variable' => $varData['variable']->name_variable,
+                            'dependencia' => $varData['dependencia'],
+                            'influencia' => $varData['influencia'],
+                            'frontera' => $esFrontera
                         ];
-                        
-                        $analysisZoneKey = $zoneMapping[$zoneName] ?? strtolower(str_replace('ZONA DE ', '', $zoneName));
-                        
-                        if ($zona === $analysisZoneKey) {
-                            $variablesInThisZone[] = [
-                                'id_variable' => $variable->id_variable,
-                                'name_variable' => $variable->name_variable,
-                                'dependencia' => $variable->dependencia,
-                                'influencia' => $variable->influencia,
-                                'frontera' => $esFrontera
-                            ];
-                        }
                     }
                 }
+                
+                // Calcular el puntaje basado en el número de palabras del comentario (igual que en el frontend)
+                $description = $analysis->description ?? '';
+                $words = array_filter(explode(' ', trim($description)));
+                $calculatedScore = count($words);
                 
                 return [
                     'zone_id' => $analysis->zone_id,
                     'zone_name' => $zoneName,
                     'description' => $analysis->description,
-                    'score' => $analysis->score,
+                    'score' => $calculatedScore, // Usar el puntaje calculado dinámicamente
                     'state' => $analysis->state,
                     'variables_in_zone' => $variablesInThisZone
                 ];
@@ -219,81 +276,66 @@ class UserController extends Controller
                 $associatedHypotheses = [];
                 
                 if ($allHypotheses->count() >= 2) {
-                    // Obtener las dos hipótesis (data[0] y data[1])
-                    $hypothesesArray = $allHypotheses->toArray();
-                    $h0_0 = $allHypotheses->where('secondary_hypotheses', 'H0')->first();
-                    $h0_1 = $allHypotheses->where('secondary_hypotheses', 'H0')->skip(1)->first();
-                    $h1_0 = $allHypotheses->where('secondary_hypotheses', 'H1')->first();
-                    $h1_1 = $allHypotheses->where('secondary_hypotheses', 'H1')->skip(1)->first();
+                    // Obtener las hipótesis organizadas por variable
+                    $hypothesesByVariable = $allHypotheses->groupBy('id_variable');
+                    $variables = $hypothesesByVariable->keys();
+                    
+                    // Obtener la primera y segunda variable (ordenadas por ID)
+                    $sortedVariables = $variables->sort();
+                    $firstVariableId = $sortedVariables->first();
+                    $secondVariableId = $sortedVariables->skip(1)->first();
+                    
+                    // Obtener hipótesis H0 y H1 para cada variable
+                    $h0_first = $allHypotheses->where('id_variable', $firstVariableId)->where('secondary_hypotheses', 'H0')->first();
+                    $h1_first = $allHypotheses->where('id_variable', $firstVariableId)->where('secondary_hypotheses', 'H1')->first();
+                    $h0_second = $allHypotheses->where('id_variable', $secondVariableId)->where('secondary_hypotheses', 'H0')->first();
+                    $h1_second = $allHypotheses->where('id_variable', $secondVariableId)->where('secondary_hypotheses', 'H1')->first();
                     
                     // Obtener información de las variables
-                    $variable0 = $h0_0 ? \App\Models\Variable::find($h0_0->id_variable) : null;
-                    $variable1 = $h1_0 ? \App\Models\Variable::find($h1_0->id_variable) : null;
+                    $firstVariable = $firstVariableId ? \App\Models\Variable::find($firstVariableId) : null;
+                    $secondVariable = $secondVariableId ? \App\Models\Variable::find($secondVariableId) : null;
                     
+                    // Definir todas las hipótesis disponibles
+                    $allAvailableHypotheses = [
+                        'H1+' => [
+                            'id' => $h1_first ? $h1_first->id : null,
+                            'name_hypothesis' => 'HIPÓTESIS 1+',
+                            'variable_name' => $firstVariable ? $firstVariable->name_variable : 'Variable Desconocida',
+                            'description' => $h1_first ? $h1_first->description : ''
+                        ],
+                        'H1-' => [
+                            'id' => $h0_first ? $h0_first->id : null,
+                            'name_hypothesis' => 'HIPÓTESIS 1-',
+                            'variable_name' => $firstVariable ? $firstVariable->name_variable : 'Variable Desconocida',
+                            'description' => $h0_first ? $h0_first->description : ''
+                        ],
+                        'H2+' => [
+                            'id' => $h1_second ? $h1_second->id : null,
+                            'name_hypothesis' => 'HIPÓTESIS 2+',
+                            'variable_name' => $secondVariable ? $secondVariable->name_variable : 'Variable Desconocida',
+                            'description' => $h1_second ? $h1_second->description : ''
+                        ],
+                        'H2-' => [
+                            'id' => $h0_second ? $h0_second->id : null,
+                            'name_hypothesis' => 'HIPÓTESIS 2-',
+                            'variable_name' => $secondVariable ? $secondVariable->name_variable : 'Variable Desconocida',
+                            'description' => $h0_second ? $h0_second->description : ''
+                        ]
+                    ];
+                    
+                    // Seleccionar hipótesis según el escenario
                     switch ($scenario->num_scenario) {
-                        case 1: // H1, H1 (data[0].descriptionH1, data[1].descriptionH1)
-                            $associatedHypotheses = [
-                                [
-                                    'id' => $h1_0 ? $h1_0->id : null,
-                                    'name_hypothesis' => 'HIPÓTESIS 1+',
-                                    'variable_name' => $variable1 ? $variable1->name_variable : 'Variable Desconocida',
-                                    'description' => $h1_0 ? $h1_0->description : ''
-                                ],
-                                [
-                                    'id' => $h1_1 ? $h1_1->id : null,
-                                    'name_hypothesis' => 'HIPÓTESIS 2+',
-                                    'variable_name' => $h1_1 ? (\App\Models\Variable::find($h1_1->id_variable) ? \App\Models\Variable::find($h1_1->id_variable)->name_variable : 'Variable Desconocida') : 'Variable Desconocida',
-                                    'description' => $h1_1 ? $h1_1->description : ''
-                                ]
-                            ];
+                        case 1: // H1, H1
+                            $associatedHypotheses = [$allAvailableHypotheses['H1+'], $allAvailableHypotheses['H2+']];
                             break;
-                        case 2: // H1, H0 (data[1].descriptionH1, data[0].descriptionH0)
-                            $associatedHypotheses = [
-                                [
-                                    'id' => $h1_1 ? $h1_1->id : null,
-                                    'name_hypothesis' => 'HIPÓTESIS 2+',
-                                    'variable_name' => $h1_1 ? (\App\Models\Variable::find($h1_1->id_variable) ? \App\Models\Variable::find($h1_1->id_variable)->name_variable : 'Variable Desconocida') : 'Variable Desconocida',
-                                    'description' => $h1_1 ? $h1_1->description : ''
-                                ],
-                                [
-                                    'id' => $h0_0 ? $h0_0->id : null,
-                                    'name_hypothesis' => 'HIPÓTESIS 1-',
-                                    'variable_name' => $variable0 ? $variable0->name_variable : 'Variable Desconocida',
-                                    'description' => $h0_0 ? $h0_0->description : ''
-                                ]
-                            ];
+                        case 2: // H2+, H1- (corregido)
+                            $associatedHypotheses = [$allAvailableHypotheses['H2+'], $allAvailableHypotheses['H1-']];
                             break;
-                        case 3: // H0, H0 (data[0].descriptionH0, data[1].descriptionH0)
-                            $associatedHypotheses = [
-                                [
-                                    'id' => $h0_0 ? $h0_0->id : null,
-                                    'name_hypothesis' => 'HIPÓTESIS 1-',
-                                    'variable_name' => $variable0 ? $variable0->name_variable : 'Variable Desconocida',
-                                    'description' => $h0_0 ? $h0_0->description : ''
-                                ],
-                                [
-                                    'id' => $h0_1 ? $h0_1->id : null,
-                                    'name_hypothesis' => 'HIPÓTESIS 2-',
-                                    'variable_name' => $h0_1 ? (\App\Models\Variable::find($h0_1->id_variable) ? \App\Models\Variable::find($h0_1->id_variable)->name_variable : 'Variable Desconocida') : 'Variable Desconocida',
-                                    'description' => $h0_1 ? $h0_1->description : ''
-                                ]
-                            ];
+                        case 3: // H0, H0
+                            $associatedHypotheses = [$allAvailableHypotheses['H1-'], $allAvailableHypotheses['H2-']];
                             break;
-                        case 4: // H0, H1 (data[1].descriptionH0, data[0].descriptionH1)
-                            $associatedHypotheses = [
-                                [
-                                    'id' => $h0_1 ? $h0_1->id : null,
-                                    'name_hypothesis' => 'HIPÓTESIS 2-',
-                                    'variable_name' => $h0_1 ? (\App\Models\Variable::find($h0_1->id_variable) ? \App\Models\Variable::find($h0_1->id_variable)->name_variable : 'Variable Desconocida') : 'Variable Desconocida',
-                                    'description' => $h0_1 ? $h0_1->description : ''
-                                ],
-                                [
-                                    'id' => $h1_0 ? $h1_0->id : null,
-                                    'name_hypothesis' => 'HIPÓTESIS 1+',
-                                    'variable_name' => $variable1 ? $variable1->name_variable : 'Variable Desconocida',
-                                    'description' => $h1_0 ? $h1_0->description : ''
-                                ]
-                            ];
+                        case 4: // H2-, H1+ (corregido)
+                            $associatedHypotheses = [$allAvailableHypotheses['H2-'], $allAvailableHypotheses['H1+']];
                             break;
                     }
                 }
@@ -343,5 +385,34 @@ class UserController extends Controller
             'status' => 200,
             'data' => $users
         ]);
+    }
+
+    /**
+     * Determina la zona de una variable basada en sus coordenadas de dependencia e influencia
+     */
+    private function determineZone($dependencia, $influencia, $variables)
+    {
+        if ($variables->isEmpty()) {
+            return 1; // Zona de Poder por defecto
+        }
+
+        // Calcular máximos para normalizar
+        $maxDependencia = $variables->max('dependencia') ?: 10;
+        $maxInfluencia = $variables->max('influencia') ?: 12;
+        
+        // Normalizar coordenadas
+        $normalizedDependencia = $dependencia / $maxDependencia;
+        $normalizedInfluencia = $influencia / $maxInfluencia;
+        
+        // Determinar zona basada en las coordenadas normalizadas
+        if ($normalizedInfluencia > 0.5 && $normalizedDependencia < 0.5) {
+            return 1; // Zona de Poder
+        } elseif ($normalizedInfluencia > 0.5 && $normalizedDependencia > 0.5) {
+            return 2; // Zona de Problemas
+        } elseif ($normalizedInfluencia < 0.5 && $normalizedDependencia < 0.5) {
+            return 3; // Zona de Resultados
+        } else {
+            return 4; // Zona de Contexto
+        }
     }
 }

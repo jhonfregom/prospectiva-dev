@@ -22,7 +22,6 @@ return new class extends Migration
             $table->integer('id_resp_influ');
             $table->integer('user_id');
             $table->enum('state', ['0', '1'])->default('0');
-            $table->integer('tried_id')->nullable();
             $table->dateTime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->dateTime('updated_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->primary([ 'id','user_id' ]);
@@ -43,10 +42,7 @@ return new class extends Migration
                 ->onDelete('NO ACTION');
             $table->foreign('id_variable')->references('id')->on('variables')
                 ->onUpdate('NO ACTION')
-                ->onDelete('NO ACTION');
-            $table->foreign('tried_id')->references('id')->on('traceability')
-                ->onUpdate('NO ACTION')
-                ->onDelete('NO ACTION');
+                ->onDelete('cascade');
         });
 
         //Add autoincrement to id

@@ -73,8 +73,8 @@ class VariableController extends Controller
             $variable = Variable::findOrFail($id);
             $userId = Auth::id();
 
-            // Si ya está bloqueada, no permitir editar
-            if ($variable->state === '1') {
+            // Si ya está bloqueada la edición de la variable, no permitir editar
+            if ($variable->edits_variable >= 3) {
                 return response()->json([
                     'data' => $variable,
                     'status' => 200,
@@ -87,29 +87,18 @@ class VariableController extends Controller
                 'score' => 'required|integer'
             ]);
 
-            // Contador de ediciones en sesión (por usuario y variable)
-            $sessionKey = 'variable_edit_count_' . $variable->id . '_user_' . $userId;
-            $editCount = session($sessionKey, null);
-            if ($editCount === null) {
-                $editCount = 0;
-            }
-            $editCount++;
-            session([$sessionKey => $editCount]);
-
-            \Log::info('Variable update - ID: ' . $variable->id . ', Edit count: ' . $editCount . ', Current state: ' . $variable->state);
-
             $variable->description = $validated['description'] ?? '';
             $variable->score = $validated['score'];
+            $variable->edits_variable = ($variable->edits_variable ?? 0) + 1;
 
-            // Si es la tercera edición o más, bloquear (después de la segunda)
-            if ($editCount >= 3) {
-                $variable->state = '1';
-                \Log::info('Variable update - Blocking variable ID: ' . $variable->id);
+            // Si es la tercera edición o más, bloquear solo la edición de la variable
+            if ($variable->edits_variable >= 3) {
+                \Log::info('Variable update - Bloqueando edición de variable ID: ' . $variable->id);
             }
 
             $variable->save();
 
-            \Log::info('Variable update - Final state: ' . $variable->state . ', Response data: ' . json_encode($variable));
+            \Log::info('Variable update - Final edits_variable: ' . $variable->edits_variable . ', Response data: ' . json_encode($variable));
 
             return response()->json([
                 'status' => 200,
@@ -127,14 +116,17 @@ class VariableController extends Controller
     public function destroy($id)
     {
         try {
+            \Log::info('Intentando borrar variable ID: ' . $id);
             $variable = Variable::findOrFail($id);
             $variable->delete();
+            \Log::info('Variable borrada ID: ' . $id);
             
             return response()->json([
                 'status' => 200,
                 'message' => 'Variable eliminada correctamente'
             ]);
         } catch (\Exception $e) {
+            \Log::error('Error al eliminar variable ID: ' . $id . ' - ' . $e->getMessage());
             return response()->json([
                 'status' => 500,
                 'message' => 'Error al eliminar la variable',
@@ -167,12 +159,12 @@ class VariableController extends Controller
             $variable = Variable::where('user_id', Auth::id())->findOrFail($id);
             $userId = Auth::id();
 
-            // Si ya está bloqueada, no permitir editar
-            if ($variable->state === '1') {
+            // Si ya está bloqueada la edición de la condición inicial, no permitir editar
+            if ($variable->edits_now_condition >= 3) {
                 return response()->json([
                     'data' => $variable,
                     'status' => 200,
-                    'message' => 'Esta variable ya está bloqueada y no se puede editar.'
+                    'message' => 'La condición inicial ya está bloqueada y no se puede editar.'
                 ]);
             }
 
@@ -180,24 +172,17 @@ class VariableController extends Controller
                 'now_condition' => 'nullable|string|max:1000'
             ]);
 
-            // Contador de ediciones en sesión (por usuario y variable para condiciones iniciales)
-            $sessionKey = 'initial_condition_edit_count_' . $variable->id . '_user_' . $userId;
-            $editCount = session($sessionKey, 0) + 1;
-            session([$sessionKey => $editCount]);
-
-            \Log::info('Initial condition update - ID: ' . $variable->id . ', Edit count: ' . $editCount . ', Current state: ' . $variable->state);
-
             $variable->now_condition = $validated['now_condition'] ?? '';
+            $variable->edits_now_condition = ($variable->edits_now_condition ?? 0) + 1;
 
-            // Si es la tercera edición o más, bloquear (después de la segunda)
-            if ($editCount >= 3) {
-                $variable->state = '1';
-                \Log::info('Initial condition update - Blocking variable ID: ' . $variable->id);
+            // Si es la tercera edición o más, bloquear solo la edición de la condición inicial
+            if ($variable->edits_now_condition >= 3) {
+                \Log::info('Initial condition update - Bloqueando edición de condición inicial ID: ' . $variable->id);
             }
 
             $variable->save();
 
-            \Log::info('Initial condition update - Final state: ' . $variable->state . ', Response data: ' . json_encode($variable));
+            \Log::info('Initial condition update - Final edits_now_condition: ' . $variable->edits_now_condition . ', Response data: ' . json_encode($variable));
 
             return response()->json([
                 'status' => 200,

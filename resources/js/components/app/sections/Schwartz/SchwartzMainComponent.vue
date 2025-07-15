@@ -1,7 +1,6 @@
 <template>
-    <div class="schwartz-container">
-        <MiniStepper :steps="steps" :currentIndex="5" />
-        <div class="schwartz-matrix-container">
+    <div class="schwartz-container" :style="{ justifyContent: 'center', alignItems: 'center', display: 'flex' }">
+        <div class="schwartz-matrix-container" :style="{ width: schwartzSize, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center' }">
             <div class="schwartz-matrix">
                 <!-- Ejes rojos -->
                 <div class="schwartz-axis schwartz-axis-x"></div>
@@ -11,7 +10,7 @@
                 <div class="cell empty"></div>
                 <div class="cell hypo top">
                     <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_plus') }}</div>
-                    <div class="cell-content">{{ h1H0 }}</div>
+                    <div class="cell-content" :style="readonly ? { maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' } : {}">{{ h1H1 }}</div>
                 </div>
                 <div class="cell empty"></div>
                 <div class="cell empty"></div>
@@ -20,50 +19,60 @@
                 <div class="cell empty"></div>
                 <div class="cell scenario">
                     <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_4') }}</div>
-                    <b-input type="textarea"
-                        v-model="escenarios[3].texto"
-                        :disabled="!editingScenario[3] || schwartzStore.isScenarioBlocked(3)"
-                        class="scenario-input"
-                        @input="handleTextInput(3, $event)"
-                        @paste="handleTextPaste(3, $event)"
-                        @keyup="handleTextKeyup(3, $event)" />
-                    <div class="edit-btn-container">
-                        <b-button
-                            type="is-info"
-                            size="is-small"
-                            icon-left="edit"
-                            @click="handleEditSave(3, 4)"
-                            outlined
-                            :disabled="schwartzStore.isEditLocked(3)"
-                        >
-                            {{ editingScenario[3] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                        </b-button>
-                        <div v-if="editMessage[3]" class="edit-limit-message">{{ editMessage[3] }}</div>
-                        <span v-if="schwartzStore.isScenarioBlocked(3)" class="tag is-warning ml-2">{{ textsStore.getText('schwartz.table.locked') }}</span>
+                    <div v-if="readonly">
+                        <div class="cell-content" :style="{ maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' }">{{ escenarios[3]?.texto || escenarios[3]?.titulo }}</div>
+                    </div>
+                    <div v-else>
+                        <b-input type="textarea"
+                            v-model="escenarios[3].texto"
+                            :disabled="!editingScenario[3] || schwartzStore.isScenarioBlocked(3)"
+                            class="scenario-input"
+                            @input="handleTextInput(3, $event)"
+                            @paste="handleTextPaste(3, $event)"
+                            @keyup="handleTextKeyup(3, $event)" />
+                        <div class="edit-btn-container">
+                            <b-button
+                                type="is-info"
+                                size="is-small"
+                                icon-left="edit"
+                                @click="handleEditSave(3, 4)"
+                                outlined
+                                :disabled="schwartzStore.isEditLocked(3)"
+                            >
+                                {{ editingScenario[3] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
+                            </b-button>
+                            <div v-if="editMessage[3]" class="edit-limit-message">{{ editMessage[3] }}</div>
+                            <span v-if="schwartzStore.isScenarioBlocked(3)" class="tag is-warning ml-2">{{ textsStore.getText('schwartz.table.locked') }}</span>
+                        </div>
                     </div>
                 </div>
                 <div class="cell empty"></div>
                 <div class="cell scenario">
                     <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_1') }}</div>
-                    <b-input type="textarea"
-                        v-model="escenarios[0].texto"
-                        :disabled="!editingScenario[0] || escenarios[0].state === 1"
-                        class="scenario-input"
-                        @input="handleTextInput(0, $event)"
-                        @paste="handleTextPaste(0, $event)"
-                        @keyup="handleTextKeyup(0, $event)" />
-                    <div class="edit-btn-container">
-                        <b-button
-                            type="is-info"
-                            size="is-small"
-                            icon-left="edit"
-                            @click="handleEditSave(0, 1)"
-                            outlined
-                            :disabled="schwartzStore.isEditLocked(0)"
-                        >
-                            {{ editingScenario[0] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                        </b-button>
-                        <div v-if="editMessage[0]" class="edit-limit-message">{{ editMessage[0] }}</div>
+                    <div v-if="readonly">
+                        <div class="cell-content" :style="{ maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' }">{{ escenarios[0]?.texto || escenarios[0]?.titulo }}</div>
+                    </div>
+                    <div v-else>
+                        <b-input type="textarea"
+                            v-model="escenarios[0].texto"
+                            :disabled="!editingScenario[0] || escenarios[0].state === 1"
+                            class="scenario-input"
+                            @input="handleTextInput(0, $event)"
+                            @paste="handleTextPaste(0, $event)"
+                            @keyup="handleTextKeyup(0, $event)" />
+                        <div class="edit-btn-container">
+                            <b-button
+                                type="is-info"
+                                size="is-small"
+                                icon-left="edit"
+                                @click="handleEditSave(0, 1)"
+                                outlined
+                                :disabled="schwartzStore.isEditLocked(0)"
+                            >
+                                {{ editingScenario[0] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
+                            </b-button>
+                            <div v-if="editMessage[0]" class="edit-limit-message">{{ editMessage[0] }}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="cell empty"></div>
@@ -71,63 +80,73 @@
                 <!-- Fila 3 -->
                 <div class="cell hypo left">
                     <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_minus') }}</div>
-                    <div class="cell-content">{{ h2H0 }}</div>
+                    <div class="cell-content" :style="readonly ? { maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' } : {}">{{ h2H0 }}</div>
                 </div>
                 <div class="cell empty"></div>
                 <div class="cell empty"></div>
                 <div class="cell empty"></div>
                 <div class="cell hypo right">
                     <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_plus') }}</div>
-                    <div class="cell-content">{{ h2H1 }}</div>
+                    <div class="cell-content" :style="readonly ? { maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' } : {}">{{ h2H1 }}</div>
                 </div>
 
                 <!-- Fila 4 -->
                 <div class="cell empty"></div>
                 <div class="cell scenario">
                     <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_3') }}</div>
-                    <b-input type="textarea"
-                        v-model="escenarios[2].texto"
-                        :disabled="!editingScenario[2] || escenarios[2].state === 1"
-                        class="scenario-input"
-                        @input="handleTextInput(2, $event)"
-                        @paste="handleTextPaste(2, $event)"
-                        @keyup="handleTextKeyup(2, $event)" />
-                    <div class="edit-btn-container">
-                        <b-button
-                            type="is-info"
-                            size="is-small"
-                            icon-left="edit"
-                            @click="handleEditSave(2, 3)"
-                            outlined
-                            :disabled="schwartzStore.isEditLocked(2)"
-                        >
-                            {{ editingScenario[2] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                        </b-button>
-                        <div v-if="editMessage[2]" class="edit-limit-message">{{ editMessage[2] }}</div>
+                    <div v-if="readonly">
+                        <div class="cell-content" :style="{ maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' }">{{ escenarios[2]?.texto || escenarios[2]?.titulo }}</div>
+                    </div>
+                    <div v-else>
+                        <b-input type="textarea"
+                            v-model="escenarios[2].texto"
+                            :disabled="!editingScenario[2] || escenarios[2].state === 1"
+                            class="scenario-input"
+                            @input="handleTextInput(2, $event)"
+                            @paste="handleTextPaste(2, $event)"
+                            @keyup="handleTextKeyup(2, $event)" />
+                        <div class="edit-btn-container">
+                            <b-button
+                                type="is-info"
+                                size="is-small"
+                                icon-left="edit"
+                                @click="handleEditSave(2, 3)"
+                                outlined
+                                :disabled="schwartzStore.isEditLocked(2)"
+                            >
+                                {{ editingScenario[2] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
+                            </b-button>
+                            <div v-if="editMessage[2]" class="edit-limit-message">{{ editMessage[2] }}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="cell empty"></div>
                 <div class="cell scenario">
                     <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_2') }}</div>
-                    <b-input type="textarea"
-                        v-model="escenarios[1].texto"
-                        :disabled="!editingScenario[1] || escenarios[1].state === 1"
-                        class="scenario-input"
-                        @input="handleTextInput(1, $event)"
-                        @paste="handleTextPaste(1, $event)"
-                        @keyup="handleTextKeyup(1, $event)" />
-                    <div class="edit-btn-container">
-                        <b-button
-                            type="is-info"
-                            size="is-small"
-                            icon-left="edit"
-                            @click="handleEditSave(1, 2)"
-                            outlined
-                            :disabled="schwartzStore.isEditLocked(1)"
-                        >
-                            {{ editingScenario[1] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                        </b-button>
-                        <div v-if="editMessage[1]" class="edit-limit-message">{{ editMessage[1] }}</div>
+                    <div v-if="readonly">
+                        <div class="cell-content" :style="{ maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' }">{{ escenarios[1]?.texto || escenarios[1]?.titulo }}</div>
+                    </div>
+                    <div v-else>
+                        <b-input type="textarea"
+                            v-model="escenarios[1].texto"
+                            :disabled="!editingScenario[1] || escenarios[1].state === 1"
+                            class="scenario-input"
+                            @input="handleTextInput(1, $event)"
+                            @paste="handleTextPaste(1, $event)"
+                            @keyup="handleTextKeyup(1, $event)" />
+                        <div class="edit-btn-container">
+                            <b-button
+                                type="is-info"
+                                size="is-small"
+                                icon-left="edit"
+                                @click="handleEditSave(1, 2)"
+                                outlined
+                                :disabled="schwartzStore.isEditLocked(1)"
+                            >
+                                {{ editingScenario[1] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
+                            </b-button>
+                            <div v-if="editMessage[1]" class="edit-limit-message">{{ editMessage[1] }}</div>
+                        </div>
                     </div>
                 </div>
                 <div class="cell empty"></div>
@@ -137,7 +156,7 @@
                 <div class="cell empty"></div>
                 <div class="cell hypo bottom">
                     <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_minus') }}</div>
-                    <div class="cell-content">{{ h1H0 }}</div>
+                    <div class="cell-content" :style="readonly ? { maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' } : {}">{{ h1H0 }}</div>
                 </div>
                 <div class="cell empty"></div>
                 <div class="cell empty"></div>
@@ -156,10 +175,32 @@ import MiniStepper from '../../ui/MiniStepper.vue';
 
 export default {
     name: 'SchwartzMainComponent',
+    props: {
+        readonly: {
+            type: Boolean,
+            default: false
+        },
+        pdfMode: {
+            type: Boolean,
+            default: false
+        },
+        size: {
+            type: [String, Number],
+            default: 'large'
+        },
+        externalScenarios: {
+            type: Array,
+            default: null
+        },
+        externalHypotheses: {
+            type: Array,
+            default: null
+        }
+    },
     components: {
         MiniStepper
     },
-    setup() {
+    setup(props) {
         const sectionStore = useSectionStore();
         const futureDriversStore = useFutureDriversStore();
         const schwartzStore = useSchwartzStore();
@@ -169,7 +210,10 @@ export default {
         const MAX_CHARACTERS = 255;
 
         onMounted(async () => {
-            sectionStore.setTitleSection(textsStore.getText('schwartz.title'));
+            // Solo cambiar el título si no está en modo readonly (modal)
+            if (!props.readonly) {
+                sectionStore.setTitleSection(textsStore.getText('schwartz.title'));
+            }
             if (futureDriversStore.drivers.length === 0) {
                 await futureDriversStore.fetchDrivers();
             }
@@ -178,22 +222,45 @@ export default {
         });
 
         // Computed para obtener los textos de hipótesis
-        const h1H0 = computed(() => futureDriversStore.drivers[0]?.descriptionH0 || '');
-        const h1H1 = computed(() => futureDriversStore.drivers[0]?.descriptionH1 || '');
-        const h2H0 = computed(() => futureDriversStore.drivers[1]?.descriptionH0 || '');
-        const h2H1 = computed(() => futureDriversStore.drivers[1]?.descriptionH1 || '');
+        const h1H0 = computed(() => {
+            if (props.externalHypotheses && props.externalHypotheses.length > 0) {
+                return props.externalHypotheses[0]?.descriptionH0 || '';
+            }
+            return futureDriversStore.drivers[0]?.descriptionH0 || '';
+        });
+        const h1H1 = computed(() => {
+            if (props.externalHypotheses && props.externalHypotheses.length > 0) {
+                return props.externalHypotheses[0]?.descriptionH1 || '';
+            }
+            return futureDriversStore.drivers[0]?.descriptionH1 || '';
+        });
+        const h2H0 = computed(() => {
+            if (props.externalHypotheses && props.externalHypotheses.length > 1) {
+                return props.externalHypotheses[1]?.descriptionH0 || '';
+            }
+            return futureDriversStore.drivers[1]?.descriptionH0 || '';
+        });
+        const h2H1 = computed(() => {
+            if (props.externalHypotheses && props.externalHypotheses.length > 1) {
+                return props.externalHypotheses[1]?.descriptionH1 || '';
+            }
+            return futureDriversStore.drivers[1]?.descriptionH1 || '';
+        });
 
         // Computed para escenarios
-        const escenarios = computed(() => schwartzStore.escenarios);
+        const escenarios = computed(() => {
+            if (props.externalScenarios && Array.isArray(props.externalScenarios) && props.externalScenarios.length > 0) {
+                return props.externalScenarios;
+            }
+            return schwartzStore.escenarios;
+        });
         const setEscenario = (index, texto) => schwartzStore.setEscenario(index, texto);
 
         // Función para manejar input de texto
         const handleTextInput = (index, event) => {
             const text = event.target.value;
             if (text.length > MAX_CHARACTERS) {
-                // Truncar el texto al límite
                 schwartzStore.setEscenario(index, text.substring(0, MAX_CHARACTERS));
-                // Mostrar mensaje de límite alcanzado
                 editMessage.value[index] = `Límite de ${MAX_CHARACTERS} caracteres alcanzado`;
                 setTimeout(() => {
                     editMessage.value[index] = '';
@@ -209,28 +276,23 @@ export default {
             const pastedText = (event.clipboardData || window.clipboardData).getData('text');
             const currentText = schwartzStore.escenarios[index].texto;
             const combinedText = currentText + pastedText;
-            
             if (combinedText.length <= MAX_CHARACTERS) {
-                // Permitir el pegado normal
                 return;
+            }
+            event.preventDefault();
+            const availableSpace = MAX_CHARACTERS - currentText.length;
+            if (availableSpace > 0) {
+                const truncatedPastedText = pastedText.substring(0, availableSpace);
+                schwartzStore.setEscenario(index, currentText + truncatedPastedText);
+                editMessage.value[index] = `Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`;
+                setTimeout(() => {
+                    editMessage.value[index] = '';
+                }, 2000);
             } else {
-                // Prevenir el pegado por defecto y manejar manualmente
-                event.preventDefault();
-                // Calcular cuántos caracteres se pueden agregar
-                const availableSpace = MAX_CHARACTERS - currentText.length;
-                if (availableSpace > 0) {
-                    const truncatedPastedText = pastedText.substring(0, availableSpace);
-                    schwartzStore.setEscenario(index, currentText + truncatedPastedText);
-                    editMessage.value[index] = `Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`;
-                    setTimeout(() => {
-                        editMessage.value[index] = '';
-                    }, 2000);
-                } else {
-                    editMessage.value[index] = `No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`;
-                    setTimeout(() => {
-                        editMessage.value[index] = '';
-                    }, 2000);
-                }
+                editMessage.value[index] = `No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`;
+                setTimeout(() => {
+                    editMessage.value[index] = '';
+                }, 2000);
             }
         };
 
@@ -238,7 +300,6 @@ export default {
         const handleTextKeyup = (index, event) => {
             const text = event.target.value;
             if (text.length >= MAX_CHARACTERS) {
-                // Prevenir escritura adicional
                 if (event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
                     event.preventDefault();
                     editMessage.value[index] = `Límite de ${MAX_CHARACTERS} caracteres alcanzado`;
@@ -254,10 +315,8 @@ export default {
             const escenario = schwartzStore.escenarios[index];
             if (schwartzStore.isEditLocked(index)) return;
             if (editingScenario.value[index]) {
-                // Guardar
                 schwartzStore.incrementEdit(index);
                 editingScenario.value[index] = false;
-                // Guardar en backend
                 const result = await schwartzStore.saveScenario(index, numScenario);
                 if (!result.success) {
                     editMessage.value[index] = textsStore.getText('schwartz.messages.save_error') + (result.message || textsStore.getText('schwartz.messages.try_again'));
@@ -274,6 +333,17 @@ export default {
         const editingScenario = ref([false, false, false, false]);
         const editMessage = ref(['', '', '', '']);
 
+        // Para tamaño visualización
+        const schwartzSize = computed(() => {
+            if (props.pdfMode) return '900px';
+            if (props.size === 'large') return '1200px';
+            if (props.size === 'medium') return '900px';
+            if (props.size === 'small') return '600px';
+            if (typeof props.size === 'number') return props.size + 'px';
+            if (typeof props.size === 'string' && props.size.endsWith('px')) return props.size;
+            return '100%';
+        });
+
         return {
             h1H0,
             h1H1,
@@ -289,6 +359,7 @@ export default {
             handleTextInput,
             handleTextPaste,
             handleTextKeyup,
+            schwartzSize,
             steps: [
                 { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
                 { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
@@ -315,16 +386,26 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 900px;
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
     margin-top: 32px;
+}
+.schwartz-matrix.pdf-mode {
+    grid-template-columns: repeat(5, minmax(220px, 1fr));
+    grid-template-rows: repeat(5, minmax(100px, 1fr));
 }
 .schwartz-matrix {
     display: grid;
-    grid-template-columns: 220px 220px 220px 220px 220px;
-    grid-template-rows: 120px 160px 120px 160px 120px;
+    grid-template-columns: repeat(5, minmax(160px, 1fr));
+    grid-template-rows: repeat(5, minmax(80px, 1fr));
     gap: 0px;
     position: relative;
     z-index: 2;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
 }
 .cell {
     background: #fff;
@@ -337,11 +418,22 @@ export default {
     justify-content: flex-start;
     padding: 12px 16px;
     font-size: 14px;
-    min-height: 78px;
-    min-width: 234px;
+    min-height: 60px;
+    min-width: 120px;
     width: 100%;
     height: 100%;
     transition: all 0.2s ease;
+    box-sizing: border-box;
+    word-break: break-word;
+    white-space: normal;
+}
+.pdf-mode .cell {
+    padding: 16px 18px;
+    font-size: 15px;
+    min-height: 80px;
+    min-width: 180px;
+    word-break: break-word;
+    white-space: normal;
 }
 .cell-title {
     font-weight: 600;
@@ -356,6 +448,7 @@ export default {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-radius: 6px 6px 0 0;
+    box-sizing: border-box;
 }
 .cell-content {
     color: #1F2937;
@@ -365,23 +458,24 @@ export default {
     text-align: center;
     width: 100%;
     margin-top: 8px;
-    max-height: 220px;
-    overflow-y: auto;
     line-height: 1.5;
+    box-sizing: border-box;
+    white-space: pre-line;
+    max-height: none;
+    overflow: visible;
 }
 .cell.hypo {
     background: #FAFAFA;
     border: 1px solid #E0E7FF;
-    min-height: 200px;
+    min-height: 120px;
     max-height: 300px;
-    overflow-y: auto;
     box-shadow: 0 3px 12px rgba(79, 70, 229, 0.08);
 }
 .cell.scenario {
     background: #fff;
     border: 1px solid #E0E7FF;
-    min-width: 234px;
-    min-height: 104px;
+    min-width: 120px;
+    min-height: 80px;
     align-items: stretch;
     justify-content: flex-start;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
@@ -427,8 +521,8 @@ export default {
 .schwartz-axis-x {
     position: absolute;
     top: 50%;
-    left: 51%;
-    width: 750px;
+    left: 50%;
+    width: 61%;
     height: 4px;
     background: red;
     transform: translate(-50%, -50%);
@@ -458,7 +552,7 @@ export default {
     left: 50%;
     top: 50%;
     width: 4px;
-    height: 530px;
+    height: 65%; /* antes 61% */
     background: red;
     transform: translate(-50%, -50%);
 }
@@ -486,36 +580,36 @@ export default {
     background: #FAFAFA;
     border: 1px solid #E0E7FF;
     position: relative;
-    left: 50px;
+    left: 0;
     z-index: 2;
-    top: -40px;
+    top: 0;
     box-shadow: 0 3px 12px rgba(79, 70, 229, 0.08);
 }
 .cell.hypo.left {
     background: #FAFAFA;
     border: 1px solid #E0E7FF;
     position: relative;
-    left: -40px;
+    left: 0;
     z-index: 2;
-    top: -40px;
+    top: 0;
     box-shadow: 0 3px 12px rgba(79, 70, 229, 0.08);
 }
 .cell.hypo.top {
     background: #FAFAFA;
     border: 1px solid #E0E7FF;
     position: relative;
-    top: -120px;
+    top: 0;
     z-index: 2;
-    left: -10px;
+    left: 0;
     box-shadow: 0 3px 12px rgba(79, 70, 229, 0.08);
 }
 .cell.hypo.bottom {
     background: #FAFAFA;
     border: 1px solid #E0E7FF;
     position: relative;
-    top: 40px;
+    top: 0;
     z-index: 2;
-    left: -10px;
+    left: 0;
     box-shadow: 0 3px 12px rgba(79, 70, 229, 0.08);
 }
 .cell.hypo .cell-content {

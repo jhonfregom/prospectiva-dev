@@ -1,6 +1,6 @@
 <template>
     <div class="conclusions-container">
-        <MiniStepper :steps="steps" :currentIndex="8" />
+        <!-- MiniStepper eliminado -->
         <div class="conclusions-table">
             <div class="table-content">
                 <!-- Primera fila: Título -->
@@ -463,7 +463,7 @@ export default {
     justify-content: flex-start;
 }
 
-::v-deep(.textarea-row .b-input textarea) {
+:deep(.textarea-row .b-input textarea) {
     width: 100% !important;
     min-width: unset !important;
     max-width: unset !important;
@@ -526,7 +526,7 @@ export default {
     max-width: 100% !important;
     resize: vertical;
 }
-::v-deep(.b-input.textarea .control textarea) {
+:deep(.b-input.textarea .control textarea) {
     width: 100% !important;
     min-width: 0 !important;
     max-width: 100% !important;

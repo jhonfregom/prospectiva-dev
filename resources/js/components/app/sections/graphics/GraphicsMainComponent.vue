@@ -1,27 +1,34 @@
 <template>
   <div class="graphics-container">
-    <MiniStepper :steps="steps" :currentIndex="2" />
     <canvas ref="chartCanvas" width="800" height="560"></canvas>
   </div>
 </template>
 
 <script>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, nextTick } from 'vue';
 import { useGraphicsStore } from '../../../../stores/graphics';
 import { useTextsStore } from '../../../../stores/texts';
 import { useSectionStore } from '../../../../stores/section';
 import { storeToRefs } from 'pinia';
 import Chart from 'chart.js/auto';
 import annotationPlugin from 'chartjs-plugin-annotation';
-import MiniStepper from '../../ui/MiniStepper.vue';
 
 Chart.register(annotationPlugin);
 
 export default {
-  components: {
-    MiniStepper
+  props: {
+    externalData: {
+      type: Array,
+      default: null
+    },
+    readonly: {
+      type: Boolean,
+      default: false
+    }
   },
-  setup() {
+  components: {
+  },
+  setup(props) {
     const graphicsStore = useGraphicsStore();
     const textsStore = useTextsStore();
     const sectionStore = useSectionStore();
@@ -70,15 +77,26 @@ export default {
 
     function renderChart() {
       if (chartInstance) chartInstance.destroy();
-      const points = data.value.map(item => ({
-        x: item.influencia,
-        y: item.dependencia,
-        label: item.codigo
+      // Usar datos externos si están presentes
+      const usedData = props.externalData && props.externalData.length > 0 ? props.externalData : data.value;
+      if (!usedData || usedData.length === 0) return;
+      
+      // Verificar que el canvas existe
+      if (!chartCanvas.value) {
+        console.error('Canvas no encontrado');
+        return;
+      }
+      
+      const points = usedData.map(item => ({
+        x: item.dependencia, // Eje X: dependencia
+        y: item.influencia,  // Eje Y: influencia
+        label: item.id_variable || item.codigo || ''
       }));
       const { maxX, maxY, minX, minY } = getAxisLimits(points);
       const cross = getCrossCenter(points, maxX, maxY);
 
-      chartInstance = new Chart(chartCanvas.value, {
+      try {
+        chartInstance = new Chart(chartCanvas.value, {
         type: 'scatter',
         data: {
           datasets: [
@@ -240,17 +258,34 @@ export default {
           }
         }
       });
+    } catch (error) {
+      console.error('Error al crear la gráfica:', error);
     }
+  }
 
-    onMounted(async () => {
-      sectionStore.setTitleSection(textsStore.graphics.title);
-      await graphicsStore.fetchGraphicsData();
+      onMounted(async () => {
+      // Solo cambiar el título si no está en modo readonly (modal)
+      if (!props.readonly) {
+        sectionStore.setTitleSection(textsStore.graphics.title);
+      }
+      if (!props.externalData) {
+        await graphicsStore.fetchGraphicsData();
+      }
+      // Esperar a que el DOM esté listo antes de renderizar
+      await nextTick();
       renderChart();
     });
 
-    // Si los datos cambian, vuelve a renderizar la gráfica
-    watch(data, () => {
+    // Forzar render cuando cambian los datos externos o el modal se muestra
+    watch(() => props.externalData, async () => {
+      await nextTick();
       renderChart();
+    }, { immediate: true });
+    watch(data, async () => {
+      if (!props.externalData) {
+        await nextTick();
+        renderChart();
+      }
     });
 
     return { chartCanvas, isLoading, textsStore, steps };

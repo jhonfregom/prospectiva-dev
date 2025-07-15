@@ -1,6 +1,5 @@
 <template>
     <div class="analisis-mapa-variables-container">
-        <MiniStepper :steps="steps" :currentIndex="3" />
         <b-message type="is-info" has-icon>
             {{ descriptionWithCount }}
         </b-message>
@@ -81,13 +80,11 @@ import { useSessionStore } from '../../../../stores/session';
 import { onMounted, watch, computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { debounce } from 'lodash';
-import MiniStepper from '../../ui/MiniStepper.vue';
 
 export default {
     name: 'AnalisisMapaVariablesMainComponent',
     
     components: {
-        MiniStepper
     },
 
     setup() {
@@ -427,7 +424,7 @@ export default {
 }
 
 /* Centrado vertical SOLO en filas de datos (tbody td) de la tabla de análisis mapa de variables */
-::v-deep .b-table .table tbody td {
+:deep(.b-table .table tbody td) {
     vertical-align: middle !important;
     height: 80px !important;
 }
@@ -442,7 +439,7 @@ export default {
 }
 
 /* Centrar el contenido del textarea */
-::v-deep .textarea-container .b-input[type="textarea"] {
+:deep(.textarea-container .b-input[type="textarea"]) {
     text-align: center !important;
     display: flex;
     align-items: center;
@@ -450,7 +447,7 @@ export default {
 }
 
 /* Asegurar que el textarea esté centrado dentro de su contenedor */
-::v-deep .textarea-container .b-input[type="textarea"] textarea {
+:deep(.textarea-container .b-input[type="textarea"] textarea) {
     text-align: center !important;
     resize: vertical;
     min-height: 80px;

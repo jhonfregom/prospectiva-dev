@@ -1,6 +1,6 @@
 <template>
     <div class="matriz-container">
-        <MiniStepper :steps="steps" :currentIndex="1" />
+        <!-- MiniStepper eliminado -->
         <div class="matriz-header">
             <b-button
                 type="is-primary"

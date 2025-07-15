@@ -35,7 +35,7 @@ return new class extends Migration
 
             $table->foreign('id_variable')->references('id')->on('variables')
                 ->onUpdate('NO ACTION')
-                ->onDelete('NO ACTION');
+                ->onDelete('cascade');
 
              $table->foreign('zone_id')->references('id')->on('zones')
                 ->onUpdate('NO ACTION')

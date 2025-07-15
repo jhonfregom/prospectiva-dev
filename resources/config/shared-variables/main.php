@@ -160,6 +160,7 @@
             'email' => 'Email',
             'variables_count' => 'Total Variables',
             'variables_list' => 'Variables Creadas',
+            'matriz' => 'Matriz',
             'zone_analyses' => 'Análisis Mapa de Variables',
             'future_drivers' => 'Direccionadores de Futuro',
             'initial_conditions' => 'Condiciones Iniciales',

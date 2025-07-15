@@ -718,6 +718,12 @@ const handleEditSave = async (numScenario, yearField) => {
     }
   }
 
+  // Protección para evitar errores si scenario es null o editsField no existe
+  if (!scenario || typeof scenario[editsField] === 'undefined' || scenario[editsField] === null) {
+    scenario = scenario || {};
+    scenario[editsField] = 0;
+  }
+
   if ((scenario[editsField] || 0) >= 3) {
     console.log(`${yearField} está bloqueado - ${scenario[editsField]} ediciones`);
     return;
@@ -884,7 +890,7 @@ const handleEditSave = async (numScenario, yearField) => {
 }
 
 /* Centrado vertical SOLO en filas de datos (tbody td) de la tabla de variables y escenarios */
-::v-deep .b-table .table tbody td {
+:deep(.b-table .table tbody td) {
     vertical-align: middle !important;
     height: 80px !important;
 }

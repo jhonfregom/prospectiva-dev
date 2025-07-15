@@ -1,8 +1,6 @@
 <template>
     <div class="variables-container">
-        <!-- NOTA: El stepper principal no debe mostrarse en los módulos, solo el mini stepper.
-             Si el stepper principal está en un layout global, condicionar su renderizado por ruta o prop. -->
-        <MiniStepper :steps="steps" :currentIndex="0" />
+        <!-- MiniStepper eliminado -->
         <b-table
             :data="variables"
             :loading="isLoading"
@@ -49,7 +47,7 @@
                         :icon-left="editingRow === props.row.id ? 'save' : 'edit'"
                         @click="handleEditSave(props.row)"
                         outlined
-                        :disabled="props.row.state === '1'"
+                        :disabled="props.row.edits_variable >= 3"
                     >
                         {{ editingRow === props.row.id ? textsStore.getText('variables_section.table.save') : textsStore.getText('variables_section.table.edit') }}
                     </b-button>
@@ -80,12 +78,10 @@ import { useTextsStore } from '../../../../stores/texts';
 import VariableFormModal from './VariableFormModal.vue';
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
-import MiniStepper from '../../ui/MiniStepper.vue';
 
 export default {
     components: {
         VariableFormModal,
-        MiniStepper
     },
 
     setup() {
@@ -278,7 +274,7 @@ export default {
 }
 
 /* Centrado vertical SOLO en filas de datos (tbody td) de la tabla de variables */
-::v-deep .b-table .table tbody td {
+:deep(.b-table .table tbody td) {
     vertical-align: middle !important;
     height: 80px !important;
 }
