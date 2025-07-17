@@ -163,15 +163,46 @@
             </div>
         </div>
     </div>
+    <!-- Botón cerrar/regresar en la esquina inferior derecha -->
+    <div v-if="!readonly && !pdfMode && !externalScenarios && !externalHypotheses" class="cerrar-container">
+      <button
+        class="cerrar-btn"
+        v-if="!cerrado"
+        @click="confirmarCerrar"
+        :disabled="cerrado"
+      >Cerrar</button>
+      <button
+        class="cerrar-btn"
+        v-else-if="tried !== null && tried < 2"
+        @click="confirmarRegresar"
+      >Regresar</button>
+    </div>
+    <!-- Modal de confirmación -->
+    <div v-if="mostrarModal" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
+        <button @click="cerrarModulo">Sí, cerrar</button>
+        <button @click="mostrarModal = false">Cancelar</button>
+      </div>
+    </div>
+    <!-- Modal de confirmación para regresar -->
+    <div v-if="mostrarModalRegresar" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
+        <button @click="regresarModulo">Sí, regresar</button>
+        <button @click="mostrarModalRegresar = false">Cancelar</button>
+      </div>
+    </div>
 </template>
 
 <script>
-import { onMounted, computed, ref } from 'vue';
+import { onMounted, onBeforeUnmount, computed, ref, getCurrentInstance, inject } from 'vue';
 import { useSectionStore } from '../../../../stores/section';
 import { useFutureDriversStore } from '../../../../stores/futureDrivers';
 import { useSchwartzStore } from '../../../../stores/schwartz';
 import { useTextsStore } from '../../../../stores/texts';
-import MiniStepper from '../../ui/MiniStepper.vue';
+import { useSessionStore } from '../../../../stores/session';
+import axios from 'axios';
 
 export default {
     name: 'SchwartzMainComponent',
@@ -198,16 +229,28 @@ export default {
         }
     },
     components: {
-        MiniStepper
     },
     setup(props) {
         const sectionStore = useSectionStore();
         const futureDriversStore = useFutureDriversStore();
         const schwartzStore = useSchwartzStore();
         const textsStore = useTextsStore();
+        const sessionStore = useSessionStore();
 
         // Constante para el límite de caracteres
         const MAX_CHARACTERS = 255;
+
+        // Inicializar 'cerrado' leyendo de localStorage directamente
+        let initialCerrado = false;
+        if (typeof window !== 'undefined') {
+            const user = JSON.parse(localStorage.getItem('user')) || {};
+            const cerradoKey = 'schwartz_cerrado_' + (user.id || 'anon');
+            initialCerrado = localStorage.getItem(cerradoKey) === 'true';
+        }
+        const cerrado = ref(initialCerrado);
+        const mostrarModal = ref(false);
+        const mostrarModalRegresar = ref(false);
+        const tried = ref(null); // Se inicializa como null hasta cargar desde traceability
 
         onMounted(async () => {
             // Solo cambiar el título si no está en modo readonly (modal)
@@ -219,6 +262,19 @@ export default {
             }
             // Cargar escenarios guardados
             await schwartzStore.fetchScenarios();
+            // Cargar el valor de tried desde traceability
+            await loadTriedValue();
+            // Actualizar estado de cerrado al entrar (por si cambia en otra pestaña)
+            if (typeof window !== 'undefined') {
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = 'schwartz_cerrado_' + (user.id || 'anon');
+                cerrado.value = localStorage.getItem(cerradoKey) === 'true';
+            }
+        });
+
+        onBeforeUnmount(() => {
+            // Limpiar botones dinámicos al desmontar el componente
+            sectionStore.clearDynamicButtons();
         });
 
         // Computed para obtener los textos de hipótesis
@@ -333,46 +389,148 @@ export default {
         const editingScenario = ref([false, false, false, false]);
         const editMessage = ref(['', '', '', '']);
 
-        // Para tamaño visualización
-        const schwartzSize = computed(() => {
-            if (props.pdfMode) return '900px';
-            if (props.size === 'large') return '1200px';
-            if (props.size === 'medium') return '900px';
-            if (props.size === 'small') return '600px';
-            if (typeof props.size === 'number') return props.size + 'px';
-            if (typeof props.size === 'string' && props.size.endsWith('px')) return props.size;
-            return '100%';
-        });
+        // --- FUNCIONES DE CERRAR Y REGRESAR ---
+        const confirmarCerrar = () => {
+            mostrarModal.value = true;
+        };
+        const cerrarModulo = async () => {
+            mostrarModal.value = false;
+            try {
+                // Para cada escenario, forzar edits=3 (bloqueado)
+                for (let i = 0; i < 4; i++) {
+                    const escenario = schwartzStore.escenarios[i];
+                    if (escenario && escenario.id) {
+                        await schwartzStore.saveScenario(i, i + 1, { edits: 3 });
+                    } else {
+                        await schwartzStore.saveScenario(i, i + 1, { texto: '', edits: 3 });
+                    }
+                }
+                await schwartzStore.fetchScenarios();
+                // Guardar acción pendiente en localStorage
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'schwartz' }));
+                if (typeof window !== 'undefined' && window.$buefy) {
+                    window.$buefy.toast.open({
+                        message: 'Módulo de Schwartz cerrado correctamente',
+                        type: 'is-success'
+                    });
+                }
+                sessionStore.setActiveContent('main');
+                // Guardar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = 'schwartz_cerrado_' + (user.id || 'anon');
+                localStorage.setItem(cerradoKey, 'true');
+                cerrado.value = true;
+            } catch (error) {
+                if (typeof window !== 'undefined' && window.$buefy) {
+                    window.$buefy.toast.open({
+                        message: 'Error al cerrar el módulo de Schwartz',
+                        type: 'is-danger'
+                    });
+                }
+            }
+        };
+        const confirmarRegresar = () => {
+            mostrarModalRegresar.value = true;
+        };
+        const regresarModulo = async () => {
+            mostrarModalRegresar.value = false;
+            try {
+                // Incrementar tried a 2
+                await incrementTried();
+                // Volver a cargar el valor actualizado de tried
+                await loadTriedValue();
+                // Para cada escenario, poner edits=0 (desbloquear)
+                for (let i = 0; i < 4; i++) {
+                    const escenario = schwartzStore.escenarios[i];
+                    if (escenario && escenario.id) {
+                        await schwartzStore.saveScenario(i, i + 1, { edits: 0 });
+                    } else {
+                        await schwartzStore.saveScenario(i, i + 1, { texto: '', edits: 0 });
+                    }
+                }
+                await schwartzStore.fetchScenarios();
+                // Guardar acción pendiente en localStorage
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'schwartz' }));
+                // Regresa a la vista principal
+                sessionStore.setActiveContent('main');
+                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = 'schwartz_cerrado_' + (user.id || 'anon');
+                localStorage.removeItem(cerradoKey);
+                cerrado.value = false;
+            } catch (error) {
+                if (typeof window !== 'undefined' && window.$buefy) {
+                    window.$buefy.toast.open({
+                        message: 'Error al regresar el módulo de Schwartz',
+                        type: 'is-danger'
+                    });
+                }
+            }
+        };
+        // --- FIN FUNCIONES DE CERRAR Y REGRESAR ---
 
-        return {
+        // Función para actualizar escenario en el servidor
+        const updateScenarioInServer = async (index, numScenario) => {
+            try {
+                const result = await schwartzStore.saveScenario(index, numScenario);
+                if (result.success) {
+                    console.log(`Escenario ${numScenario} actualizado correctamente`);
+                }
+            } catch (error) {
+                console.error('Error al actualizar escenario:', error);
+            }
+        };
+
+        // Función para cargar el valor de tried desde traceability
+        const loadTriedValue = async () => {
+            try {
+                const response = await axios.get('/traceability/tried');
+                if (response.data && response.data.success && response.data.tried !== undefined) {
+                    tried.value = response.data.tried;
+                }
+            } catch (error) {
+                console.error('Error al cargar tried:', error);
+            }
+        };
+
+        // Función para incrementar tried
+        const incrementTried = async () => {
+            try {
+                await axios.put('/traceability/tried', { tried: 2 });
+                tried.value = 2;
+            } catch (error) {
+                console.error('Error al incrementar tried:', error);
+            }
+        };
+
+        return { 
+            sectionStore,
+            futureDriversStore,
+            schwartzStore,
+            textsStore,
+            sessionStore,
             h1H0,
             h1H1,
             h2H0,
             h2H1,
             escenarios,
             setEscenario,
-            textsStore,
-            editingScenario,
-            handleEditSave,
-            editMessage,
-            schwartzStore,
             handleTextInput,
             handleTextPaste,
             handleTextKeyup,
-            schwartzSize,
-            steps: [
-                { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
-                { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
-                { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
-                { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
-                { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
-                { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
-                { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
-                { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
-                { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
-                { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
-                { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
-            ]
+            handleEditSave,
+            editingScenario,
+            editMessage,
+            cerrado,
+            mostrarModal,
+            mostrarModalRegresar,
+            tried,
+            confirmarCerrar,
+            cerrarModulo,
+            confirmarRegresar,
+            regresarModulo,
+            updateScenarioInServer,
+            MAX_CHARACTERS
         };
     }
 };
@@ -584,6 +742,54 @@ export default {
     z-index: 2;
     top: 0;
     box-shadow: 0 3px 12px rgba(79, 70, 229, 0.08);
+}
+
+.cerrar-container {
+  position: fixed;
+  bottom: 32px;
+  right: 48px;
+  z-index: 100;
+}
+.cerrar-btn {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cerrar-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+.modal-confirm {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.modal-content {
+  background: white;
+  padding: 32px 48px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  text-align: center;
+}
+.modal-content button {
+  margin: 0 12px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
 }
 .cell.hypo.left {
     background: #FAFAFA;

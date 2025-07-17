@@ -1,5 +1,5 @@
 <template>
-    <div class="conclusions-container">
+    <div class="conclusions-container" :key="forceRerender">
         <!-- MiniStepper eliminado -->
         <div class="conclusions-table">
             <div class="table-content">
@@ -128,6 +128,36 @@
                 </div>
             </div>
         </div>
+        <!-- Botón Cerrar -->
+    </div>
+    <!-- Botón cerrar/regresar en la esquina inferior derecha -->
+    <div class="cerrar-container">
+      <button
+        class="cerrar-btn"
+        v-if="!cerrado"
+        @click="confirmarCerrar"
+      >Cerrar</button>
+      <button
+        class="cerrar-btn"
+        v-else-if="tried !== null && tried < 2"
+        @click="mostrarModalRegresar = true"
+      >Regresar</button>
+    </div>
+    <!-- Modal de confirmación -->
+    <div v-if="mostrarModal" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
+        <button @click="cerrarModulo">Sí, cerrar</button>
+        <button @click="mostrarModal = false">Cancelar</button>
+      </div>
+    </div>
+    <!-- Modal de confirmación para regresar -->
+    <div v-if="mostrarModalRegresar" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
+        <button @click="regresarModulo">Sí, regresar</button>
+        <button @click="mostrarModalRegresar = false">Cancelar</button>
+      </div>
     </div>
 </template>
 
@@ -136,8 +166,8 @@
 import { useSectionStore } from '../../../../stores/section';
 import { useTextsStore } from '../../../../stores/texts';
 import { useConclusionsStore } from '../../../../stores/conclusions';
+import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
-import MiniStepper from '../../ui/MiniStepper.vue';
 
 
 export default {
@@ -147,6 +177,7 @@ export default {
         const sectionStore = useSectionStore();
         const textsStore = useTextsStore();
         const conclusionsStore = useConclusionsStore();
+        const storeSession = useSessionStore();
         
         // Constante para el límite de caracteres
         const MAX_CHARACTERS = 2000;
@@ -201,6 +232,7 @@ export default {
             sectionStore,
             textsStore,
             conclusionsStore,
+            storeSession,
             handleTextInput,
             handleTextPaste,
             handleTextKeyup
@@ -208,7 +240,7 @@ export default {
     },
 
     components: {
-        MiniStepper
+        
     },
 
     data() {
@@ -229,7 +261,12 @@ export default {
                 { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
                 { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
                 { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
-            ]
+            ],
+            mostrarModal: false,
+            mostrarModalRegresar: false,
+            cerrado: false,
+            forceRerender: 0,
+            tried: null, // Se inicializa como null hasta cargar desde traceability
         };
     },
 
@@ -253,7 +290,22 @@ export default {
 
     mounted() {
         this.sectionStore.setTitleSection(this.textsStore.getText('conclusions_section.title'));
-        this.loadConclusions();
+        this.loadConclusions().then(() => {
+            this.forceRerender++;
+        });
+        // Cargar el valor de tried desde traceability
+        this.loadTriedValue();
+        // Inicializar 'cerrado' leyendo de localStorage directamente
+        if (typeof window !== 'undefined') {
+            const user = JSON.parse(localStorage.getItem('user')) || {};
+            const cerradoKey = 'conclusions_cerrado_' + (user.id || 'anon');
+            this.cerrado = localStorage.getItem(cerradoKey) === 'true';
+        }
+    },
+
+    beforeUnmount() {
+        // Limpiar botones dinámicos al desmontar el componente
+        this.sectionStore.clearDynamicButtons();
     },
 
     watch: {
@@ -370,6 +422,117 @@ export default {
             } catch (error) {
                 this.$buefy.toast.open({
                     message: this.textsStore.getText('conclusions_section.messages.save_error'),
+                    type: 'is-danger'
+                });
+            }
+        },
+        async handleCloseConclusions() {
+            try {
+                await this.conclusionsStore.closeAllConclusions();
+                this.$buefy.toast.open({
+                    message: this.textsStore.getText('conclusions_section.messages.close_success') || 'Conclusiones cerradas correctamente',
+                    type: 'is-success'
+                });
+                this.sectionStore.setSection('main');
+            } catch (error) {
+                this.$buefy.toast.open({
+                    message: this.textsStore.getText('conclusions_section.messages.close_error') || 'Error al cerrar las conclusiones',
+                    type: 'is-danger'
+                });
+            }
+        },
+        confirmarCerrar() {
+            this.mostrarModal = true;
+        },
+        async cerrarModulo() {
+            this.mostrarModal = false;
+            // Bloquear conclusiones en el backend y store
+            try {
+                await this.conclusionsStore.closeAllConclusions();
+                // Guardar acción pendiente en localStorage
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'conclusions' }));
+                // Guardar estado de cerrado en localStorage
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = 'conclusions_cerrado_' + (user.id || 'anon');
+                localStorage.setItem(cerradoKey, 'true');
+                this.$buefy.toast.open({
+                    message: 'Módulo de conclusiones cerrado correctamente',
+                    type: 'is-success'
+                });
+                this.storeSession.setActiveContent('main');
+                // Habilitar el siguiente módulo en la trazabilidad después de 1 segundo
+                setTimeout(async () => {
+                    const { useTraceabilityStore } = await import('../../../../stores/traceability');
+                    const traceabilityStore = useTraceabilityStore();
+                    await traceabilityStore.markSectionCompleted('conclusions');
+                }, 1000);
+                // Cambiar el estado local después de volver al main
+                this.cerrado = true;
+            } catch (error) {
+                this.$buefy.toast.open({
+                    message: 'Error al cerrar el módulo de conclusiones',
+                    type: 'is-danger'
+                });
+            }
+        },
+        async loadTriedValue() {
+            try {
+                const response = await axios.get('/traceability/tried');
+                if (response.data && response.data.success && response.data.tried !== undefined) {
+                    this.tried = response.data.tried;
+                }
+            } catch (error) {
+                console.error('Error al cargar tried:', error);
+            }
+        },
+
+        async incrementTried() {
+            try {
+                await axios.put('/traceability/tried', { tried: 2 });
+                this.tried = 2;
+            } catch (error) {
+                console.error('Error al incrementar tried:', error);
+            }
+        },
+
+        async regresarModulo() {
+            this.mostrarModalRegresar = false;
+            try {
+                // Incrementar tried a 2
+                await this.incrementTried();
+                // Volver a cargar el valor actualizado de tried
+                await this.loadTriedValue();
+                // Guardar acción pendiente en localStorage
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'conclusions' }));
+                // Desbloquear módulos posteriores (eliminar su flag de cerrado en localStorage)
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const posteriores = [
+                  'results' // Agrega aquí los módulos posteriores a conclusiones
+                ];
+                posteriores.forEach(mod => {
+                  const cerradoKey = mod + '_cerrado_' + (user.id || 'anon');
+                  localStorage.removeItem(cerradoKey);
+                });
+                // Regresa a la vista principal
+                this.storeSession.setActiveContent('main');
+                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                const cerradoKey = 'conclusions_cerrado_' + (user.id || 'anon');
+                localStorage.removeItem(cerradoKey);
+                this.cerrado = false;
+                // Resetear flags de edición locales
+                this.isComponentPracticeEditing = false;
+                this.isActualityEditing = false;
+                this.isAplicationEditing = false;
+                // Recargar los datos de conclusiones para actualizar los estados de edición
+                await this.loadConclusions();
+                this.forceRerender++;
+                this.$buefy.toast.open({
+                    message: 'Módulo de conclusiones reabierto correctamente',
+                    type: 'is-success'
+                });
+            } catch (error) {
+                this.$buefy.toast.open({
+                    message: 'Error al regresar el módulo de conclusiones',
                     type: 'is-danger'
                 });
             }
@@ -532,6 +695,54 @@ export default {
     max-width: 100% !important;
     resize: vertical !important;
     height: auto !important;
+}
+
+.cerrar-container {
+  position: fixed;
+  bottom: 32px;
+  right: 48px;
+  z-index: 100;
+}
+.cerrar-btn {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cerrar-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+.modal-confirm {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.modal-content {
+  background: white;
+  padding: 32px 48px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  text-align: center;
+}
+.modal-content button {
+  margin: 0 12px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 @media (max-width: 700px) {

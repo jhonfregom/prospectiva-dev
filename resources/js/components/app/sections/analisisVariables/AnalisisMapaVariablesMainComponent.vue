@@ -1,5 +1,6 @@
 <template>
-    <div class="analisis-mapa-variables-container">
+    <div v-if="traceabilityStore.isLoading || !seccionesValidas" style="min-height:160px;"></div>
+    <div v-else class="analisis-mapa-variables-container">
         <b-message type="is-info" has-icon>
             {{ descriptionWithCount }}
         </b-message>
@@ -40,10 +41,10 @@
                         placeholder="Escribe tu análisis..."
                         :rows="4"
                         style="min-width:495px; max-width:900px; resize:vertical; text-align:center;"
-                        @input="onCommentInput(props.row, $event)"
-                        @keyup="onCommentInput(props.row, $event)"
-                        @paste="onCommentInput(props.row, $event)"
-                        @cut="onCommentInput(props.row, $event)"
+                        @input="handleCommentChange(props.row)"
+                        @keyup="handleCommentChange(props.row)"
+                        @paste="handleCommentChange(props.row)"
+                        @cut="handleCommentChange(props.row)"
                     />
                 </div>
             </b-table-column>
@@ -69,6 +70,36 @@
             </b-table-column>
         </b-table>
     </div>
+    <!-- Botón cerrar en la esquina inferior derecha -->
+    <div class="cerrar-container">
+      <button
+        class="cerrar-btn"
+        v-if="!cerrado"
+        @click="confirmarCerrar"
+        :disabled="cerrado"
+      >Cerrar</button>
+      <button
+        class="cerrar-btn"
+        v-else-if="tried !== null && tried < 2"
+        @click="confirmarRegresar"
+      >Regresar</button>
+    </div>
+    <!-- Modal de confirmación -->
+    <div v-if="mostrarModal" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
+        <button @click="cerrarModulo">Sí, cerrar</button>
+        <button @click="mostrarModal = false">Cancelar</button>
+      </div>
+    </div>
+    <!-- Modal de confirmación para regresar -->
+    <div v-if="mostrarModalRegresar" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Estás seguro de regresar el módulo? Podrás editar y guardar nuevamente.</p>
+        <button @click="regresarModulo">Sí, regresar</button>
+        <button @click="mostrarModalRegresar = false">Cancelar</button>
+      </div>
+    </div>
 </template>
 
 <script>
@@ -77,9 +108,13 @@ import { useTextsStore } from '../../../../stores/texts';
 import { useGraphicsStore } from '../../../../stores/graphics';
 import { useSectionStore } from '../../../../stores/section';
 import { useSessionStore } from '../../../../stores/session';
-import { onMounted, watch, computed, ref } from 'vue';
+import { onMounted, computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { debounce } from 'lodash';
+import { useTraceabilityStore } from '../../../../stores/traceability';
+import axios from 'axios';
+
+const CERRADO_KEY_PREFIX = 'analisis_cerrado_';
 
 export default {
     name: 'AnalisisMapaVariablesMainComponent',
@@ -87,260 +122,41 @@ export default {
     components: {
     },
 
+    data() {
+        return {
+            editingRow: null,
+            cerrado: false,
+            mostrarModal: false,
+            mostrarModalRegresar: false,
+            tried: null, // Se inicializa como null hasta cargar desde traceability
+        };
+    },
+    created() {
+        // Leer estado de cerrado desde localStorage
+        const user = JSON.parse(localStorage.getItem('user')) || {};
+        const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
+        const cerradoValue = localStorage.getItem(cerradoKey);
+        this.cerrado = cerradoValue === 'true';
+    },
     setup() {
         const analysisStore = useAnalysisStore();
         const textsStore = useTextsStore();
         const graphicsStore = useGraphicsStore();
         const sectionStore = useSectionStore();
         const sessionStore = useSessionStore();
+        const traceabilityStore = useTraceabilityStore();
         const { rows } = storeToRefs(analysisStore);
         const { data } = storeToRefs(graphicsStore);
-        const editingRow = ref(null);
-
         const descriptionWithCount = computed(() => {
             const count = data.value ? data.value.length : 0;
             return textsStore.getText('analysis.description').replace(/de \d+ variables/i, `de ${count} variables`);
         });
-
-        // Cargar análisis guardados al montar
-        async function loadSavedAnalysis() {
-            try {
-                console.log('Cargando análisis para usuario autenticado');
-                
-                const result = await analysisStore.fetchAnalyses();
-                if (result && result.data) {
-                    result.data.forEach(analysis => {
-                        console.log('Procesando análisis:', analysis);
-                        const row = rows.value.find(r => r.key === analysis.zone_id);
-                        console.log('Fila encontrada:', row ? row.key : 'NO ENCONTRADA');
-                        
-                        if (row) {
-                            row.comment = analysis.description || '';
-                            row.score = analysis.score || 0;
-                            row.state = analysis.state || '0';
-                            console.log(`Asignado a zona ${row.key}:`, {
-                                comment: row.comment,
-                                score: row.score,
-                                state: row.state,
-                                isBlocked: row.state === '1'
-                            });
-                        }
-                    });
-                }
-            } catch (e) {
-                console.error('Error al cargar análisis:', e);
-            }
-        }
-
-        // Guardar o crear análisis en backend
-        async function saveOrCreateAnalysis(row, isManualSave = false) {
-            try {
-                const analysisData = {
-                    zone_id: row.key,
-                    description: row.comment || '',
-                    score: Number(row.score) || 0,
-                    state: String(row.state || 0),
-                    is_manual_save: isManualSave
-                };
-                
-                console.log('Datos enviados al backend:', analysisData);
-                const result = await analysisStore.saveAnalysis(analysisData);
-                
-                if (result.success && result.data) {
-                    row.state = result.data.state;
-                }
-            } catch (e) {
-                console.error('Error al guardar análisis:', e);
-            }
-        }
-
-        // Al hacer click en el botón
-        async function handleEditSave(row) {
-            console.log('handleEditSave - Zone:', row.key, 'Current state:', row.state);
-            
-            if (row.state === '1') {
-                console.log('Análisis bloqueado, no se puede editar:', row.key);
-                return; // Verificar si está bloqueado
-            }
-            
-            if (editingRow.value === row.key) {
-                // Guardar manualmente
-                console.log('Guardando manualmente análisis:', row.key);
-                debouncedSaveAnalysis.cancel(); // Cancelar guardado automático pendiente
-                const result = await saveOrCreateAnalysis(row, true);
-                console.log('After save - Zone:', row.key, 'New state:', row.state);
-                editingRow.value = null;
-            } else {
-                // Entrar en modo edición
-                editingRow.value = row.key;
-            }
-        }
-
-        // Función para agrupar variables en filas
-        function groupByRows(variables, itemsPerRow) {
-            const groups = [];
-            for (let i = 0; i < variables.length; i += itemsPerRow) {
-                groups.push(variables.slice(i, i + itemsPerRow));
-            }
-            return groups;
-        }
-
-        // Función para obtener el nombre de la zona
-        function getZoneName(key) {
-            const zone = textsStore.getText('analysis.zones').find(z => z.key === key);
-            return zone ? zone.name : key;
-        }
-
-        // Función para obtener el diagnóstico
-        function getDiagnosis(score) {
-            const diagnosis = textsStore.getText('analysis.diagnosis');
-            for (const diag of diagnosis) {
-                if (score >= diag.min && score <= diag.max) {
-                    return diag;
-                }
-            }
-            return diagnosis[0]; // Por defecto
-        }
-
-        // Función para obtener la clase CSS del diagnóstico
-        function getDiagnosisClass(score) {
-            const diag = getDiagnosis(score);
-            if (diag.text === 'DEBES MEJORAR') return 'has-text-danger';
-            if (diag.text === 'FALTA ALGO MAS') return 'has-text-warning';
-            if (diag.text === 'UN ESFUERZO MAS') return 'has-text-info';
-            if (diag.text === 'LO LOGRASTE') return 'has-text-success';
-            return '';
-        }
-
-        // Función para actualizar variables por zona
-        function updateVariablesByZone() {
-            if (!data.value || data.value.length === 0) return;
-            
-            const maxX = Math.max(...data.value.map(v => v.influencia), 10);
-            const maxY = Math.max(...data.value.map(v => v.dependencia), 12);
-            const centroX = maxX / 2;
-            const centroY = maxY / 2;
-            
-            rows.value.forEach(r => r.variables = []);
-            
-            data.value.forEach(v => {
-                let zona = '';
-                let esFrontera = false;
-                
-                if (v.influencia === centroX || v.dependencia === centroY) {
-                    esFrontera = true;
-                    if (v.influencia > centroX && v.dependencia >= centroY) zona = 'conflicto';
-                    else if (v.influencia <= centroX && v.dependencia > centroY) zona = 'poder';
-                    else if (v.influencia > centroX && v.dependencia < centroY) zona = 'salida';
-                    else zona = 'indiferencia';
-                } else {
-                    if (v.influencia <= centroX && v.dependencia > centroY) zona = 'poder';
-                    else if (v.influencia > centroX && v.dependencia >= centroY) zona = 'conflicto';
-                    else if (v.influencia <= centroX && v.dependencia <= centroY) zona = 'indiferencia';
-                    else if (v.influencia > centroX && v.dependencia < centroY) zona = 'salida';
-                }
-                
-                const row = rows.value.find(r => r.key === zona);
-                if (row) {
-                    row.variables.push({ codigo: v.codigo, frontera: esFrontera });
-                }
-            });
-        }
-
-        // Guardado automático con debounce
-        const debouncedSaveAnalysis = debounce((row) => {
-            saveOrCreateAnalysis(row, false);
-        }, 1000);
-
-        // Constante para el límite de caracteres
-        const MAX_CHARACTERS = 255;
-
-        // Función para manejar input del comentario
-        function onCommentInput(row, event = null) {
-            if (row.state === '1') {
-                console.log('Análisis bloqueado, no se permiten cambios:', row.key);
-                return; // No permitir cambios si está bloqueado
-            }
-
-            // Si es un evento de pegado, manejar de forma especial
-            if (event && event.type === 'paste') {
-                const pastedText = (event.clipboardData || window.clipboardData).getData('text');
-                const currentText = row.comment || '';
-                const combinedText = currentText + pastedText;
-                
-                if (combinedText.length <= MAX_CHARACTERS) {
-                    // Permitir el pegado normal
-                    return;
-                } else {
-                    // Prevenir el pegado por defecto y manejar manualmente
-                    event.preventDefault();
-                    // Calcular cuántos caracteres se pueden agregar
-                    const availableSpace = MAX_CHARACTERS - currentText.length;
-                    if (availableSpace > 0) {
-                        const truncatedPastedText = pastedText.substring(0, availableSpace);
-                        row.comment = currentText + truncatedPastedText;
-                        console.log(`Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
-                    } else {
-                        console.log(`No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
-                    }
-                }
-            } else {
-                // Para input normal y keyup
-                const text = row.comment || '';
-                if (text.length > MAX_CHARACTERS) {
-                    // Truncar el texto al límite
-                    row.comment = text.substring(0, MAX_CHARACTERS);
-                    console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
-                }
-            }
-            
-            // Guardado automático
-            debouncedSaveAnalysis(row);
-        }
-
-        onMounted(async () => {
-            console.log('onMounted iniciado');
-            sectionStore.setTitleSection(textsStore.getText('analysis.title'));
-            analysisStore.initZones();
-            
-            console.log('Filas inicializadas:', rows.value.map(row => ({
-                key: row.key,
-                state: row.state,
-                comment: row.comment,
-                score: row.score
-            })));
-            
-            await graphicsStore.fetchGraphicsData();
-            updateVariablesByZone();
-            
-            // Cargar análisis después de que todo esté inicializado
-            await loadSavedAnalysis();
-            
-            // Verificar el estado después de cargar
-            console.log('Estado final de las filas:', rows.value.map(row => ({
-                key: row.key,
-                state: row.state,
-                isBlocked: row.state === '1',
-                comment: row.comment,
-                score: row.score
-            })));
+        // --- NUEVO: Validación extra de secciones válidas ---
+        const seccionesValidas = computed(() => {
+            const secciones = traceabilityStore.availableSections;
+            return secciones && secciones.analysis === true;
         });
-
-        // Actualiza las variables por zona en tiempo real
-        watch(data, () => {
-            updateVariablesByZone();
-        }, { immediate: true });
-
-        // Watcher para actualizar el puntaje cuando cambie el comentario
-        watch(rows, () => {
-            rows.value.forEach(row => {
-                if (row.comment !== undefined) {
-                    const words = (row.comment || '').trim().split(/\s+/).filter(w => w.length > 0);
-                    row.score = words.length;
-                }
-            });
-        }, { deep: true });
-
+        // --- FIN NUEVO ---
         return {
             analysisStore,
             textsStore,
@@ -349,36 +165,212 @@ export default {
             sessionStore,
             rows,
             data,
-            editingRow,
             descriptionWithCount,
-            loadSavedAnalysis,
-            saveOrCreateAnalysis,
-            handleEditSave,
-            groupByRows,
-            getZoneName,
-            getDiagnosis,
-            getDiagnosisClass,
-            onCommentInput,
-            updateVariablesByZone,
-            steps: [
-                { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
-                { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
-                { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
-                { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
-                { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
-                { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
-                { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
-                { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
-                { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
-                { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
-                { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
-            ]
+            traceabilityStore,
+            seccionesValidas
         };
+    },
+    mounted() {
+        this.sectionStore.setTitleSection(this.textsStore.getText('analysis.title'));
+        this.loadSavedAnalysis();
+        // Cargar el valor de tried desde traceability
+        this.loadTriedValue();
+    },
+
+    beforeUnmount() {
+        // Limpiar botones dinámicos al desmontar el componente
+        this.sectionStore.clearDynamicButtons();
+    },
+    methods: {
+        async loadSavedAnalysis() {
+            try {
+                const result = await this.analysisStore.fetchAnalyses();
+                if (result && result.data) {
+                    result.data.forEach(analysis => {
+                        const row = this.rows.find(r => r.key === analysis.zone_id);
+                        if (row) {
+                            row.comment = analysis.description || '';
+                            row.score = analysis.score || 0;
+                            row.state = analysis.state || '0';
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Error al cargar análisis:', e);
+            }
+        },
+        groupByRows(variables, itemsPerRow) {
+            const groups = [];
+            for (let i = 0; i < variables.length; i += itemsPerRow) {
+                groups.push(variables.slice(i, i + itemsPerRow));
+            }
+            return groups;
+        },
+        getZoneName(key) {
+            const zone = this.textsStore.getText('analysis.zones').find(z => z.key === key);
+            return zone ? zone.name : key;
+        },
+        getDiagnosis(score) {
+            const diagnosis = this.textsStore.getText('analysis.diagnosis');
+            for (const diag of diagnosis) {
+                if (score >= diag.min && score <= diag.max) {
+                    return diag;
+                }
+            }
+            return diagnosis[0];
+        },
+        getDiagnosisClass(score) {
+            const diag = this.getDiagnosis(score);
+            if (diag.text === 'DEBES MEJORAR') return 'has-text-danger';
+            if (diag.text === 'FALTA ALGO MAS') return 'has-text-warning';
+            if (diag.text === 'UN ESFUERZO MAS') return 'has-text-info';
+            if (diag.text === 'LO LOGRASTE') return 'has-text-success';
+            return '';
+        },
+        handleCommentChange(row) {
+            const words = row.comment ? row.comment.split(/\s+/).filter(word => word.length > 0) : [];
+            row.score = words.length;
+            this.debouncedSaveAnalysis(row);
+        },
+        debouncedSaveAnalysis: debounce(async function(row) {
+            if (row.state !== '1') {
+                await this.saveOrCreateAnalysis(row, false);
+            }
+        }, 1000),
+        async saveOrCreateAnalysis(row, isManualSave = false) {
+            try {
+                const analysisData = {
+                    zone_id: row.key,
+                    description: row.comment || '',
+                    score: Number(row.score) || 0,
+                    state: String(row.state || 0),
+                    is_manual_save: isManualSave
+                };
+                const result = await this.analysisStore.saveAnalysis(analysisData);
+                if (result.success && result.data) {
+                    row.state = result.data.state;
+                }
+            } catch (e) {
+                console.error('Error al guardar análisis:', e);
+            }
+        },
+        async updateAnalysisInServer(row) {
+            try {
+                const analyses = await this.analysisStore.fetchAnalyses();
+                if (analyses && analyses.data) {
+                    const existingAnalysis = analyses.data.find(analysis => analysis.zone_id === row.key);
+                    if (existingAnalysis) {
+                        const result = await this.analysisStore.updateAnalysis(existingAnalysis.id, {
+                            description: row.comment || '',
+                            score: Number(row.score) || 0,
+                            state: '1' // Bloquear
+                        });
+                        if (result.success && result.data) {
+                            row.state = result.data.state;
+                        }
+                    } else {
+                        await this.saveOrCreateAnalysis(row, true);
+                    }
+                }
+            } catch (e) {
+                console.error('Error al actualizar análisis:', e);
+            }
+        },
+        async handleEditSave(row) {
+            if (row.state === '1') return;
+            if (this.editingRow === row.key) {
+                this.debouncedSaveAnalysis.cancel();
+                await this.saveOrCreateAnalysis(row, true);
+                this.editingRow = null;
+            } else {
+                this.editingRow = row.key;
+            }
+        },
+        confirmarCerrar() {
+            this.mostrarModal = true;
+        },
+        confirmarRegresar() {
+            this.mostrarModalRegresar = true;
+        },
+        async cerrarModulo() {
+            this.mostrarModal = false;
+            // Bloquear todos los análisis en el backend y store
+            const result = await this.analysisStore.closeAllAnalyses();
+            if (result.success) {
+                // Guardar acción pendiente en localStorage
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'analysis' }));
+                this.$buefy.toast.open({
+                    message: 'Módulo de análisis de variables cerrado correctamente',
+                    type: 'is-success'
+                });
+                this.sessionStore.setActiveContent('main');
+                // Guardar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
+                localStorage.setItem(cerradoKey, 'true');
+                this.cerrado = true;
+            } else {
+                this.$buefy.toast.open({
+                    message: 'Error al cerrar el módulo de análisis de variables',
+                    type: 'is-danger'
+                });
+            }
+        },
+        async regresarModulo() {
+            this.mostrarModalRegresar = false;
+            try {
+                // Incrementar tried a 2
+                await this.incrementTried();
+                // Volver a cargar el valor actualizado de tried
+                await this.loadTriedValue();
+                // Guardar acción pendiente en localStorage
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'analysis' }));
+                this.$buefy.toast.open({
+                    message: 'Módulo de análisis de variables reabierto correctamente',
+                    type: 'is-success'
+                });
+                this.sessionStore.setActiveContent('main');
+                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
+                localStorage.removeItem(cerradoKey);
+                this.cerrado = false;
+            } catch (error) {
+                this.$buefy.toast.open({
+                    message: 'Error al regresar el módulo de análisis de variables',
+                    type: 'is-danger'
+                });
+            }
+        },
+
+        async loadTriedValue() {
+            try {
+                const response = await axios.get('/traceability/tried');
+                if (response.data && response.data.success && response.data.tried !== undefined) {
+                    this.tried = response.data.tried;
+                }
+            } catch (error) {
+                console.error('Error al cargar tried:', error);
+            }
+        },
+
+        async incrementTried() {
+            try {
+                await axios.put('/traceability/tried', { tried: 2 });
+                this.tried = 2;
+            } catch (error) {
+                console.error('Error al incrementar tried:', error);
+            }
+        }
     }
 };
 </script>
 
 <style scoped>
+.analisis-mapa-variables-container {
+    position: relative; /* Para posicionar el botón de cerrar */
+}
+
 .variables-container {
     padding: 20px;
 }
@@ -451,5 +443,53 @@ export default {
     text-align: center !important;
     resize: vertical;
     min-height: 80px;
+}
+
+.cerrar-container {
+  position: fixed;
+  bottom: 32px;
+  right: 48px;
+  z-index: 100;
+}
+.cerrar-btn {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cerrar-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+.modal-confirm {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.modal-content {
+  background: white;
+  padding: 32px 48px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  text-align: center;
+}
+.modal-content button {
+  margin: 0 12px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
 }
 </style>

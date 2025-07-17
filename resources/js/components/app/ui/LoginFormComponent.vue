@@ -1,3 +1,49 @@
+<template>
+    <div>
+        <div v-if="showSuccessMessage" class="notification is-success">
+            {{ successMessage }}
+        </div>
+        <form
+            :action="storeUrls.login"
+            @submit="clickLogin"
+            method="POST">
+            <input type="hidden" name="_token" :value="csrf_token">
+            <b-field
+                v-bind:type="{ 'is-danger' : fields.user.error }"
+                :message="fields.user.error ? fields.user.msg : ''">
+                <b-input
+                    name="user"
+                    size="is-large"
+                    type="text"
+                    :placeholder="capitalize( fields.user.placeholder )"
+                    autofocus=""
+                    v-model="user" />
+            </b-field>
+            <b-field
+                v-bind:type="{ 'is-danger' : fields.password.error }"
+                :message="fields.password.error ? fields.password.msg : ''">
+                <b-tooltip
+                    :label="capitalize( fields.password.caps_lock )"
+                    :active="isCapsLock"
+                    position="is-bottom"
+                    always>
+                    <b-input
+                        size="is-large"
+                        type="password"
+                        :placeholder="capitalize( fields.password.placeholder )"
+                        autofocus=""
+                        v-model="password"
+                        v-on:keyup="keyUpCapsLock($event)"
+                        v-on:blur="isCapsLock = isCapsLock ? false : isCapsLock"/>
+                </b-tooltip>
+            </b-field>
+            <b-button name="password" class="is-block is-info" size="is-large is-fullwidth" native-type="submit">
+                {{ fields.login.placeholder }}
+            </b-button>
+        </form>
+    </div>
+</template>
+
 <script>
 import { capitalize } from '../../../../js/functions';
 
@@ -47,7 +93,7 @@ export default {
             this.successMessage = this.success_message;
             this.showSuccessMessage = true;
             setTimeout(() => {
-                this.showSuccessMessage = false;//############<-
+                this.showSuccessMessage = false;
             }, 3000); // El mensaje desaparecerá después de 3 segundos
         }
     },
@@ -64,7 +110,6 @@ export default {
 
             if(  this.user !== '' || this.password !== '' )
             {
-            // return true;
                 const data = {
                     _token: this.csrf_token,
                     user: this.user,
@@ -100,48 +145,3 @@ export default {
     }
 }
 </script>
-<template>
-    <div>
-        <div v-if="showSuccessMessage" class="notification is-success">
-            {{ successMessage }}
-        </div>
-        <form
-            :action="storeUrls.login"
-            @submit="clickLogin"
-            method="POST">
-            <input type="hidden" name="_token" :value="csrf_token">
-            <b-field
-                v-bind:type="{ 'is-danger' : fields.user.error }"
-                :message="fields.user.error ? fields.user.msg : ''">
-                <b-input
-                    name="user"
-                    size="is-large"
-                    type="text"
-                    :placeholder="capitalize( fields.user.placeholder )"
-                    autofocus=""
-                    v-model="user" />
-            </b-field>
-            <b-field
-                v-bind:type="{ 'is-danger' : fields.password.error }"
-                :message="fields.password.error ? fields.password.msg : ''">
-                <b-tooltip
-                    :label="capitalize( fields.password.caps_lock )"
-                    :active="isCapsLock"
-                    position="is-bottom"
-                    always>
-                    <b-input
-                        size="is-large"
-                        type="password"
-                        :placeholder="capitalize( fields.password.placeholder )"
-                        autofocus=""
-                        v-model="password"
-                        v-on:keyup="keyUpCapsLock($event)"
-                        v-on:blur="isCapsLock = isCapsLock ? false : isCapsLock"/>
-                </b-tooltip>
-            </b-field>
-            <b-button name="password" class="is-block is-info" size="is-large is-fullwidth" native-type="submit">
-                {{ fields.login.placeholder }}
-            </b-button>
-        </form>
-    </div>
-</template>

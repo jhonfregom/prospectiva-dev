@@ -1,5 +1,6 @@
 <template>
-    <div class="matriz-container">
+    <div v-if="traceabilityStore.isLoading || !seccionesValidas" style="min-height:160px;"></div>
+    <div v-else class="matriz-container">
         <!-- MiniStepper eliminado -->
         <div class="matriz-header">
             <b-button
@@ -123,32 +124,71 @@
             </table>
         </div>
     </div>
+    <div class="cerrar-container">
+      <button
+        class="cerrar-btn"
+        v-if="!cerrado"
+        @click="confirmarCerrar"
+        :disabled="cerrado"
+      >Cerrar</button>
+      <button
+        class="cerrar-btn"
+        v-else-if="tried !== null && tried < 2"
+        @click="confirmarRegresar"
+      >Regresar</button>
+    </div>
+    <div v-if="mostrarModal" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Está seguro de que desea cerrar el módulo de matriz?</p>
+        <button @click="cerrarModulo">Sí, cerrar</button>
+        <button @click="mostrarModal = false">Cancelar</button>
+      </div>
+    </div>
+    <div v-if="mostrarModalRegresar" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Está seguro de que desea regresar el módulo de matriz? Podrá editar y guardar nuevamente.</p>
+        <button @click="regresarModulo">Sí, regresar</button>
+        <button @click="mostrarModalRegresar = false">Cancelar</button>
+      </div>
+    </div>
 </template>
 
 <script>
 import { useMatrizStore } from '../../../../stores/matriz';
 import { useSectionStore } from '../../../../stores/section';
 import { useTextsStore } from '../../../../stores/texts';
+import { useSessionStore } from '../../../../stores/session';
 import { storeToRefs } from 'pinia';
-import MiniStepper from '../../ui/MiniStepper.vue';
+import { useTraceabilityStore } from '../../../../stores/traceability';
+import { computed } from 'vue';
+import axios from 'axios';
 
 export default {
     components: {
-        MiniStepper
     },
     setup() {
         const matrizStore = useMatrizStore();
         const sectionStore = useSectionStore();
         const textsStore = useTextsStore();
+        const sessionStore = useSessionStore();
+        const traceabilityStore = useTraceabilityStore();
         const { variables, isLoading, isLocked } = storeToRefs(matrizStore);
-
+        // --- NUEVO: Validación extra de secciones válidas ---
+        const seccionesValidas = computed(() => {
+            const secciones = traceabilityStore.availableSections;
+            return secciones && secciones.matrix === true;
+        });
+        // --- FIN NUEVO ---
         return {
             matrizStore,
             sectionStore,
             textsStore,
+            sessionStore,
             variables,
             isLoading,
-            isLocked
+            isLocked,
+            traceabilityStore,
+            seccionesValidas
         };
     },
 
@@ -170,8 +210,20 @@ export default {
                 { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
                 { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
                 { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
-            ]
+            ],
+            mostrarModal: false,
+            mostrarModalRegresar: false,
+            cerrado: false,
+            tried: null, // Se inicializa como null hasta cargar desde traceability
         };
+    },
+
+    created() {
+        // Leer estado de cerrado desde localStorage
+        const user = JSON.parse(localStorage.getItem('user')) || {};
+        const cerradoKey = 'matriz_cerrado_' + (user.id || 'anon');
+        const cerradoValue = localStorage.getItem(cerradoKey);
+        this.cerrado = cerradoValue === 'true';
     },
 
     computed: {
@@ -218,9 +270,13 @@ export default {
         this.sectionStore.setTitleSection(this.textsStore.getText('matriz.section_title'));
         this.loadMatrizData();
         document.addEventListener('click', this.closePopover);
+        // Cargar el valor de tried desde traceability
+        this.loadTriedValue();
     },
 
     beforeUnmount() {
+        // Limpiar botones dinámicos al desmontar el componente
+        this.sectionStore.clearDynamicButtons();
         document.removeEventListener('click', this.closePopover);
     },
 
@@ -299,7 +355,83 @@ export default {
                     this.editingCell = null;
                 });
             }
-        }
+        },
+        confirmarCerrar() {
+          this.mostrarModal = true;
+        },
+        confirmarRegresar() {
+          this.mostrarModalRegresar = true;
+        },
+        async cerrarModulo() {
+          this.mostrarModal = false;
+          try {
+            // Guardar la matriz antes de cerrar
+            await this.guardarMatriz();
+            // Guardar acción pendiente en localStorage
+            localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'matrix' }));
+            this.$buefy.toast.open({
+              message: 'Módulo de matriz cerrado correctamente',
+              type: 'is-success'
+            });
+            this.sessionStore.setActiveContent('main');
+            // Guardar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+            const user = JSON.parse(localStorage.getItem('user')) || {};
+            const cerradoKey = 'matriz_cerrado_' + (user.id || 'anon');
+            localStorage.setItem(cerradoKey, 'true');
+            this.cerrado = true;
+          } catch (error) {
+            this.$buefy.toast.open({
+              message: 'Error al cerrar el módulo de matriz',
+              type: 'is-danger'
+            });
+          }
+        },
+        async regresarModulo() {
+          this.mostrarModalRegresar = false;
+          try {
+            // Incrementar tried a 2
+            await this.incrementTried();
+            // Volver a cargar el valor actualizado de tried
+            await this.loadTriedValue();
+            // Guardar acción pendiente en localStorage
+            localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'matrix' }));
+            this.$buefy.toast.open({
+              message: 'Módulo de matriz reabierto correctamente',
+              type: 'is-success'
+            });
+            this.sessionStore.setActiveContent('main');
+            // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+            const user = JSON.parse(localStorage.getItem('user')) || {};
+            const cerradoKey = 'matriz_cerrado_' + (user.id || 'anon');
+            localStorage.removeItem(cerradoKey);
+            this.cerrado = false;
+          } catch (error) {
+            this.$buefy.toast.open({
+              message: 'Error al regresar el módulo de matriz',
+              type: 'is-danger'
+            });
+          }
+        },
+
+        async loadTriedValue() {
+            try {
+                const response = await axios.get('/traceability/tried');
+                if (response.data && response.data.success && response.data.tried !== undefined) {
+                    this.tried = response.data.tried;
+                }
+            } catch (error) {
+                console.error('Error al cargar tried:', error);
+            }
+        },
+
+        async incrementTried() {
+            try {
+                await axios.put('/traceability/tried', { tried: 2 });
+                this.tried = 2;
+            } catch (error) {
+                console.error('Error al incrementar tried:', error);
+            }
+        },
     }
 };
 </script>
@@ -598,6 +730,54 @@ export default {
             }
         }
     }
+}
+
+.cerrar-container {
+  position: fixed;
+  bottom: 32px;
+  right: 48px;
+  z-index: 100;
+}
+.cerrar-btn {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cerrar-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+.modal-confirm {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.modal-content {
+  background: white;
+  padding: 32px 48px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  text-align: center;
+}
+.modal-content button {
+  margin: 0 12px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 // Ocultar flechas del input number

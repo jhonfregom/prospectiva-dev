@@ -1,8 +1,3 @@
-<script>
-    export default {
-
-    }
-</script>
 <template>
     <section class="notify-content">
         <b-icon
@@ -12,6 +7,12 @@
             />
     </section>
 </template>
+<script>
+    export default {
+
+    }
+</script>
+
 <style lang="scss" scoped>
     @use '../../../../../sass/variables' as var;
 

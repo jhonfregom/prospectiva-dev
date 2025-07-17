@@ -1,3 +1,17 @@
+<template>
+    <div class="column is-9 is-hidden-mobile is-hidden-tablet-only is-size-7-tablet contentMenu">
+        <ul class="listMenu">
+            <li v-for="(item, index) in items"
+                :key="index"
+                :class="{ listMenuActive: item.active }"
+                v-on:click="handleClick(item.action)">
+                <a href="#">
+                    {{ item.label }}
+                </a>
+            </li>
+        </ul>
+    </div>
+</template>
 <script>
 export default {
     props: {
@@ -39,20 +53,7 @@ export default {
     }
 }
 </script>
-<template>
-    <div class="column is-9 is-hidden-mobile is-hidden-tablet-only is-size-7-tablet contentMenu">
-        <ul class="listMenu">
-            <li v-for="(item, index) in items"
-                :key="index"
-                :class="{ listMenuActive: item.active }"
-                v-on:click="handleClick(item.action)">
-                <a href="#">
-                    {{ item.label }}
-                </a>
-            </li>
-        </ul>
-    </div>
-</template>
+
 <style lang="scss" scoped>
     @use '../../../../sass/variables' as var;
 

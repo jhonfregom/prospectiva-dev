@@ -108,7 +108,9 @@ export const useVariablesStore = defineStore('variables', {
             try {
                 const response = await axios.put(`/variables/${variable.id}`, {
                     description: variable.description,
-                    score: variable.score
+                    score: variable.score,
+                    edits_variable: variable.edits_variable,
+                    state: variable.state // <-- AÑADIDO
                 });
 
                 console.log('Variable update response:', response.data);

@@ -535,28 +535,6 @@
     <GraphicsMainComponent :external-data="convertMatrizToGraphicsData(user.matriz, user.matriz_cruzada)" :readonly="true" />
   </div>
 
-  <!--
-  <div
-    v-for="user in filteredUsers"
-    :key="'grafica-matriz-' + user.id"
-    :id="'grafica-matriz-' + user.id"
-    style="position: absolute; left: -9999px; top: 0; width: 800px; height: 560px; background: white;"
-    class="pdf-graphic-container"
-  >
-    <GraphicsMainComponent :external-data="convertMatrizToGraphicsData(user.matriz, user.matriz_cruzada)" :readonly="true" />
-  </div>
-
-  <div
-    v-for="user in filteredUsers"
-    :key="'grafica-schwartz-' + user.id"
-    :id="'grafica-schwartz-' + user.id"
-    style="position: absolute; left: -9999px; top: 0; width: 800px; height: 640px; background: white;"
-    class="pdf-graphic-container"
-  >
-    <SchwartzPDFComponent :external-scenarios="user.scenarios" :external-hypotheses="user.future_drivers" />
-    </div>
-  -->
-
   <!-- Canvas oculto para la gráfica de Schwartz (para PDF) -->
   <div
     v-for="user in filteredUsers"
@@ -592,17 +570,18 @@
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import autoTable from 'jspdf-autotable';
+import { createApp, nextTick } from 'vue';
+import SchwartzPDFEditableCanvas from '../Schwartz/SchwartzPDFEditableCanvas.vue';
 
 import { useSectionStore } from '../../../../stores/section';
 import { useTextsStore } from '../../../../stores/texts';
 import { useResultsStore } from '../../../../stores/results';
 import { storeToRefs } from 'pinia';
-import { ref, computed, nextTick } from 'vue';
+import { ref, computed } from 'vue';
 import GraphicsMainComponent from '../graphics/GraphicsMainComponent.vue';
 import SchwartzMainComponent from '../Schwartz/SchwartzMainComponent.vue';
 import SchwartzChartComponent from '../Schwartz/SchwartzChartComponent.vue';
 import SchwartzPDFComponent from '../Schwartz/SchwartzPDFComponent.vue';
-import SchwartzPDFEditableCanvas from '../Schwartz/SchwartzPDFEditableCanvas.vue';
 
 export default {
     components: {
@@ -647,7 +626,6 @@ export default {
         
         // 1. Agrega las refs y métodos para el modal propio
         const showVariableModal = ref(false);
-        const showZoneModal = ref(false);
         const showScenarioModal = ref(false);
         const showConclusionModal = ref(false);
         const showZoneAnalysisModal = ref(false);
@@ -655,7 +633,6 @@ export default {
         const showInitialConditionModal = ref(false);
         const showMatrizModal = ref(false);
         const selectedVariable = ref(null);
-        const selectedZone = ref(null);
         const selectedScenario = ref(null);
         const selectedConclusion = ref(null);
         const selectedZoneAnalysis = ref(null);
@@ -669,75 +646,40 @@ export default {
         const loadingPdfId = ref(null);
 
         function showVariableDescription(variable) {
-            console.log('Abriendo modal para variable:', variable);
             selectedVariable.value = variable;
             showVariableModal.value = true;
         }
 
         function showZoneAnalysisDescription(analysis) {
-            console.log('Abriendo modal para análisis de zona:', analysis);
             selectedZoneAnalysis.value = analysis;
             showZoneAnalysisModal.value = true;
         }
 
         function showConclusionDescription(conclusion) {
-            console.log('Abriendo modal para conclusión:', conclusion);
-            console.log('Datos de la conclusión:', {
-              id: conclusion.id,
-              title: conclusion.title,
-              description: conclusion.description,
-              component_practice: conclusion.component_practice,
-              actuality: conclusion.actuality,
-              aplication: conclusion.aplication
-            });
             selectedConclusion.value = conclusion;
             showConclusionModal.value = true;
         }
 
         function showFutureDriverDescription(driver) {
-            console.log('Abriendo modal para direccionador de futuro:', driver);
             selectedFutureDriver.value = driver;
             showFutureDriverModal.value = true;
         }
 
         function showInitialConditionDescription(condition) {
-            console.log('Abriendo modal para condición inicial:', condition);
             selectedInitialCondition.value = condition;
             showInitialConditionModal.value = true;
         }
 
         function showScenarioDescription(scenario) {
-            console.log('Abriendo modal para escenario:', scenario);
             selectedScenario.value = scenario;
             showScenarioModal.value = true;
         }
 
         function showMatrizDescription(matriz, firstName, lastName, matrizCruzada = []) {
-            console.log('Abriendo modal para matriz:', matriz);
             selectedMatriz.value = matriz;
             selectedMatrizUser.value = `${firstName} ${lastName}`;
             selectedMatrizCruzada.value = matrizCruzada;
             showMatrizModal.value = true;
-        }
-
-        function getZoneName(zoneId) {
-            const zoneNames = {
-                1: 'Zona de Poder',
-                2: 'Zona de Problemas',
-                3: 'Zona de Resultados',
-                4: 'Zona de Contexto'
-            };
-            return zoneNames[zoneId] || 'Sin zona';
-        }
-
-        function getZoneClass(zoneId) {
-            const zoneClasses = {
-                1: 'zone-power',
-                2: 'zone-problems',
-                3: 'zone-results',
-                4: 'zone-context'
-            };
-            return zoneClasses[zoneId] || '';
         }
 
         // Función para obtener las hipótesis relacionadas con un escenario
@@ -981,7 +923,6 @@ export default {
             };
           });
 
-          console.log('Datos convertidos para gráfica:', graphicsData);
           return graphicsData;
         }
 
@@ -1074,18 +1015,48 @@ export default {
             
             let y = margin + 40;
 
-            // Función para verificar si necesitamos nueva página
-            const checkPageBreak = (requiredSpace = 50) => {
+            // Función mejorada para verificar si necesitamos nueva página
+            const checkPageBreak = (requiredSpace = 50, title = '') => {
               const currentY = y;
               const pageHeight = doc.internal.pageSize.getHeight();
               const bottomMargin = margin;
+              const availableSpace = pageHeight - bottomMargin - currentY;
               
-              if (currentY + requiredSpace > pageHeight - bottomMargin) {
+              // Si el espacio requerido es mayor al disponible, crear nueva página
+              if (requiredSpace > availableSpace) {
+                // Si hay un título, también moverlo a la nueva página
+                if (title) {
+                  doc.addPage();
+                  y = margin + 40;
+                  return true;
+                }
                 doc.addPage();
                 y = margin + 40;
                 return true;
               }
               return false;
+            };
+            
+            // Función para verificar si una tabla va a salir cortada
+            const checkTablePageBreak = (tableData, title = '') => {
+              const titleHeight = 30; // altura del título
+              const tableHeaderHeight = 20; // altura del encabezado
+              const rowHeight = 15; // altura estimada por fila
+              const tableFooterHeight = 20; // espacio después de la tabla
+              
+              const estimatedTableHeight = titleHeight + tableHeaderHeight + (tableData.length * rowHeight) + tableFooterHeight;
+              
+              return checkPageBreak(estimatedTableHeight, title);
+            };
+            
+            // Función para verificar si una gráfica va a salir cortada
+            const checkGraphicPageBreak = (graphicHeight, title = '') => {
+              const titleHeight = 30; // altura del título
+              const graphicSpacing = 40; // espacio antes y después de la gráfica
+              
+              const totalHeight = titleHeight + graphicHeight + graphicSpacing;
+              
+              return checkPageBreak(totalHeight, title);
             };
 
             // Función para preparar las gráficas ocultas
@@ -1151,7 +1122,6 @@ export default {
                   // Verificar que el canvas o contenido esté presente
                   const canvas = element.querySelector('canvas');
                   if (canvas) {
-                    console.log(`Canvas encontrado en ${id}`);
                   }
                 }
               }
@@ -1164,20 +1134,7 @@ export default {
           const captureGraphic = async (elementId, title, y, createNewPage = false, options = {}) => {
             const element = document.getElementById(elementId);
             if (!element) {
-              console.warn(`Elemento ${elementId} no encontrado`);
               return false;
-            }
-            
-            // Log específico para Schwartz
-            if (elementId.includes('schwartz')) {
-              console.log(`Elemento Schwartz encontrado:`, element);
-              const canvas = element.querySelector('canvas');
-              if (canvas) {
-                console.log(`Canvas de Schwartz encontrado:`, canvas);
-                console.log(`Dimensiones del canvas:`, canvas.width, 'x', canvas.height);
-              } else {
-                console.warn(`Canvas de Schwartz no encontrado`);
-              }
             }
             
             // Forzar el renderizado del componente
@@ -1210,7 +1167,6 @@ export default {
             }
             
             try {
-              console.log(`Capturando gráfica: ${elementId} con dimensiones ${captureWidth}x${captureHeight}`);
               const canvas = await html2canvas(element, {
                 scale: 2,
                 useCORS: true,
@@ -1323,10 +1279,8 @@ export default {
               doc.addImage(imgData, 'PNG', xOffset, y, finalWidth, finalHeight);
               y += finalHeight + 40; // Espacio después de la gráfica
               
-              console.log(`Gráfica ${elementId} capturada exitosamente con tamaño fijo centrado`);
               return y;
             } catch (error) {
-              console.error('Error capturando gráfica:', error);
               return false;
             }
           };
@@ -1381,11 +1335,11 @@ export default {
             });
             y = doc.lastAutoTable.finalY + 25;
 
-                      // 3. Variables del Sistema
-          checkPageBreak(30);
-          doc.setFontSize(12);
-          doc.setFont(undefined, 'bold');
-          doc.text('VARIABLES DEL SISTEMA', margin, y); y += 20;
+                                  // 3. Variables del Sistema
+            checkTablePageBreak(usuario.variables_list || [], 'VARIABLES DEL SISTEMA');
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('VARIABLES DEL SISTEMA', margin, y); y += 20;
             if (usuario.variables_list && usuario.variables_list.length > 0) {
               autoTable(doc, {
                 startY: y,
@@ -1429,12 +1383,6 @@ export default {
             if (usuario.matriz && usuario.matriz.length > 0 && usuario.matriz_cruzada) {
               // Obtener variables únicas ordenadas desde matriz_cruzada
               const variables = [...new Set(usuario.matriz_cruzada.map(m => m.origen))].sort();
-              
-              console.log('Datos de matriz para PDF:', {
-                variables: variables,
-                variables_list: usuario.variables_list,
-                matriz_cruzada: usuario.matriz_cruzada
-              });
               
               // Crear tabla principal de matriz con colores
               const matrizHeaders = ['CÓDIGO', 'NOMBRE', ...variables.map(v => v), 'TOTAL INFLUENCIA'];
@@ -1662,7 +1610,7 @@ export default {
             }
 
             // 5. Análisis Mapa De Variables (aprovechando espacio después de la gráfica)
-            checkPageBreak(30);
+            checkTablePageBreak(usuario.zone_analyses || [], 'ANÁLISIS MAPA DE VARIABLES');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text('ANÁLISIS MAPA DE VARIABLES', margin, y); y += 20;
@@ -1729,7 +1677,7 @@ export default {
 
 
             // 6. Direccionadores de Futuro (Hipótesis)
-            checkPageBreak(30);
+            checkTablePageBreak(usuario.future_drivers || [], 'DIRECCIONADORES DE FUTURO');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text('DIRECCIONADORES DE FUTURO', margin, y); y += 20;
@@ -1769,13 +1717,69 @@ export default {
               y += 25;
             }
 
-            // Gráfica de Schwartz - Página dedicada (tercera hoja)
-            doc.addPage();
-            y = margin + 40;
-            y = await captureGraphic('schwartz-editable-diagram-visible', 'GRÁFICA DE SCHWARTZ', y, false);
+            // 6.1 Gráfica de Schwartz - Justo después de Direccionadores de Futuro
+            checkGraphicPageBreak(420, 'EJES DE PETER SCHWARTZ'); // 420 es la altura estimada de la gráfica
+            const tempDivSchwartz = document.createElement('div');
+            tempDivSchwartz.style.position = 'fixed';
+            tempDivSchwartz.style.left = '-9999px';
+            tempDivSchwartz.style.top = '0';
+            tempDivSchwartz.style.width = '900px';
+            tempDivSchwartz.style.height = '700px';
+            document.body.appendChild(tempDivSchwartz);
+            const appSchwartz = createApp(SchwartzPDFEditableCanvas, {
+              scenarios: usuario.scenarios || [],
+              hypotheses: usuario.future_drivers || [],
+              width: 900,
+              height: 700,
+              boxWidth: 210,
+              boxHeight: 90,
+              scenarioBoxWidth: 210,
+              scenarioBoxHeight: 90,
+              font: '14px Arial',
+              titleFont: 'bold 16px Arial',
+              offset: 150,
+              hypoOffset: 300,
+              axisLength: 230,
+              margin: 30
+            });
+            appSchwartz.mount(tempDivSchwartz);
+            await nextTick();
+            const canvasSchwartz = tempDivSchwartz.querySelector('canvas');
+            if (canvasSchwartz) {
+              const imgData = canvasSchwartz.toDataURL('image/png');
+              
+              // Título alineado a la izquierda
+              doc.setFontSize(16);
+              doc.setFont(undefined, 'bold');
+              const titleText = 'EJES DE PETER SCHWARTZ';
+              doc.text(titleText, margin, y);
+              y += 40; // Espacio después del título
+              
+              // Calcular dimensiones centradas y 30% más pequeñas
+              const originalWidth = 560;
+              const originalHeight = 420;
+              const scaleFactor = 0.7; // 30% más pequeña (70% del tamaño original)
+              const finalWidth = originalWidth * scaleFactor;
+              const finalHeight = originalHeight * scaleFactor;
+              
+              // Centrar la imagen horizontalmente
+              const pageWidth = doc.internal.pageSize.getWidth();
+              const x = (pageWidth - finalWidth) / 2;
+              
+              // Verificar que la imagen no se superponga con el margen inferior
+              const pageHeight = doc.internal.pageSize.getHeight();
+              const bottomMargin = margin;
+              const maxY = pageHeight - finalHeight - bottomMargin;
+              const finalY = Math.min(y, maxY);
+              
+              doc.addImage(imgData, 'PNG', x, finalY, finalWidth, finalHeight);
+              y = finalY + finalHeight + 40; // Posición Y después de la gráfica
+            }
+            appSchwartz.unmount();
+            document.body.removeChild(tempDivSchwartz);
 
             // 7. Condiciones Iniciales
-            checkPageBreak(30);
+            checkTablePageBreak(usuario.initial_conditions || [], 'CONDICIONES INICIALES');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text('CONDICIONES INICIALES', margin, y); y += 20;
@@ -1815,7 +1819,7 @@ export default {
             }
 
             // 8. Escenarios
-            checkPageBreak(30);
+            checkTablePageBreak(usuario.scenarios || [], 'ESCENARIOS');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text('ESCENARIOS', margin, y); y += 20;
@@ -1857,7 +1861,7 @@ export default {
             // Sección de Ejes de Peter Schwartz eliminada según solicitud del usuario
 
             // 9. Conclusiones de Aprendizaje
-            checkPageBreak(30);
+            checkTablePageBreak(usuario.conclusions || [], 'CONCLUSIONES DE APRENDIZAJE');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text('CONCLUSIONES DE APRENDIZAJE', margin, y); y += 20;
@@ -1944,7 +1948,6 @@ export default {
 
             doc.save(`Reporte_Prospectiva_${usuario.first_name || ''}_${usuario.last_name || ''}_${new Date().toISOString().split('T')[0]}.pdf`);
           } catch (error) {
-            console.error('Error generando PDF:', error);
             restoreGraphics();
             restoreGraphicsToOriginal();
           } finally {
@@ -1967,7 +1970,6 @@ export default {
             filterDocumentId,
             filteredUsers,
             showVariableModal,
-            showZoneModal,
             showScenarioModal,
             showConclusionModal,
             showZoneAnalysisModal,
@@ -1975,7 +1977,6 @@ export default {
             showInitialConditionModal,
             showMatrizModal,
             selectedVariable,
-            selectedZone,
             selectedScenario,
             selectedConclusion,
             selectedZoneAnalysis,
@@ -1991,8 +1992,6 @@ export default {
             showFutureDriverDescription,
             showInitialConditionDescription,
             showMatrizDescription,
-            getZoneName,
-            getZoneClass,
             matrizOrderedVariables,
             getCellValueMatriz,
             getCellClassMatriz,
@@ -2037,11 +2036,6 @@ export default {
         this.sectionStore.setTitleSection(this.textsStore.getText('results_section.title'));
         this.resultsStore.fetchUsers();
         
-        // Centrar el encabezado de la columna 'Correo' de forma más robusta
-        this.$nextTick(() => {
-            this.centerEmailHeader();
-        });
-        
         // Debug: verificar si los textos se cargan correctamente
         this.$nextTick(() => {
             console.log('Textos cargados:', {
@@ -2050,29 +2044,7 @@ export default {
             });
         });
     },
-    updated() {
-        // Centrar el encabezado cuando la tabla se actualice
-        this.$nextTick(() => {
-            this.centerEmailHeader();
-        });
-    },
     methods: {
-        centerEmailHeader() {
-            // Método más robusto para centrar el encabezado de correo
-            setTimeout(() => {
-                if (this.$el && this.$el.querySelectorAll) {
-                    const headers = this.$el.querySelectorAll('.b-table thead th');
-                    headers.forEach((th) => {
-                        const text = th.textContent.trim().toLowerCase();
-                        if (text.includes('correo') || text.includes('email') || text.includes('e-mail')) {
-                            th.style.textAlign = 'center';
-                            th.style.verticalAlign = 'middle';
-                            th.classList.add('email-header-centered');
-                        }
-                    });
-                }
-            }, 200);
-        },
         // Solo permitir números en el filtro de ID
         onIdInput(event) {
             const value = event.target.value;
@@ -2811,20 +2783,8 @@ export default {
   min-height: 40px;
 }
 
-/* Estilos específicos para centrar el encabezado de correo */
-:deep(.b-table thead th.email-header-centered) {
-  text-align: center !important;
-  vertical-align: middle !important;
-}
-
 /* Centrar todos los encabezados de tabla */
 :deep(.b-table thead th) {
-  text-align: center !important;
-  vertical-align: middle !important;
-}
-
-/* Asegurar que la columna de correo esté centrada */
-:deep(.b-table thead th:nth-child(5)) {
   text-align: center !important;
   vertical-align: middle !important;
 }
@@ -3159,20 +3119,6 @@ canvas {
   vertical-align: middle !important;
 }
 
-/* Específicamente para el encabezado de correo */
-.b-table thead th.email-header-centered {
-  text-align: center !important;
-  vertical-align: middle !important;
-}
-
-/* Por si acaso, centrar también por contenido de texto */
-.b-table thead th:contains("Correo"),
-.b-table thead th:contains("Email"),
-.b-table thead th:contains("E-mail") {
-  text-align: center !important;
-  vertical-align: middle !important;
-}
-
 /* Contenedor del botón PDF para evitar reflow */
 .pdf-button-container {
   width: 80px !important;
@@ -3208,9 +3154,9 @@ canvas {
 }
 
 .pdf-button .button-content i {
-  font-size: 14px !important;
-  width: 14px !important;
-  height: 14px !important;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -3295,12 +3241,5 @@ canvas {
 .dialog .dialog-footer .button.is-danger:hover {
   background-color: #d12c4c !important;
   border-color: #d12c4c !important;
-}
-</style>
-
-<style>
-.tabla-scroll-contenedor table {
-  min-width: 150vw !important;
-  width: 150vw !important;
 }
 </style>

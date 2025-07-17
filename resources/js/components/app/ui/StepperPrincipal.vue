@@ -1,5 +1,6 @@
 <template>
-  <div class="stepper-principal stepper-multifila">
+  <div v-if="!isStoreInitialized || traceabilityStore.isLoading || !seccionesValidas" class="stepper-loading" style="min-height:160px;"></div>
+  <div v-else class="stepper-principal stepper-multifila">
     <div
       v-for="(row, rowIdx) in gridRows"
       :key="'row-' + rowIdx"
@@ -17,9 +18,10 @@
           :key="cell.key"
           class="stepper-step"
           :class="{
-            active: cell.globalIdx === currentStepIndex,
-            completed: cell.globalIdx < currentStepIndex,
-            clickable: isStepEnabled(cell.globalIdx)
+            active: cell.globalIdx === currentActiveStep,
+            completed: cell.globalIdx < currentActiveStep,
+            clickable: isStepEnabled(cell.globalIdx),
+            disabled: !isStepEnabled(cell.globalIdx)
           }"
           @click="goToStep(cell.globalIdx)"
         >
@@ -37,9 +39,10 @@
     <div class="stepper-last-row-flex">
       <div class="stepper-step"
            :class="{
-             active: currentStepIndex === 8,
-             completed: currentStepIndex > 8,
-             clickable: isStepEnabled(8)
+             active: currentActiveStep === 8,
+             completed: currentActiveStep > 8,
+             clickable: isStepEnabled(8),
+             disabled: !isStepEnabled(8)
            }"
            @click="goToStep(8)">
         <div class="stepper-circle">
@@ -52,9 +55,10 @@
       <div class="stepper-row-line last-flex"></div>
       <div class="stepper-step"
            :class="{
-             active: currentStepIndex === 9,
-             completed: currentStepIndex > 9,
-             clickable: isStepEnabled(9)
+             active: currentActiveStep === 9,
+             completed: currentActiveStep > 9,
+             clickable: isStepEnabled(9),
+             disabled: !isStepEnabled(9)
            }"
            @click="goToStep(9)">
         <div class="stepper-circle">
@@ -70,11 +74,39 @@
 
 <script>
 import { useSessionStore } from '../../../stores/session';
-import { computed } from 'vue';
+import { useTraceabilityStore } from '../../../stores/traceability';
+import { computed, onMounted, ref } from 'vue';
 
 export default {
   setup() {
     const storeSession = useSessionStore();
+    const traceabilityStore = useTraceabilityStore();
+    
+    // Estado reactivo para controlar si el store está inicializado
+    const isStoreInitialized = ref(false);
+    
+    // --- NUEVO: Validación extra de secciones válidas ---
+    const seccionesValidas = computed(() => {
+      const secciones = traceabilityStore.availableSections;
+      if (!secciones) return false;
+      const values = Object.values(secciones);
+      const allTrue = values.every(v => v === true);
+      // Mostrar si la primera está en true y (hay al menos una en false o todas son true)
+      return values[0] === true && (values.some(v => v === false) || allTrue);
+    });
+    // --- FIN NUEVO ---
+    
+    // Inicializar el store de traceability al montar el componente
+    onMounted(async () => {
+      try {
+        await traceabilityStore.initialize();
+        isStoreInitialized.value = true;
+      } catch (error) {
+        await traceabilityStore.loadAvailableSections();
+        isStoreInitialized.value = true;
+      }
+    });
+    
     // Define los pasos/secciones principales
     const steps = [
       { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
@@ -88,6 +120,7 @@ export default {
       { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
       { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
     ];
+    
     // Divide los pasos en 3 filas equilibradas y ajusta la última fila para centrar las burbujas
     const maxPerRow = 4;
     const gridRows = computed(() => {
@@ -97,6 +130,7 @@ export default {
       // Última fila: se maneja manualmente para posicionamiento exacto
       return [row1, row2];
     });
+    
     // Encuentra el índice del paso actual
     const currentStepIndex = computed(() => {
       const active = Object.keys(storeSession.contentActive).find(
@@ -104,12 +138,98 @@ export default {
       );
       return steps.findIndex((s) => s.key === active);
     });
+    
+    // Calcula el paso activo basado en las secciones disponibles para usuarios rol 0
+    const currentActiveStep = computed(() => {
+      if (!isStoreInitialized.value) {
+        return currentStepIndex.value;
+      }
+      
+      const userRole = traceabilityStore.getUserRole;
+      const isAdmin = traceabilityStore.isAdmin;
+      
+      // Para administradores, usar el índice actual normal
+      if (isAdmin) {
+        return currentStepIndex.value;
+      }
+      
+      // Para usuarios rol 0, calcular basado en secciones disponibles
+      const sectionKeys = [
+        'variables',
+        'matrix', 
+        'graphics',
+        'analysis',
+        'hypothesis',
+        'schwartz',
+        'initialconditions',
+        'scenarios',
+        'conclusions',
+        'results'
+      ];
+      
+      // Encontrar la última sección disponible
+      let lastAvailableIndex = -1;
+      for (let i = 0; i < sectionKeys.length; i++) {
+        const sectionKey = sectionKeys[i];
+        if (traceabilityStore.isSectionAvailable(sectionKey)) {
+          lastAvailableIndex = i;
+        } else {
+          break; // Detener en la primera no disponible
+        }
+      }
+      
+      return Math.max(0, lastAvailableIndex);
+    });
+    
+    // Verifica si un paso está habilitado basado en permisos
     function isStepEnabled(idx) {
-      return true; // TODO: lógica de permisos por usuario
+      const step = steps[idx];
+      if (!step) return false;
+      
+      // Si el store no está inicializado, permitir acceso temporal
+      if (!isStoreInitialized.value) {
+        return true;
+      }
+      
+      // Debug: mostrar información del usuario y permisos
+      const userRole = traceabilityStore.getUserRole;
+      const isAdmin = traceabilityStore.isAdmin;
+      const availableSections = traceabilityStore.availableSections;
+      const isAvailable = traceabilityStore.isSectionAvailable(step.key);
+      
+      // Los administradores pueden acceder a todas las secciones
+      if (isAdmin) {
+        return true;
+      }
+      
+      // Para usuarios normales, verificar si la sección está disponible
+      return isAvailable;
     }
-    function goToStep(idx) {
+    
+    // Función para navegar a un paso
+    async function goToStep(idx) {
+      const step = steps[idx];
+      if (!step) return;
+      
+      // Si el store no está inicializado, permitir navegación temporal
+      if (!isStoreInitialized.value) {
+        storeSession.setActiveContent(step.key);
+        return;
+      }
+      
+      // Los administradores pueden navegar libremente
+      if (traceabilityStore.isAdmin) {
+        storeSession.setActiveContent(step.key);
+        return;
+      }
+      
+      // Para usuarios normales, verificar permisos
       if (isStepEnabled(idx)) {
-        storeSession.setActiveContent(steps[idx].key);
+        storeSession.setActiveContent(step.key);
+      } else {
+        // Mostrar mensaje de que la sección no está disponible
+        alert(`La sección ${step.label} no está disponible aún. Debes completar las secciones anteriores primero.`);
+        // Aquí podrías mostrar un toast o alert
       }
     }
     // Calcula el estilo de la línea para que solo conecte las burbujas reales
@@ -132,7 +252,7 @@ export default {
         right: right + '%',
       };
     }
-    return { gridRows, currentStepIndex, goToStep, isStepEnabled, maxPerRow, rowLineStyle };
+    return { gridRows, currentStepIndex, currentActiveStep, goToStep, isStepEnabled, maxPerRow, rowLineStyle, isStoreInitialized, traceabilityStore, seccionesValidas };
   },
 };
 </script>
@@ -172,7 +292,7 @@ export default {
   background: #b5b5b5;
   z-index: 1;
   pointer-events: none;
-  transition: left 0.2s, right 0.2s;
+  transition: left 0.6s, right 0.6s;
   transform: translateY(-50%);
 }
 .stepper-step {
@@ -192,6 +312,15 @@ export default {
 .stepper-step.clickable:hover .stepper-circle {
   border-color: #3273dc;
   box-shadow: 0 0 0 2px #3273dc33;
+}
+.stepper-step.disabled .stepper-circle {
+  border-color: #ccc;
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+.stepper-step.disabled .stepper-label {
+  color: #999;
 }
 .stepper-step.completed .stepper-circle {
   border-color: #b5b5b5;
@@ -214,7 +343,7 @@ export default {
   justify-content: center;
   font-size: 4.2rem;
   margin-bottom: 8px;
-  transition: border 0.2s, box-shadow 0.2s;
+  transition: border 0.6s, box-shadow 0.6s;
 }
 .stepper-step .stepper-label {
   font-size: 2.2rem;

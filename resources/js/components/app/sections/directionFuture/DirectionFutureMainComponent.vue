@@ -75,22 +75,52 @@
             </div>
         </div>
     </div>
+    <!-- Botón cerrar/regresar en la esquina inferior derecha -->
+    <div class="cerrar-container">
+      <button
+        class="cerrar-btn"
+        v-if="!cerrado"
+        @click="confirmarCerrar"
+        :disabled="cerrado"
+      >Cerrar</button>
+      <button
+        class="cerrar-btn"
+        v-else-if="tried !== null && tried < 2"
+        @click="confirmarRegresar"
+      >Regresar</button>
+    </div>
+    <!-- Modal de confirmación -->
+    <div v-if="mostrarModal" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
+        <button @click="cerrarModulo">Sí, cerrar</button>
+        <button @click="mostrarModal = false">Cancelar</button>
+      </div>
+    </div>
+    <!-- Modal de confirmación para regresar -->
+    <div v-if="mostrarModalRegresar" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
+        <button @click="regresarModulo">Sí, regresar</button>
+        <button @click="mostrarModalRegresar = false">Cancelar</button>
+      </div>
+    </div>
+
 </template>
 <script>
 import { useSectionStore } from '../../../../stores/section';
 import { useFutureDriversStore } from '../../../../stores/futureDrivers';
 import { useTextsStore } from '../../../../stores/texts';
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch, computed, getCurrentInstance, inject } from 'vue';
 import { storeToRefs } from 'pinia';
-import MiniStepper from '../../ui/MiniStepper.vue';
+import { useSessionStore } from '../../../../stores/session';
+import axios from 'axios';
 
 export default {
     name: 'DirectionFutureMainComponent',
     components: {
-        MiniStepper
     },
     setup() {
-        console.log('=== COMPONENT SETUP START ===');
         
         const sectionStore = useSectionStore();
         const futureDriversStore = useFutureDriversStore();
@@ -99,6 +129,11 @@ export default {
         const localDescriptionsH0 = ref([]);
         const localDescriptionsH1 = ref([]);
         const editingRow = ref(null);
+        const sessionStore = useSessionStore();
+        const cerrado = ref(false);
+        const mostrarModal = ref(false);
+        const mostrarModalRegresar = ref(false);
+        const tried = ref(null); // Se inicializa como null hasta cargar desde traceability
 
         // Función para contar palabras
         const countWords = (text) => {
@@ -125,13 +160,11 @@ export default {
         watch(
             () => futureDriversStore.drivers,
             (newVal) => {
-                console.log('DirectionFuture - Watcher triggered, drivers:', newVal);
                 if (newVal && newVal.length > 0) {
                     newVal.forEach(d => {
                         localDescriptionsH0.value[d.variable_id] = d.descriptionH0 || '';
                         localDescriptionsH1.value[d.variable_id] = d.descriptionH1 || '';
                     });
-                    console.log('DirectionFuture - Local arrays updated from watcher');
                 }
             },
             { immediate: true, deep: true }
@@ -139,13 +172,11 @@ export default {
 
         // Watcher adicional para detectar cambios en los drivers y sincronizar los arrays locales usando variable_id como clave
         watch(drivers, (newDrivers) => {
-            console.log('DirectionFuture - Drivers watcher triggered:', newDrivers);
             if (newDrivers && newDrivers.length > 0) {
                 newDrivers.forEach((driver) => {
                     localDescriptionsH0.value[driver.variable_id] = driver.descriptionH0 || '';
                     localDescriptionsH1.value[driver.variable_id] = driver.descriptionH1 || '';
                 });
-                console.log('DirectionFuture - Local arrays updated from drivers watcher');
             }
         }, { immediate: true, deep: true });
 
@@ -153,26 +184,12 @@ export default {
         const isLocked = (row) => {
             // Si cualquiera de las dos hipótesis está bloqueada, toda la fila se bloquea
             const locked = (row.stateH0 === '1' || row.stateH1 === '1');
-            console.log('isLocked check:', { 
-                variable_id: row.variable_id, 
-                stateH0: row.stateH0, 
-                stateH1: row.stateH1, 
-                locked: locked 
-            });
             return locked;
         };
 
         const handleEditSave = async (row, index) => {
-            console.log('handleEditSave called:', { 
-                variable_id: row.variable_id, 
-                index: index, 
-                stateH0: row.stateH0, 
-                stateH1: row.stateH1,
-                isLocked: isLocked(row)
-            });
             
             if (isLocked(row)) {
-                console.log('Row is locked, cannot edit');
                 return;
             }
 
@@ -253,21 +270,27 @@ export default {
         };
 
         onMounted(async () => {
-            console.log('=== COMPONENT MOUNTED ===');
-            console.log('DirectionFuture - onMounted - Component mounted');
-            console.log('DirectionFuture - onMounted - Store available:', !!futureDriversStore);
             
             sectionStore.setTitleSection('Direccionadores de futuro');
             
+            // Leer estado de cerrado desde localStorage al crear el componente
+            const user = JSON.parse(localStorage.getItem('user')) || {};
+            const cerradoKey = 'hypothesis_cerrado_' + (user.id || 'anon');
+            const cerradoValue = localStorage.getItem(cerradoKey);
+            cerrado.value = cerradoValue === 'true';
             // Cargar datos siempre al montar el componente
-            console.log('DirectionFuture - onMounted - Starting data load...');
             await futureDriversStore.fetchDrivers();
-            console.log('DirectionFuture - onMounted - Data load finished');
+            // Cargar el valor de tried desde traceability
+            await this.loadTriedValue();
             
-            console.log('=== COMPONENT MOUNTED END ===');
         });
 
-        return {
+        onBeforeUnmount(() => {
+            // Limpiar botones dinámicos al desmontar el componente
+            sectionStore.clearDynamicButtons();
+        });
+
+        return { 
             sectionStore,
             futureDriversStore,
             textsStore,
@@ -275,10 +298,16 @@ export default {
             localDescriptionsH0,
             localDescriptionsH1,
             editingRow,
+            sessionStore,
+            cerrado,
+            mostrarModal,
+            mostrarModalRegresar,
+            tried,
+            countWords,
+            limitWords,
+            getWordCountClass,
             isLocked,
             handleEditSave,
-            countWords,
-            getWordCountClass,
             handleInput,
             handleKeyDown,
             handlePaste,
@@ -294,10 +323,107 @@ export default {
                 { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
                 { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
                 { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
-            ]
+            ],
+            confirmarRegresar: () => { mostrarModalRegresar.value = true; },
+            async regresarModulo() {
+                mostrarModalRegresar.value = false;
+                try {
+                    // Incrementar tried a 2
+                    await this.incrementTried();
+                    // Volver a cargar el valor actualizado de tried
+                    await this.loadTriedValue();
+                    // Cambiar stateH0 y stateH1 a '0' en todos los drivers y guardar en backend
+                    for (const driver of drivers.value) {
+                        await futureDriversStore.saveBothHypotheses(
+                            driver.variable_id,
+                            driver.name_hypothesis || 'H1',
+                            localDescriptionsH0.value[driver.variable_id] || '',
+                            localDescriptionsH1.value[driver.variable_id] || '',
+                            driver.zone_id || 1,
+                            '0' // Desbloquear
+                        );
+                    }
+                    // Guardar acción pendiente en localStorage
+                    localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'hypothesis' }));
+                    // Regresa a la vista principal
+                    sessionStore.setActiveContent('main');
+                    // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                    const user = JSON.parse(localStorage.getItem('user')) || {};
+                    const cerradoKey = 'hypothesis_cerrado_' + (user.id || 'anon');
+                    localStorage.removeItem(cerradoKey);
+                    cerrado.value = false;
+                } catch (error) {
+                    if (typeof window !== 'undefined' && window.$buefy) {
+                        window.$buefy.toast.open({
+                            message: 'Error al regresar el módulo de direccionadores de futuro',
+                            type: 'is-danger'
+                        });
+                    }
+                }
+            }
         };
     },
-}
+
+    methods: {
+        async cerrarModulo() {
+            this.mostrarModal = false;
+            try {
+                // Cambiar stateH0 y stateH1 a '1' en todos los drivers y guardar en backend
+                for (const driver of this.drivers) {
+                    await this.futureDriversStore.saveBothHypotheses(
+                        driver.variable_id,
+                        driver.name_hypothesis || 'H1',
+                        this.localDescriptionsH0[driver.variable_id] || '',
+                        this.localDescriptionsH1[driver.variable_id] || '',
+                        driver.zone_id || 1,
+                        '1' // Bloquear
+                    );
+                }
+                // Guardar acción pendiente en localStorage
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'hypothesis' }));
+                this.$buefy.toast.open({
+                    message: 'Módulo de direccionadores de futuro cerrado correctamente',
+                    type: 'is-success'
+                });
+                this.sessionStore.setActiveContent('main');
+                // Guardar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = 'hypothesis_cerrado_' + (user.id || 'anon');
+                localStorage.setItem(cerradoKey, 'true');
+                this.cerrado = true;
+            } catch (error) {
+                this.$buefy.toast.open({
+                    message: 'Error al cerrar el módulo de direccionadores de futuro',
+                    type: 'is-danger'
+                });
+            }
+        },
+
+        confirmarCerrar() {
+            this.mostrarModal = true;
+        },
+
+        async loadTriedValue() {
+            try {
+                const response = await axios.get('/traceability/tried');
+                if (response.data && response.data.success && response.data.tried !== undefined) {
+                    this.tried = response.data.tried;
+                }
+            } catch (error) {
+                console.error('Error al cargar tried:', error);
+            }
+        },
+
+        async incrementTried() {
+            try {
+                await axios.put('/traceability/tried', { tried: 2 });
+                this.tried = 2;
+            } catch (error) {
+                console.error('Error al incrementar tried:', error);
+            }
+        }
+    }
+};
 </script>
 
 
@@ -403,5 +529,52 @@ th.hypothesis-header {
     justify-content: center;
     width: 100%;
     height: 100%;
+}
+.cerrar-container {
+  position: fixed;
+  bottom: 32px;
+  right: 48px;
+  z-index: 100;
+}
+.cerrar-btn {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cerrar-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+.modal-confirm {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.modal-content {
+  background: white;
+  padding: 32px 48px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  text-align: center;
+}
+.modal-content button {
+  margin: 0 12px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
 }
 </style>

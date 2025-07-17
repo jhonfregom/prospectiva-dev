@@ -99,49 +99,22 @@ export default {
     // Cargar análisis guardados al montar
     async function loadSavedAnalysis() {
       try {
-        console.log('Cargando análisis para usuario autenticado');
-        console.log('Session store participant:', sessionStore.participant);
-        
-        console.log('Filas antes de cargar:', rows.value.map(row => ({
-          key: row.key,
-          state: row.state,
-          comment: row.comment,
-          score: row.score
-        })));
-        
         const res = await axios.get('/variables-map-analysis/user');
-        console.log('Análisis recibidos del backend:', res.data);
         
         if (res.data && res.data.data) {
           res.data.data.forEach(analysis => {
-            console.log('Procesando análisis:', analysis);
             // El backend ya convierte el ID a nombre, así que usamos directamente
             const row = rows.value.find(r => r.key === analysis.zone_id);
-            console.log('Fila encontrada:', row ? row.key : 'NO ENCONTRADA');
             
             if (row) {
               row.comment = analysis.description || '';
               row.score = analysis.score || 0;
               row.state = analysis.state || '0';
-              console.log(`Asignado a zona ${row.key}:`, {
-                comment: row.comment,
-                score: row.score,
-                state: row.state,
-                isBlocked: row.state === '1'
-              });
             }
           });
         }
-        
-        console.log('Filas después de cargar:', rows.value.map(row => ({
-          key: row.key,
-          state: row.state,
-          comment: row.comment,
-          score: row.score,
-          isBlocked: row.state === '1'
-        })));
       } catch (e) {
-        console.error('Error al cargar análisis:', e);
+        // Eliminar todos los console.log y console.error en este archivo
       }
     }
 
@@ -155,13 +128,12 @@ export default {
           state: String(row.state || 0), // Convertir a string para el enum
           is_manual_save: isManualSave // Indicar si es guardado manual
         };
-        console.log('Datos enviados al backend:', payload);
         const res = await axios.post('/variables-map-analysis/save', payload);
         if (res.data && res.data.data) {
           row.state = res.data.data.state;
         }
       } catch (e) {
-        console.error('Error al guardar análisis:', e);
+        // Eliminar todos los console.log y console.error en este archivo
       }
     }
 
@@ -171,7 +143,6 @@ export default {
       
       if (editingRow.value === row.key) {
         // Guardar manualmente
-        console.log('Guardando manualmente análisis:', row.key);
         debouncedSaveAnalysis.cancel(); // Cancelar guardado automático pendiente
         await saveOrCreateAnalysis(row, true);
         editingRow.value = null;
@@ -179,7 +150,6 @@ export default {
         // Entrar en modo edición
         // Solo crear análisis vacío si no existe ninguno
         if (!row.comment && !row.score && row.state === '0') {
-          console.log('Creando análisis vacío para:', row.key);
           await saveOrCreateAnalysis(row, true);
         }
         editingRow.value = row.key;
@@ -187,16 +157,8 @@ export default {
     }
 
     onMounted(async () => {
-      console.log('onMounted iniciado');
       sectionStore.setTitleSection(textsStore.analysis.title);
       analysisStore.initZones();
-      
-      console.log('Filas inicializadas:', rows.value.map(row => ({
-        key: row.key,
-        state: row.state,
-        comment: row.comment,
-        score: row.score
-      })));
       
       await graphicsStore.fetchGraphicsData();
       updateVariablesByZone();
@@ -205,13 +167,6 @@ export default {
       await loadSavedAnalysis();
       
       // Verificar el estado después de cargar
-      console.log('Estado final de las filas:', rows.value.map(row => ({
-        key: row.key,
-        state: row.state,
-        isBlocked: row.state === '1',
-        comment: row.comment,
-        score: row.score
-      })));
     });
 
     // Actualiza las variables por zona en tiempo real
@@ -258,7 +213,6 @@ export default {
     const debouncedSaveAnalysis = debounce(async (row) => {
       // Solo guardar si estamos en modo edición y hay contenido
       if (editingRow.value === row.key && row.comment && row.comment.trim().length > 0) {
-        console.log('Guardando automáticamente análisis:', row.key);
         await saveOrCreateAnalysis(row, false);
       }
     }, 1000); // Guardar después de 1 segundo de inactividad

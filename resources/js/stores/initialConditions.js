@@ -39,9 +39,20 @@ export const useInitialConditionsStore = defineStore('initialConditions', {
                 if (response.data.status === 200) {
                     // Recargar datos para obtener el estado actualizado
                     await this.fetchConditions();
-                return { success: true };
+                    return { success: true };
                 }
                 return { success: false, message: 'Error al actualizar' };
+            } catch (error) {
+                this.error = error.response?.data?.message || error.message;
+                return { success: false, message: this.error };
+            }
+        },
+        async closeAllConditions() {
+            try {
+                // Usar el endpoint masivo
+                await axios.post('/initial-conditions/close-all');
+                await this.fetchConditions();
+                return { success: true };
             } catch (error) {
                 this.error = error.response?.data?.message || error.message;
                 return { success: false, message: this.error };

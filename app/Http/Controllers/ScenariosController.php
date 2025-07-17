@@ -13,9 +13,12 @@ class ScenariosController extends Controller
     public function update($id, Request $request): JsonResponse
     {
         $data = $request->validate([
-            'titulo' => 'required|string',
+            'titulo' => 'nullable|string',
             'edits' => 'required|integer',
             'state' => 'required|integer',
+            'edits_year1' => 'nullable|integer',
+            'edits_year2' => 'nullable|integer',
+            'edits_year3' => 'nullable|integer',
         ]);
 
         $scenario = Scenarios::find($id);
@@ -30,6 +33,18 @@ class ScenariosController extends Controller
         $scenario->titulo = $data['titulo'];
         $scenario->edits = $data['edits'];
         $scenario->state = (string) $data['state'];
+        
+        // Actualizar contadores de edición si se envían
+        if (isset($data['edits_year1'])) {
+            $scenario->edits_year1 = $data['edits_year1'];
+        }
+        if (isset($data['edits_year2'])) {
+            $scenario->edits_year2 = $data['edits_year2'];
+        }
+        if (isset($data['edits_year3'])) {
+            $scenario->edits_year3 = $data['edits_year3'];
+        }
+        
         $scenario->save();
 
         return response()->json([
@@ -57,7 +72,7 @@ class ScenariosController extends Controller
         \Log::info('ScenariosController@store - Request data:', $request->all());
         
         $data = $request->validate([
-            'titulo' => 'required|string',
+            'titulo' => 'nullable|string',
             'edits' => 'required|integer',
             'state' => 'required|integer',
             'num_scenario' => 'required|integer',

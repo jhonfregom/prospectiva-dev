@@ -1,3 +1,85 @@
+<template>
+    <div>
+        <form
+            :action="storeUrls.register"
+            @submit="clickRegister"
+            method="POST">
+            <input type="hidden" name="_token" :value="csrf_token">
+            
+            <b-field
+                v-bind:type="{ 'is-danger' : fields.first_name.error }"
+                :message="fields.first_name.error ? fields.first_name.msg : ''">
+                <b-input
+                    name="first_name"
+                    size="is-large"
+                    type="text"
+                    :placeholder="capitalize(fields.first_name.placeholder)"
+                    autofocus
+                    v-model="first_name" />
+            </b-field>
+
+            <b-field
+                v-bind:type="{ 'is-danger' : fields.last_name.error }"
+                :message="fields.last_name.error ? fields.last_name.msg : ''">
+                <b-input
+                    name="last_name"
+                    size="is-large"
+                    type="text"
+                    :placeholder="capitalize(fields.last_name.placeholder)"
+                    v-model="last_name" />
+            </b-field>
+
+            <b-field
+                v-bind:type="{ 'is-danger' : fields.user.error }"
+                :message="fields.user.error ? fields.user.msg : ''">
+                <b-input
+                    name="user"
+                    size="is-large"
+                    type="text"
+                    :placeholder="capitalize(fields.user.placeholder)"
+                    v-model="user" />
+            </b-field>
+
+            <b-field
+                v-bind:type="{ 'is-danger' : fields.password.error }"
+                :message="fields.password.error ? fields.password.msg : ''">
+                <b-input
+                    name="password"
+                    size="is-large"
+                    type="password"
+                    :placeholder="capitalize(fields.password.placeholder)"
+                    v-model="password" />
+            </b-field>
+
+            <b-field
+                v-bind:type="{ 'is-danger' : !passwordMatch }"
+                :message="!passwordMatch ? 'Las contraseñas no coinciden' : ''">
+                <b-input
+                    name="confirm_password"
+                    size="is-large"
+                    type="password"  
+                    :placeholder="capitalize(fields.confirm_password.placeholder)"
+                    v-model="confirm_password" />
+            </b-field>
+
+
+            <b-field
+                v-bind:type="{ 'is-danger' : fields.document_id.error }"
+                :message="fields.document_id.error ? fields.document_id.msg : ''">
+                <b-input
+                    name="document_id"
+                    size="is-large"
+                    type="text"
+                    :placeholder="capitalize(fields.document_id.placeholder)"
+                    v-model="document_id" />
+            </b-field>
+
+            <b-button class="is-block is-info" size="is-large is-fullwidth" native-type="submit">
+                {{ fields.submit.label }}
+            </b-button>
+        </form>
+    </div>
+</template>
 <script>
 import { capitalize } from '../../../../js/functions';
 import { useUrlsStore } from '../../../stores/urls';
@@ -130,19 +212,14 @@ export default {
                 axios.post(this.storeUrls.register, data)
                     .then(res => {
                         if (res.data.status === 'success') {
-                            window.location.href = res.data.redirect;//############<-
-                            //window.location.href = res.data.redirect;
+                            window.location.href = res.data.redirect;
                         } else {
                             this.fields.user.error = true;
                             this.fields.user.msg = res.data.message;
                         }
                     })
 
-                    //.catch(error => {
-                    //    this.fields.user.error = true;
-                    //    this.fields.user.msg = 'An error occurred during registration.';
-                    //});
-                    .catch(error => {//############<-
+                    .catch(error => {
                         console.error('Registration error:', error);
                         if (error.response && error.response.data) {
                             const errors = error.response.data.errors;
@@ -165,85 +242,3 @@ export default {
 }
 </script>
 
-<template>
-    <div>
-        <form
-            :action="storeUrls.register"
-            @submit="clickRegister"
-            method="POST">
-            <input type="hidden" name="_token" :value="csrf_token">
-            
-            <b-field
-                v-bind:type="{ 'is-danger' : fields.first_name.error }"
-                :message="fields.first_name.error ? fields.first_name.msg : ''">
-                <b-input
-                    name="first_name"
-                    size="is-large"
-                    type="text"
-                    :placeholder="capitalize(fields.first_name.placeholder)"
-                    autofocus
-                    v-model="first_name" />
-            </b-field>
-
-            <b-field
-                v-bind:type="{ 'is-danger' : fields.last_name.error }"
-                :message="fields.last_name.error ? fields.last_name.msg : ''">
-                <b-input
-                    name="last_name"
-                    size="is-large"
-                    type="text"
-                    :placeholder="capitalize(fields.last_name.placeholder)"
-                    v-model="last_name" />
-            </b-field>
-
-            <b-field
-                v-bind:type="{ 'is-danger' : fields.user.error }"
-                :message="fields.user.error ? fields.user.msg : ''">
-                <b-input
-                    name="user"
-                    size="is-large"
-                    type="text"
-                    :placeholder="capitalize(fields.user.placeholder)"
-                    v-model="user" />
-            </b-field>
-
-            <b-field
-                v-bind:type="{ 'is-danger' : fields.password.error }"
-                :message="fields.password.error ? fields.password.msg : ''">
-                <b-input
-                    name="password"
-                    size="is-large"
-                    type="password"
-                    :placeholder="capitalize(fields.password.placeholder)"
-                    v-model="password" />
-            </b-field>
-
-            <b-field
-                v-bind:type="{ 'is-danger' : !passwordMatch }"
-                :message="!passwordMatch ? 'Las contraseñas no coinciden' : ''">
-                <b-input
-                    name="confirm_password"
-                    size="is-large"
-                    type="password"  
-                    :placeholder="capitalize(fields.confirm_password.placeholder)"
-                    v-model="confirm_password" />
-            </b-field>
-
-
-            <b-field
-                v-bind:type="{ 'is-danger' : fields.document_id.error }"
-                :message="fields.document_id.error ? fields.document_id.msg : ''">
-                <b-input
-                    name="document_id"
-                    size="is-large"
-                    type="text"
-                    :placeholder="capitalize(fields.document_id.placeholder)"
-                    v-model="document_id" />
-            </b-field>
-
-            <b-button class="is-block is-info" size="is-large is-fullwidth" native-type="submit">
-                {{ fields.submit.label }}
-            </b-button>
-        </form>
-    </div>
-</template>

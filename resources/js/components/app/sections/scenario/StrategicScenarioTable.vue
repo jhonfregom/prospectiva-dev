@@ -487,279 +487,475 @@
       </b-table>
     </div>
   </div>
+  <!-- Botón cerrar/regresar en la esquina inferior derecha -->
+  <div class="cerrar-container">
+    <button
+      class="cerrar-btn"
+      v-if="!cerrado"
+      @click="confirmarCerrar"
+      :disabled="cerrado"
+    >Cerrar</button>
+    <button
+      class="cerrar-btn"
+      v-else-if="tried !== null && tried < 2"
+      @click="mostrarModalRegresar = true"
+    >Regresar</button>
+  </div>
+  <!-- Modal de confirmación -->
+  <div v-if="mostrarModal" class="modal-confirm">
+    <div class="modal-content">
+      <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
+      <button @click="cerrarModulo">Sí, cerrar</button>
+      <button @click="mostrarModal = false">Cancelar</button>
+    </div>
+  </div>
+      <!-- Modal de confirmación para regresar -->
+    <div v-if="mostrarModalRegresar" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
+        <button @click="regresarModulo">Sí, regresar</button>
+        <button @click="mostrarModalRegresar = false">Cancelar</button>
+      </div>
+    </div>
 </template>
 
-<script setup>
-import { ref, onMounted, computed } from 'vue';
+<script>
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useStrategicScenarioStore } from '../../../../stores/strategicScenario';
 import { useTextsStore } from '../../../../stores/texts';
+import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
 import { useSectionStore } from '../../../../stores/section';
 
-const store = useStrategicScenarioStore();
-const textsStore = useTextsStore();
-const sectionStore = useSectionStore();
+export default {
+    name: 'StrategicScenarioTable',
+    setup() {
+        const store = useStrategicScenarioStore();
+        const textsStore = useTextsStore();
+        const sectionStore = useSectionStore();
+        const sessionStore = useSessionStore();
 
-// Constante para el límite de caracteres
-const MAX_CHARACTERS = 255;
+        // Variables para el botón cerrar
+        const cerrado = ref(false);
+        const mostrarModal = ref(false);
+        const tried = ref(null); // Se inicializa como null hasta cargar desde traceability
 
-// Función para manejar input de texto con límite de caracteres
-const handleTextInput = (localValue, event = null) => {
-    const text = event ? event.target.value : localValue.value;
-    if (text.length > MAX_CHARACTERS) {
-        // Truncar el texto al límite
-        localValue.value = text.substring(0, MAX_CHARACTERS);
-        console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
-    }
-};
+        // Constante para el límite de caracteres
+        const MAX_CHARACTERS = 255;
 
-// Función para manejar pegado de texto
-const handleTextPaste = (localValue, event) => {
-    const pastedText = (event.clipboardData || window.clipboardData).getData('text');
-    const currentText = localValue.value;
-    const combinedText = currentText + pastedText;
-    
-    if (combinedText.length <= MAX_CHARACTERS) {
-        // Permitir el pegado normal
-        return;
-    } else {
-        // Prevenir el pegado por defecto y manejar manualmente
-        event.preventDefault();
-        // Calcular cuántos caracteres se pueden agregar
-        const availableSpace = MAX_CHARACTERS - currentText.length;
-        if (availableSpace > 0) {
-            const truncatedPastedText = pastedText.substring(0, availableSpace);
-            localValue.value = currentText + truncatedPastedText;
-            console.log(`Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
-        } else {
-            console.log(`No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+        // Función para manejar input de texto con límite de caracteres
+        const handleTextInput = (localValue, event = null) => {
+            const text = event ? event.target.value : localValue.value;
+            if (text.length > MAX_CHARACTERS) {
+                // Truncar el texto al límite
+                localValue.value = text.substring(0, MAX_CHARACTERS);
+                console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+            }
+        };
+
+        // Función para manejar pegado de texto
+        const handleTextPaste = (localValue, event) => {
+            const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+            const currentText = localValue.value;
+            const combinedText = currentText + pastedText;
+            
+            if (combinedText.length <= MAX_CHARACTERS) {
+                // Permitir el pegado normal
+                return;
+            } else {
+                // Prevenir el pegado por defecto y manejar manualmente
+                event.preventDefault();
+                // Calcular cuántos caracteres se pueden agregar
+                const availableSpace = MAX_CHARACTERS - currentText.length;
+                if (availableSpace > 0) {
+                    const truncatedPastedText = pastedText.substring(0, availableSpace);
+                    localValue.value = currentText + truncatedPastedText;
+                    console.log(`Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+                } else {
+                    console.log(`No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+                }
+            }
+        };
+
+        // Función para manejar keyup
+        const handleTextKeyup = (localValue, event) => {
+            const text = event.target.value;
+            if (text.length >= MAX_CHARACTERS) {
+                // Prevenir escritura adicional
+                if (event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
+                    event.preventDefault();
+                    console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
+                }
+            }
+        };
+
+        // Escenario 1
+        const scenario1 = computed(() => store.scenario1);
+        const localYear1_1 = ref('');
+        const localYear1_2 = ref('');
+        const localYear1_3 = ref('');
+        const editingYear1_1 = ref(false);
+        const editingYear1_2 = ref(false);
+        const editingYear1_3 = ref(false);
+        const editMessage1 = ref({ year1: '', year2: '', year3: '' });
+        const hypothesis1_1 = ref('');
+        const hypothesis1_2 = ref('');
+
+        // Escenario 2
+        const scenario2 = computed(() => store.scenario2);
+        const localYear2_1 = ref('');
+        const localYear2_2 = ref('');
+        const localYear2_3 = ref('');
+        const editingYear2_1 = ref(false);
+        const editingYear2_2 = ref(false);
+        const editingYear2_3 = ref(false);
+        const editMessage2 = ref({ year1: '', year2: '', year3: '' });
+        const hypothesis2_1 = ref('');
+        const hypothesis2_2 = ref('');
+
+        // Agregar variables y lógica para escenario 3 y 4
+        const scenario3 = computed(() => store.scenario3);
+        const localYear3_1 = ref('');
+        const localYear3_2 = ref('');
+        const localYear3_3 = ref('');
+        const editingYear3_1 = ref(false);
+        const editingYear3_2 = ref(false);
+        const editingYear3_3 = ref(false);
+        const editMessage3 = ref({ year1: '', year2: '', year3: '' });
+        const hypothesis3_1 = ref('');
+        const hypothesis3_2 = ref('');
+
+        const scenario4 = computed(() => store.scenario4);
+        const localYear4_1 = ref('');
+        const localYear4_2 = ref('');
+        const localYear4_3 = ref('');
+        const editingYear4_1 = ref(false);
+        const editingYear4_2 = ref(false);
+        const editingYear4_3 = ref(false);
+        const editMessage4 = ref({ year1: '', year2: '', year3: '' });
+        const hypothesis4_1 = ref('');
+        const hypothesis4_2 = ref('');
+
+        onMounted(async () => {
+            sectionStore.setTitleSection('Escenarios');
+            await store.fetchScenarios();
+            // Cargar el valor de tried desde traceability
+            await loadTriedValue();
+            // Actualizar estado de cerrado al entrar (por si cambia en otra pestaña)
+            if (typeof window !== 'undefined') {
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = 'scenarios_cerrado_' + (user.id || 'anon');
+                cerrado.value = localStorage.getItem(cerradoKey) === 'true';
+            }
+            if (scenario1.value) {
+                localYear1_1.value = scenario1.value.year1 || '';
+                localYear1_2.value = scenario1.value.year2 || '';
+                localYear1_3.value = scenario1.value.year3 || '';
+            }
+            if (scenario2.value) {
+                localYear2_1.value = scenario2.value.year1 || '';
+                localYear2_2.value = scenario2.value.year2 || '';
+                localYear2_3.value = scenario2.value.year3 || '';
+            }
+            if (scenario3.value) {
+                localYear3_1.value = scenario3.value.year1 || '';
+                localYear3_2.value = scenario3.value.year2 || '';
+                localYear3_3.value = scenario3.value.year3 || '';
+            }
+            if (scenario4.value) {
+                localYear4_1.value = scenario4.value.year1 || '';
+                localYear4_2.value = scenario4.value.year2 || '';
+                localYear4_3.value = scenario4.value.year3 || '';
+            }
+            // Traer hipótesis
+            try {
+                const res = await axios.get('/hypothesis');
+                const data = res.data.data;
+                if (Array.isArray(data) && data.length > 0) {
+                    // Escenario 1 (antes: H0, H0) → ahora: H1, H1
+                    hypothesis1_1.value = data[0]?.descriptionH1 || '';
+                    hypothesis1_2.value = data[1]?.descriptionH1 || '';
+                    // Escenario 2 (antes: H0, H1) → ahora: H1, H0
+                    hypothesis2_1.value = data[1]?.descriptionH1 || '';
+                    hypothesis2_2.value = data[0]?.descriptionH0 || '';
+                    // Escenario 3 (antes: H1, H1) → ahora: H0, H0
+                    hypothesis3_1.value = data[0]?.descriptionH0 || '';
+                    hypothesis3_2.value = data[1]?.descriptionH0 || '';
+                    // Escenario 4 (antes: H1, H0) → ahora: H0, H1
+                    hypothesis4_1.value = data[1]?.descriptionH0 || '';
+                    hypothesis4_2.value = data[0]?.descriptionH1 || '';
+                }
+            } catch (e) {
+                hypothesis1_1.value = '';
+                hypothesis1_2.value = '';
+                hypothesis2_1.value = '';
+                hypothesis2_2.value = '';
+                hypothesis3_1.value = '';
+                hypothesis3_2.value = '';
+                hypothesis4_1.value = '';
+                hypothesis4_2.value = '';
+            }
+        });
+
+        onBeforeUnmount(() => {
+            // Limpiar botones dinámicos al desmontar el componente
+            sectionStore.clearDynamicButtons();
+        });
+
+        // Función para cargar el valor de tried desde traceability
+        const loadTriedValue = async () => {
+            try {
+                const response = await axios.get('/traceability/tried');
+                if (response.data && response.data.success && response.data.tried !== undefined) {
+                    tried.value = response.data.tried;
+                }
+            } catch (error) {
+                console.error('Error al cargar tried:', error);
+            }
+        };
+
+        // Función para incrementar tried
+        const incrementTried = async () => {
+            try {
+                await axios.put('/traceability/tried', { tried: 2 });
+                tried.value = 2;
+            } catch (error) {
+                console.error('Error al incrementar tried:', error);
+            }
+        };
+
+        const handleEditSave = async (numScenario, yearField) => {
+            // numScenario: 1 o 2
+            let scenario, localValue, editingRef, editsField, editMessage;
+            if (numScenario === 1) {
+                scenario = scenario1.value;
+                editMessage = editMessage1;
+                if (yearField === 'year1') {
+                    localValue = localYear1_1;
+                    editingRef = editingYear1_1;
+                    editsField = 'edits_year1';
+                } else if (yearField === 'year2') {
+                    localValue = localYear1_2;
+                    editingRef = editingYear1_2;
+                    editsField = 'edits_year2';
+                } else if (yearField === 'year3') {
+                    localValue = localYear1_3;
+                    editingRef = editingYear1_3;
+                    editsField = 'edits_year3';
+                }
+            } else if (numScenario === 2) {
+                scenario = scenario2.value;
+                editMessage = editMessage2;
+                if (yearField === 'year1') {
+                    localValue = localYear2_1;
+                    editingRef = editingYear2_1;
+                    editsField = 'edits_year1';
+                } else if (yearField === 'year2') {
+                    localValue = localYear2_2;
+                    editingRef = editingYear2_2;
+                    editsField = 'edits_year2';
+                } else if (yearField === 'year3') {
+                    localValue = localYear2_3;
+                    editingRef = editingYear2_3;
+                    editsField = 'edits_year3';
+                }
+            } else if (numScenario === 3) {
+                scenario = scenario3.value;
+                editMessage = editMessage3;
+                if (yearField === 'year1') {
+                    localValue = localYear3_1;
+                    editingRef = editingYear3_1;
+                    editsField = 'edits_year1';
+                } else if (yearField === 'year2') {
+                    localValue = localYear3_2;
+                    editingRef = editingYear3_2;
+                    editsField = 'edits_year2';
+                } else if (yearField === 'year3') {
+                    localValue = localYear3_3;
+                    editingRef = editingYear3_3;
+                    editsField = 'edits_year3';
+                }
+            } else if (numScenario === 4) {
+                scenario = scenario4.value;
+                editMessage = editMessage4;
+                if (yearField === 'year1') {
+                    localValue = localYear4_1;
+                    editingRef = editingYear4_1;
+                    editsField = 'edits_year1';
+                } else if (yearField === 'year2') {
+                    localValue = localYear4_2;
+                    editingRef = editingYear4_2;
+                    editsField = 'edits_year2';
+                } else if (yearField === 'year3') {
+                    localValue = localYear4_3;
+                    editingRef = editingYear4_3;
+                    editsField = 'edits_year3';
+                }
+            }
+
+            if (!scenario || scenario.state === 1) {
+                console.log(`Escenario ${numScenario} bloqueado, no se puede editar`);
+                return;
+            }
+
+            if (editingRef.value) {
+                // Guardar
+                console.log(`Guardando escenario ${numScenario}, campo ${yearField}`);
+                const result = await store.saveScenario(numScenario, yearField, localValue.value);
+                if (result.success) {
+                    editingRef.value = false;
+                    editMessage.value[yearField] = '';
+                    console.log(`Escenario ${numScenario} guardado correctamente`);
+                } else {
+                    editMessage.value[yearField] = textsStore.getText('strategic.messages.save_error');
+                }
+            } else {
+                // Entrar en modo edición
+                editingRef.value = true;
+            }
+        };
+
+        // Función para actualizar escenario en el servidor
+        const updateScenarioInServer = async (scenarioId) => {
+            try {
+                const result = await store.updateScenario(scenarioId);
+                if (result.success) {
+                    console.log(`Escenario ${scenarioId} actualizado correctamente`);
+                }
+            } catch (error) {
+                console.error('Error al actualizar escenario:', error);
+            }
+        };
+
+        return {
+            store,
+            textsStore,
+            sectionStore,
+            sessionStore,
+            cerrado,
+            mostrarModal,
+            tried,
+            handleTextInput,
+            handleTextPaste,
+            handleTextKeyup,
+            scenario1,
+            localYear1_1,
+            localYear1_2,
+            localYear1_3,
+            editingYear1_1,
+            editingYear1_2,
+            editingYear1_3,
+            editMessage1,
+            hypothesis1_1,
+            hypothesis1_2,
+            scenario2,
+            localYear2_1,
+            localYear2_2,
+            localYear2_3,
+            editingYear2_1,
+            editingYear2_2,
+            editingYear2_3,
+            editMessage2,
+            hypothesis2_1,
+            hypothesis2_2,
+            scenario3,
+            localYear3_1,
+            localYear3_2,
+            localYear3_3,
+            editingYear3_1,
+            editingYear3_2,
+            editingYear3_3,
+            editMessage3,
+            hypothesis3_1,
+            hypothesis3_2,
+            scenario4,
+            localYear4_1,
+            localYear4_2,
+            localYear4_3,
+            editingYear4_1,
+            editingYear4_2,
+            editingYear4_3,
+            editMessage4,
+            hypothesis4_1,
+            hypothesis4_2,
+            handleEditSave,
+            updateScenarioInServer,
+            MAX_CHARACTERS
+        };
+    },
+
+    methods: {
+        confirmarCerrar() {
+            this.mostrarModal = true;
+        },
+
+        async cerrarModulo() {
+            this.mostrarModal = false;
+            // Bloquear todos los escenarios en el backend y store
+            const result = await this.store.closeAllScenarios();
+            if (result.success) {
+                // Guardar acción pendiente en localStorage
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'scenarios' }));
+                // Guardar estado de cerrado en localStorage
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = 'scenarios_cerrado_' + (user.id || 'anon');
+                localStorage.setItem(cerradoKey, 'true');
+                this.$buefy.toast.open({
+                    message: 'Módulo de escenarios estratégicos cerrado correctamente',
+                    type: 'is-success'
+                });
+                this.sessionStore.setActiveContent('main');
+                // Habilitar el siguiente módulo en la trazabilidad después de 1 segundo
+                setTimeout(async () => {
+                    const { useTraceabilityStore } = await import('../../../../stores/traceability');
+                    const traceabilityStore = useTraceabilityStore();
+                    await traceabilityStore.markSectionCompleted('scenarios');
+                }, 1000);
+                // Cambiar el estado local después de volver al main
+                this.cerrado = true;
+            } else {
+                this.$buefy.toast.open({
+                    message: 'Error al cerrar el módulo de escenarios estratégicos',
+                    type: 'is-danger'
+                });
+            }
+        },
+        async regresarModulo() {
+            this.mostrarModalRegresar = false;
+            try {
+                // Incrementar tried a 2
+                await this.incrementTried();
+                // Volver a cargar el valor actualizado de tried
+                await this.loadTriedValue();
+                // Guardar acción pendiente en localStorage
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'scenarios' }));
+                // Desbloquear módulos posteriores (eliminar su flag de cerrado en localStorage)
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const posteriores = [
+                  'conclusions', 'results' // Agrega aquí los módulos posteriores a escenarios
+                ];
+                posteriores.forEach(mod => {
+                  const cerradoKey = mod + '_cerrado_' + (user.id || 'anon');
+                  localStorage.removeItem(cerradoKey);
+                });
+                // Regresa a la vista principal
+                this.sessionStore.setActiveContent('main');
+                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                const cerradoKey = 'scenarios_cerrado_' + (user.id || 'anon');
+                localStorage.removeItem(cerradoKey);
+                this.cerrado = false;
+                this.$buefy.toast.open({
+                    message: 'Módulo de escenarios estratégicos reabierto correctamente',
+                    type: 'is-success'
+                });
+            } catch (error) {
+                this.$buefy.toast.open({
+                    message: 'Error al regresar el módulo de escenarios estratégicos',
+                    type: 'is-danger'
+                });
+            }
         }
     }
-};
-
-// Función para manejar keyup
-const handleTextKeyup = (localValue, event) => {
-    const text = event.target.value;
-    if (text.length >= MAX_CHARACTERS) {
-        // Prevenir escritura adicional
-        if (event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
-            event.preventDefault();
-            console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
-        }
-    }
-};
-
-// Escenario 1
-const scenario1 = computed(() => store.scenario1);
-const localYear1_1 = ref('');
-const localYear1_2 = ref('');
-const localYear1_3 = ref('');
-const editingYear1_1 = ref(false);
-const editingYear1_2 = ref(false);
-const editingYear1_3 = ref(false);
-const editMessage1 = ref({ year1: '', year2: '', year3: '' });
-const hypothesis1_1 = ref('');
-const hypothesis1_2 = ref('');
-
-// Escenario 2
-const scenario2 = computed(() => store.scenario2);
-const localYear2_1 = ref('');
-const localYear2_2 = ref('');
-const localYear2_3 = ref('');
-const editingYear2_1 = ref(false);
-const editingYear2_2 = ref(false);
-const editingYear2_3 = ref(false);
-const editMessage2 = ref({ year1: '', year2: '', year3: '' });
-const hypothesis2_1 = ref('');
-const hypothesis2_2 = ref('');
-
-// Agregar variables y lógica para escenario 3 y 4
-const scenario3 = computed(() => store.scenario3);
-const localYear3_1 = ref('');
-const localYear3_2 = ref('');
-const localYear3_3 = ref('');
-const editingYear3_1 = ref(false);
-const editingYear3_2 = ref(false);
-const editingYear3_3 = ref(false);
-const editMessage3 = ref({ year1: '', year2: '', year3: '' });
-const hypothesis3_1 = ref('');
-const hypothesis3_2 = ref('');
-
-const scenario4 = computed(() => store.scenario4);
-const localYear4_1 = ref('');
-const localYear4_2 = ref('');
-const localYear4_3 = ref('');
-const editingYear4_1 = ref(false);
-const editingYear4_2 = ref(false);
-const editingYear4_3 = ref(false);
-const editMessage4 = ref({ year1: '', year2: '', year3: '' });
-const hypothesis4_1 = ref('');
-const hypothesis4_2 = ref('');
-
-onMounted(async () => {
-  sectionStore.setTitleSection('Escenarios');
-  await store.fetchScenarios();
-  if (scenario1.value) {
-    localYear1_1.value = scenario1.value.year1 || '';
-    localYear1_2.value = scenario1.value.year2 || '';
-    localYear1_3.value = scenario1.value.year3 || '';
-  }
-  if (scenario2.value) {
-    localYear2_1.value = scenario2.value.year1 || '';
-    localYear2_2.value = scenario2.value.year2 || '';
-    localYear2_3.value = scenario2.value.year3 || '';
-  }
-  if (scenario3.value) {
-    localYear3_1.value = scenario3.value.year1 || '';
-    localYear3_2.value = scenario3.value.year2 || '';
-    localYear3_3.value = scenario3.value.year3 || '';
-  }
-  if (scenario4.value) {
-    localYear4_1.value = scenario4.value.year1 || '';
-    localYear4_2.value = scenario4.value.year2 || '';
-    localYear4_3.value = scenario4.value.year3 || '';
-  }
-  // Traer hipótesis
-  try {
-    const res = await axios.get('/hypothesis');
-    const data = res.data.data;
-    if (Array.isArray(data) && data.length > 0) {
-      // Escenario 1 (antes: H0, H0) → ahora: H1, H1
-      hypothesis1_1.value = data[0]?.descriptionH1 || '';
-      hypothesis1_2.value = data[1]?.descriptionH1 || '';
-      // Escenario 2 (antes: H0, H1) → ahora: H1, H0
-      hypothesis2_1.value = data[1]?.descriptionH1 || '';
-      hypothesis2_2.value = data[0]?.descriptionH0 || '';
-      // Escenario 3 (antes: H1, H1) → ahora: H0, H0
-      hypothesis3_1.value = data[0]?.descriptionH0 || '';
-      hypothesis3_2.value = data[1]?.descriptionH0 || '';
-      // Escenario 4 (antes: H1, H0) → ahora: H0, H1
-      hypothesis4_1.value = data[1]?.descriptionH0 || '';
-      hypothesis4_2.value = data[0]?.descriptionH1 || '';
-    }
-  } catch (e) {
-    hypothesis1_1.value = '';
-    hypothesis1_2.value = '';
-    hypothesis2_1.value = '';
-    hypothesis2_2.value = '';
-    hypothesis3_1.value = '';
-    hypothesis3_2.value = '';
-    hypothesis4_1.value = '';
-    hypothesis4_2.value = '';
-  }
-});
-
-const handleEditSave = async (numScenario, yearField) => {
-  // numScenario: 1 o 2
-  let scenario, localValue, editingRef, editsField, editMessage;
-  if (numScenario === 1) {
-    scenario = scenario1.value;
-    editMessage = editMessage1;
-    if (yearField === 'year1') {
-      localValue = localYear1_1;
-      editingRef = editingYear1_1;
-      editsField = 'edits_year1';
-    } else if (yearField === 'year2') {
-      localValue = localYear1_2;
-      editingRef = editingYear1_2;
-      editsField = 'edits_year2';
-    } else {
-      localValue = localYear1_3;
-      editingRef = editingYear1_3;
-      editsField = 'edits_year3';
-    }
-  } else if (numScenario === 2) {
-    scenario = scenario2.value;
-    editMessage = editMessage2;
-    if (yearField === 'year1') {
-      localValue = localYear2_1;
-      editingRef = editingYear2_1;
-      editsField = 'edits_year1';
-    } else if (yearField === 'year2') {
-      localValue = localYear2_2;
-      editingRef = editingYear2_2;
-      editsField = 'edits_year2';
-    } else {
-      localValue = localYear2_3;
-      editingRef = editingYear2_3;
-      editsField = 'edits_year3';
-    }
-  } else if (numScenario === 3) {
-    scenario = scenario3.value;
-    editMessage = editMessage3;
-    if (yearField === 'year1') {
-      localValue = localYear3_1;
-      editingRef = editingYear3_1;
-      editsField = 'edits_year1';
-    } else if (yearField === 'year2') {
-      localValue = localYear3_2;
-      editingRef = editingYear3_2;
-      editsField = 'edits_year2';
-    } else {
-      localValue = localYear3_3;
-      editingRef = editingYear3_3;
-      editsField = 'edits_year3';
-    }
-  } else if (numScenario === 4) {
-    scenario = scenario4.value;
-    editMessage = editMessage4;
-    if (yearField === 'year1') {
-      localValue = localYear4_1;
-      editingRef = editingYear4_1;
-      editsField = 'edits_year1';
-    } else if (yearField === 'year2') {
-      localValue = localYear4_2;
-      editingRef = editingYear4_2;
-      editsField = 'edits_year2';
-    } else {
-      localValue = localYear4_3;
-      editingRef = editingYear4_3;
-      editsField = 'edits_year3';
-    }
-  }
-
-  // Protección para evitar errores si scenario es null o editsField no existe
-  if (!scenario || typeof scenario[editsField] === 'undefined' || scenario[editsField] === null) {
-    scenario = scenario || {};
-    scenario[editsField] = 0;
-  }
-
-  if ((scenario[editsField] || 0) >= 3) {
-    console.log(`${yearField} está bloqueado - ${scenario[editsField]} ediciones`);
-    return;
-  }
-
-  if (editingRef.value) {
-    // Guardar
-    let currentEdits = (scenario[editsField] || 0) + 1;
-    const payload = {
-      titulo: scenario.titulo,
-      edits: scenario.edits,
-      state: scenario.state,
-      num_scenario: numScenario,
-      [yearField]: localValue.value,
-      [editsField]: currentEdits
-    };
-    try {
-      const res = await axios.post('/scenarios', payload);
-      if (res.data && res.data.data) {
-        await store.fetchScenarios();
-        editingRef.value = false;
-        if (currentEdits >= 3) {
-          editMessage.value[yearField] = textsStore.getText('strategic.edit_limit');
-        } else {
-          editMessage.value[yearField] = '';
-        }
-      } else {
-        editMessage.value[yearField] = textsStore.getText('strategic.save_error');
-      }
-    } catch (error) {
-      editMessage.value[yearField] = textsStore.getText('strategic.save_error');
-    }
-  } else {
-    editingRef.value = true;
-    editMessage.value[yearField] = '';
-  }
 };
 </script>
 
@@ -918,6 +1114,54 @@ const handleEditSave = async (numScenario, yearField) => {
 
 :deep(.b-table .table tbody tr:nth-child(even) td) {
   background: #f3f0fa !important;
+}
+
+.cerrar-container {
+  position: fixed;
+  bottom: 32px;
+  right: 48px;
+  z-index: 100;
+}
+.cerrar-btn {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cerrar-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+.modal-confirm {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.modal-content {
+  background: white;
+  padding: 32px 48px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  text-align: center;
+}
+.modal-content button {
+  margin: 0 12px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
 }
 </style>
 

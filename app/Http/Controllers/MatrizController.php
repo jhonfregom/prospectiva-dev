@@ -36,10 +36,6 @@ class MatrizController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            // Se elimina la validación de bloqueo para permitir guardar nuevas matrices.
-            // La lógica para decidir si se puede guardar o no, eventualmente
-            // dependerá de la nueva funcionalidad de "reiniciar".
-
             $data = $request->validate([
                 'matriz' => 'required|array',
                 'matriz.*.id_variable' => 'required|integer',
@@ -47,29 +43,32 @@ class MatrizController extends Controller
                 'matriz.*.id_resp_influ' => 'required|integer|min:0|max:3'
             ]);
 
-            // Determinar el siguiente id_matriz
-            $nextIdMatriz = Matriz::max('id_matriz') + 1;
+            $userId = Auth::id();
 
-            // Se elimina la sección que borraba los registros antiguos.
-            // Ahora, cada guardado creará un nuevo conjunto de registros con un nuevo id_matriz.
-
-            // Si la tabla está vacía, reiniciar el auto-incremento del ID
-            if (Matriz::count() === 0) {
-                DB::statement('ALTER TABLE matriz AUTO_INCREMENT = 1');
-            }
-
-            // Insertar nuevos registros
             foreach ($data['matriz'] as $item) {
+                $matriz = Matriz::where('user_id', $userId)
+                    ->where('id_variable', $item['id_variable'])
+                    ->where('id_resp_depen', $item['id_resp_depen'])
+                    ->first();
+
+                if ($matriz) {
+                    // Actualizar registro existente
+                    $matriz->id_resp_influ = $item['id_resp_influ'];
+                    $matriz->state = '1'; // Bloquear
+                    $matriz->save();
+                } else {
+                    // Crear nuevo registro
                 $itemId = $this->findNextAvailableId();
                 Matriz::create([
                     'id' => $itemId,
-                    'id_matriz' => $nextIdMatriz, // Usar el nuevo id_matriz
+                        'id_matriz' => Matriz::max('id_matriz') + 1,
                     'id_variable' => $item['id_variable'],
                     'id_resp_depen' => $item['id_resp_depen'],
                     'id_resp_influ' => $item['id_resp_influ'],
-                    'user_id' => Auth::id(),
-                    'state' => '1' // Establecer el estado a 1 para bloquear
+                        'user_id' => $userId,
+                        'state' => '1'
                 ]);
+                }
             }
 
             return response()->json([

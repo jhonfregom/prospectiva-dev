@@ -1,85 +1,3 @@
-<script>
-    // Importa el store de sesión que maneja el estado global de la sesión
-    import { useSessionStore } from '../../../stores/session';
-    // Importa el store de sección que maneja el título y botones de la sección actual
-    import { useSectionStore } from '../../../stores/section';
-    // Importa el componente que muestra el título de la sección actual
-    import titleSection from '../ui/TitleSectionComponent.vue';
-    // Importa el componente principal que muestra el dashboard
-    import mainSection from '../sections/MainComponent.vue';
-    // Importa el componente que maneja la tabla de variables
-    import variables from '../sections/variables/VariablesMainComponent.vue';
-    // Importa el componente que maneja la matriz de influencia
-    import matriz from '../sections/matriz/MatrizMainComponent.vue';
-    // Importa el componente que maneja la gráfica principal
-    import graphics from '../sections/graphics/GraphicsMainComponent.vue';
-    // Importa el componente para el análisis mapa de variables
-    import analysis from '../sections/analisisVariables/AnalisisMapaVariablesMainComponent.vue';
-    // Importa el componente que maneja los direccionadores de futuro
-    import hypothesis  from '../sections/directionFuture/DirectionFutureMainComponent.vue';
-    // Importa el componente que maneja los ejes de Peter Schwartz
-    import schwartz from '../sections/schwartz/SchwartzMainComponent.vue';
-    // Importa el componente que maneja las condiciones iniciales
-    import initialConditions from '../sections/initialConditions/InitialConditionsMainComponent.vue';
-    // Importa el componente que maneja los escenarios
-    import scenarios from '../sections/scenery/SceneryMainComponent.vue';
-    // Importar el componente de conslusiones
-    import conclusions from '../sections/conclusions/ConclusionsMainComponent.vue';
-    // Importar el componente de resultados
-    import results from '../sections/results/ResultsMainComponent.vue';
-    // También elimino la importación y el registro del componente si no se usa en otro lugar
-
-    export default {
-        // Setup es un hook de composition API que inicializa los stores
-        setup() {
-            const storeSession = useSessionStore();
-            const storeSection = useSectionStore();
-            return { storeSession, storeSection };
-        },
-
-        // Registra los componentes que se usarán en el template
-        components: {
-            titleSection,    // Componente para el título de sección
-            mainSection,     // Componente para la vista principal/dashboard
-            variables,       // Componente para la tabla de variables
-            matriz,          // Componente para la matriz de influencia
-            graphics,        // Componente para la gráfica principal
-            analysis,        // Componente para el análisis mapa de variables
-            hypothesis, // Componente para los direccionadores de futuro
-            schwartz,         // Componente para los ejes de Peter Schwartz
-            initialConditions, // Componente para las condiciones iniciales
-            scenarios,         // Componente para los escenarios
-            conclusions,       // Componente para las conclusiones
-            results,
-            // También elimino la importación y el registro del componente si no se usa en otro lugar
-        },
-
-        data() {
-            return {
-                // Objeto que refleja qué contenido está activo
-                // Se sincroniza con el store de sesión
-                contentActive: {}
-            }
-        },
-
-        created() {
-            // Al crear el componente, obtiene el contenido activo del store de sesión
-            this.contentActive = this.storeSession.contentActive;
-        },
-
-        watch: {
-            'storeSession.contentActive': {
-                handler(newVal) {
-                    this.contentActive = newVal;
-                },
-                deep: true
-            }
-        },
-
-        methods: {
-        }
-    }
-</script>
 <template>
     <div class="application">
         <div class="action-main">
@@ -149,3 +67,87 @@
         </div>
     </div>
 </template>
+
+<script>
+    // Importa el store de sesión que maneja el estado global de la sesión
+    import { useSessionStore } from '../../../stores/session';
+    // Importa el store de sección que maneja el título y botones de la sección actual
+    import { useSectionStore } from '../../../stores/section';
+    // Importa el componente que muestra el título de la sección actual
+    import titleSection from '../ui/TitleSectionComponent.vue';
+    // Importa el componente principal que muestra el dashboard
+    import mainSection from '../sections/MainComponent.vue';
+    // Importa el componente que maneja la tabla de variables
+    import variables from '../sections/variables/VariablesMainComponent.vue';
+    // Importa el componente que maneja la matriz de influencia
+    import matriz from '../sections/matriz/MatrizMainComponent.vue';
+    // Importa el componente que maneja la gráfica principal
+    import graphics from '../sections/graphics/GraphicsMainComponent.vue';
+    // Importa el componente para el análisis mapa de variables
+    import analysis from '../sections/analisisVariables/AnalisisMapaVariablesMainComponent.vue';
+    // Importa el componente que maneja los direccionadores de futuro
+    import hypothesis  from '../sections/directionFuture/DirectionFutureMainComponent.vue';
+    // Importa el componente que maneja los ejes de Peter Schwartz
+    import schwartz from '../sections/schwartz/SchwartzMainComponent.vue';
+    // Importa el componente que maneja las condiciones iniciales
+    import initialConditions from '../sections/initialConditions/InitialConditionsMainComponent.vue';
+    // Importa el componente que maneja los escenarios
+    import scenarios from '../sections/scenery/SceneryMainComponent.vue';
+    // Importar el componente de conslusiones
+    import conclusions from '../sections/conclusions/ConclusionsMainComponent.vue';
+    // Importar el componente de resultados
+    import results from '../sections/results/ResultsMainComponent.vue';
+    // También elimino la importación y el registro del componente si no se usa en otro lugar
+
+    export default {
+        // Setup es un hook de composition API que inicializa los stores
+        setup() {
+            const storeSession = useSessionStore();
+            const storeSection = useSectionStore();
+            return { storeSession, storeSection };
+        },
+
+        // Registra los componentes que se usarán en el template
+        components: {
+            titleSection,    // Componente para el título de sección
+            mainSection,     // Componente para la vista principal/dashboard
+            variables,       // Componente para la tabla de variables
+            matriz,          // Componente para la matriz de influencia
+            graphics,        // Componente para la gráfica principal
+            analysis,        // Componente para el análisis mapa de variables
+            hypothesis, // Componente para los direccionadores de futuro
+            schwartz,         // Componente para los ejes de Peter Schwartz
+            initialConditions, // Componente para las condiciones iniciales
+            scenarios,         // Componente para los escenarios
+            conclusions,       // Componente para las conclusiones
+            results,
+            // También elimino la importación y el registro del componente si no se usa en otro lugar
+        },
+
+        data() {
+            return {
+                // Objeto que refleja qué contenido está activo
+                // Se sincroniza con el store de sesión
+                contentActive: {}
+            }
+        },
+
+        created() {
+            // Al crear el componente, obtiene el contenido activo del store de sesión
+            this.contentActive = this.storeSession.contentActive;
+        },
+
+
+        watch: {
+            'storeSession.contentActive': {
+                handler(newVal) {
+                    this.contentActive = newVal;
+                },
+                deep: true
+            }
+        },
+
+        methods: {
+        }
+    }
+</script>

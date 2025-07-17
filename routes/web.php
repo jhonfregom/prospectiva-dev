@@ -11,6 +11,7 @@ use App\Http\Controllers\VariablesMapController;
 use App\Http\Controllers\HypothesisController;
 use App\Http\Controllers\ScenariosController;
 use App\Http\Controllers\ConclusionController;
+use App\Http\Controllers\TraceabilityController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -58,6 +59,7 @@ Route::group(['middleware' => ['auth']], function(){
     Route::controller(HypothesisController::class)->group(function(){
         Route::get('/hypothesis', 'index')->name('hypothesis.index');
         Route::post('/hypothesis', 'store')->name('hypothesis.store');
+        Route::put('/hypothesis/{id}', 'update')->name('hypothesis.update');
         Route::post('/hypothesis/reset-auto-increment', 'resetAutoIncrement')->name('hypothesis.reset-auto-increment');
         Route::post('/hypothesis/delete-all-reset', 'deleteAllAndReset')->name('hypothesis.delete-all-reset');
     });
@@ -74,6 +76,7 @@ Route::group(['middleware' => ['auth']], function(){
     // Condiciones iniciales del sistema
     Route::get('/initial-conditions', [\App\Http\Controllers\VariableController::class, 'getInitialConditions']);
     Route::put('/initial-conditions/{id}', [\App\Http\Controllers\VariableController::class, 'updateInitialCondition']);
+    Route::post('/initial-conditions/close-all', [\App\Http\Controllers\VariableController::class, 'closeAllInitialConditions']);
 
     // Rutas de escenarios protegidas por autenticación
     Route::get('/scenarios', [\App\Http\Controllers\ScenariosController::class, 'index']);
@@ -93,6 +96,19 @@ Route::group(['middleware' => ['auth']], function(){
         Route::put('/conclusions/{id}/unblock', 'unblock')->name('conclusions.unblock');
         Route::put('/conclusions/{id}/field', 'updateField')->name('conclusions.updateField');
         Route::post('/conclusions/reset-auto-increment', 'resetAutoIncrement')->name('conclusions.reset-auto-increment');
+        Route::post('/conclusions/close-all', 'closeAll')->name('conclusions.closeAll');
+    });
+
+    // Rutas de traceability protegidas por autenticación
+    Route::controller(TraceabilityController::class)->group(function(){
+        Route::get('/traceability/user', 'getUserTraceability')->name('traceability.user');
+        Route::post('/traceability/can-access', 'canAccessSection')->name('traceability.canAccess');
+        Route::post('/traceability/mark-completed', 'markSectionCompleted')->name('traceability.markCompleted');
+        Route::get('/traceability/available-sections', 'getAvailableSections')->name('traceability.availableSections');
+        Route::post('/traceability/reverse-section-completed', 'reverseSectionCompleted')->middleware('auth');
+        Route::post('/traceability/reset-edit-locks', [TraceabilityController::class, 'resetEditLocksFromSection'])->middleware('auth');
+        Route::put('/traceability/tried', [App\Http\Controllers\TraceabilityController::class, 'updateTried']);
+        Route::get('/traceability/tried', [App\Http\Controllers\TraceabilityController::class, 'getTried']);
     });
 });
 

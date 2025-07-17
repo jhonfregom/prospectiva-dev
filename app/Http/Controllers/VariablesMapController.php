@@ -147,6 +147,20 @@ class VariablesMapController extends Controller
 
             $analysis->update($validated);
 
+            // Convertir el ID de zona de vuelta a nombre para el frontend
+            $zone = Zones::find($analysis->zone_id);
+            if ($zone) {
+                // Mapear el nombre de la zona a la clave del frontend
+                $zoneMapping = [
+                    'ZONA DE PODER' => 'poder',
+                    'ZONA DE CONFLICTO' => 'conflicto',
+                    'ZONA DE SALIDA' => 'salida',
+                    'ZONA DE INDIFERENCIA' => 'indiferencia'
+                ];
+                
+                $analysis->zone_id = $zoneMapping[$zone->name_zones] ?? $zone->name_zones;
+            }
+
             return response()->json([
                 'data' => $analysis,
                 'status' => 200,

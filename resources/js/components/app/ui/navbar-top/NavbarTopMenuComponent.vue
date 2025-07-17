@@ -1,3 +1,31 @@
+<template>
+    <nav id="navbar-main"
+        class="navbar"
+        >
+        <div class="navbar-brand">
+            <div class="navbar-item">
+                <!-- Bell notification -->
+                <navbar-notification />
+
+                <!-- Content entity name and selector account -->
+                <navbar-company
+                    v-bind:dataParticipantsUser="dataParticipantsUser"
+                    v-on:actionReloadGeneralData="reloadGeneralData" />
+            </div>
+        </div>
+        <div class="navbar-menu">
+            <div class="navbar-end">
+                <b-button
+                    class="is-primary"
+                    v-on:click="logout"
+                >
+                    Logout
+                </b-button>
+            </div>
+            <span class="icon"><i class="fas fa-bars"></i></span>
+        </div>
+    </nav>
+</template>
 <script>
     //Import url from store
     import { useUrlsStore } from '../../../../stores/urls';
@@ -40,34 +68,7 @@
     }
 </script>
 
-<template>
-    <nav id="navbar-main"
-        class="navbar"
-        >
-        <div class="navbar-brand">
-            <div class="navbar-item">
-                <!-- Bell notification -->
-                <navbar-notification />
 
-                <!-- Content entity name and selector account -->
-                <navbar-company
-                    v-bind:dataParticipantsUser="dataParticipantsUser"
-                    v-on:actionReloadGeneralData="reloadGeneralData" />
-            </div>
-        </div>
-        <div class="navbar-menu">
-            <div class="navbar-end">
-                <b-button
-                    class="is-primary"
-                    v-on:click="logout"
-                >
-                    Logout
-                </b-button>
-            </div>
-            <span class="icon"><i class="fas fa-bars"></i></span>
-        </div>
-    </nav>
-</template>
 <style lang="scss" scoped>
     .notify-content{
         margin-top: 0.5rem;

@@ -168,6 +168,30 @@ export const useConclusionsStore = defineStore('conclusions', {
             } finally {
                 this.isLoading = false;
             }
+        },
+
+        /**
+         * Cerrar todas las conclusiones del usuario
+         */
+        async closeAllConclusions() {
+            this.isLoading = true;
+            this.error = null;
+            try {
+                const response = await axios.post('/conclusions/close-all');
+                if (response.data.status === 200) {
+                    // Actualizar el estado local para reflejar el cierre
+                    this.conclusions.component_practice_edits = 3;
+                    this.conclusions.actuality_edits = 3;
+                    this.conclusions.aplication_edits = 3;
+                    this.conclusions.state = '1';
+                }
+                return response.data;
+            } catch (error) {
+                this.error = error.response?.data?.message || error.message;
+                throw error;
+            } finally {
+                this.isLoading = false;
+            }
         }
     }
 }); 

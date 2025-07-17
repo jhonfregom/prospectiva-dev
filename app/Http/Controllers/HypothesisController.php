@@ -318,6 +318,59 @@ class HypothesisController extends Controller
         }
     }
 
+    /**
+     * Actualiza una hipótesis específica por ID.
+     */
+    public function update(Request $request, $id): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            
+            $data = $request->validate([
+                'variable_id' => 'required|integer',
+                'name_hypothesis' => 'required|string',
+                'secondary_hypothesis' => 'required|string',
+                'description' => 'nullable|string',
+                'zone_id' => 'nullable|integer',
+                'state' => 'nullable',
+            ]);
+
+            // Buscar la hipótesis por ID y usuario
+            $hypothesis = Hypothesis::where('id', $id)
+                ->where('user_id', $userId)
+                ->first();
+
+            if (!$hypothesis) {
+                return response()->json([
+                    'data' => null,
+                    'status' => 404,
+                    'message' => 'Hipótesis no encontrada.'
+                ], 404);
+            }
+
+            // Actualizar los campos
+            $hypothesis->update([
+                'description' => $data['description'] ?? $hypothesis->description,
+                'zone_id' => $data['zone_id'] ?? $hypothesis->zone_id,
+                'state' => isset($data['state']) ? (string)$data['state'] : $hypothesis->state,
+            ]);
+
+            return response()->json([
+                'data' => $hypothesis,
+                'status' => 200,
+                'message' => 'Hipótesis actualizada correctamente.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al actualizar hipótesis: ' . $e->getMessage());
+            return response()->json([
+                'data' => null,
+                'status' => 500,
+                'message' => 'Error al actualizar hipótesis: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     // Función para encontrar el primer ID disponible
     private function findNextAvailableId(): int
     {

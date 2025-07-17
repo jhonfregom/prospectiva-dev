@@ -39,13 +39,14 @@ export const useSchwartzStore = defineStore('schwartz', {
                 this.escenarios[index].state = value;
             }
         },
-        async saveScenario(index, numScenario) {
+        async saveScenario(index, numScenario, extra = {}) {
             const escenario = this.escenarios[index];
             const payload = {
                 titulo: escenario.texto,
                 edits: escenario.edits,
                 state: escenario.state,
-                num_scenario: numScenario // num_scenario explícito
+                num_scenario: numScenario,
+                ...extra // Permite forzar edits=3 o texto vacío
             };
             try {
                 // Usar solo POST, el backend decide si crea o actualiza

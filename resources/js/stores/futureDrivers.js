@@ -41,9 +41,25 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
                 zone_id: zoneId,
                 state: state
             };
-            console.log('Payload enviado:', payload);
             try {
-                await axios.post('/hypothesis', payload);
+                // Buscar el driver existente
+                const existing = this.drivers.find(d => d.variable_id === variableId);
+                let recordId = null;
+                
+                if (existing) {
+                    // Si es H0, usar idH0, si es H1, usar idH1
+                    if (secondaryHypothesis === 'H0') {
+                        recordId = existing.idH0;
+                    } else if (secondaryHypothesis === 'H1') {
+                        recordId = existing.idH1;
+                    }
+                }
+                
+                if (existing && recordId) {
+                    await axios.put(`/hypothesis/${recordId}`, payload);
+                } else {
+                    await axios.post('/hypothesis', payload);
+                }
                 return { success: true };
             } catch (error) {
                 this.error = error.response?.data?.message || error.message;
@@ -52,6 +68,7 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
         },
         async saveBothHypotheses(variableId, nameHypothesis, h0Text, h1Text, zoneId, state) {
             try {
+                
                 // Guarda H0
                 const resultH0 = await this.saveDriver(variableId, nameHypothesis, h0Text, 'H0', zoneId, state);
                 if (!resultH0.success) {

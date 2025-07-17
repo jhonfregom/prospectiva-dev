@@ -1,3 +1,30 @@
+<template>
+    <section class="company-content">
+        <span class="name-entity">{{ capitalizeWords( company.entity_name ) }}</span>
+        <b-dropdown v-if="isEnabledSelectorCompany"
+            class="dropdown-account"
+            position="is-bottom-left"
+            trap-focus
+            aria-role="list">
+            <template #trigger="{ active }" >
+                <b-button
+                    class="button btn-account-selector">
+                    <b-icon :icon="active ? 'fas fa-caret-up' : 'fas fa-caret-down'"/>
+                </b-button>
+            </template>
+            <b-dropdown-item
+                v-for="(account,index) in dataParticipantsUser"
+                :key="'account-item-'+ index"
+                aria-role="listitem"
+                :class="{ 'is-current' : company.id === account.company.id }"
+                :disabled="company.id === account.back.id "
+                v-on:click="clickChangeAccount(account)"
+            >
+                {{ capitalizeWords( account.company.entity_name ) }}
+            </b-dropdown-item>
+        </b-dropdown>
+    </section>
+</template>
 <script>
     //Import general functions
     import {
@@ -38,33 +65,7 @@
         }
     }
 </script>
-<template>
-    <section class="company-content">
-        <span class="name-entity">{{ capitalizeWords( company.entity_name ) }}</span>
-        <b-dropdown v-if="isEnabledSelectorCompany"
-            class="dropdown-account"
-            position="is-bottom-left"
-            trap-focus
-            aria-role="list">
-            <template #trigger="{ active }" >
-                <b-button
-                    class="button btn-account-selector">
-                    <b-icon :icon="active ? 'fas fa-caret-up' : 'fas fa-caret-down'"/>
-                </b-button>
-            </template>
-            <b-dropdown-item
-                v-for="(account,index) in dataParticipantsUser"
-                :key="'account-item-'+ index"
-                aria-role="listitem"
-                :class="{ 'is-current' : company.id === account.company.id }"
-                :disabled="company.id === account.back.id "
-                v-on:click="clickChangeAccount(account)"
-            >
-                {{ capitalizeWords( account.company.entity_name ) }}
-            </b-dropdown-item>
-        </b-dropdown>
-    </section>
-</template>
+
 <style lang="scss" scoped>
     @use '../../../../../sass/variables' as var;
 

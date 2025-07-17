@@ -38,7 +38,12 @@ class VariableController extends Controller
                 'name_variable' => 'required|string|max:80'
             ]);
 
-            $nextVariableNumber = $userVariablesCount + 1;
+            // Buscar el siguiente id_variable disponible
+            $existingVariables = Variable::where('user_id', $user->id)->pluck('id_variable')->toArray();
+            $nextVariableNumber = 1;
+            while (in_array('V' . $nextVariableNumber, $existingVariables)) {
+                $nextVariableNumber++;
+            }
 
             $variable = Variable::create([
                 'id_variable' => 'V' . $nextVariableNumber,
@@ -46,6 +51,8 @@ class VariableController extends Controller
                 'description' => '',
                 'score' => 0,
                 'state' => '0',
+                'edits_variable' => 0, // Inicializar el contador de ediciones
+                'edits_now_condition' => 0, // Inicializar el contador de condiciones iniciales
                 'user_id' => $user->id
             ]);
             // Al crear, inicializar el contador de ediciones en 0
@@ -73,29 +80,38 @@ class VariableController extends Controller
             $variable = Variable::findOrFail($id);
             $userId = Auth::id();
 
-            // Si ya está bloqueada la edición de la variable, no permitir editar
-            if ($variable->edits_variable >= 3) {
-                return response()->json([
-                    'data' => $variable,
-                    'status' => 200,
-                    'message' => 'Esta variable ya está bloqueada y no se puede editar.'
-                ]);
-            }
+            \Log::info('Variable update - Request data: ' . json_encode($request->all()));
+            \Log::info('Variable update - Current edits_variable: ' . $variable->edits_variable);
 
             $validated = $request->validate([
                 'description' => 'nullable|string',
-                'score' => 'required|integer'
+                'score' => 'nullable|integer',
+                'edits_variable' => 'nullable|integer',
+                'state' => 'nullable|integer', // Asegura que state también se pueda actualizar
             ]);
 
             $variable->description = $validated['description'] ?? '';
+            if (isset($validated['score'])) {
             $variable->score = $validated['score'];
-            $variable->edits_variable = ($variable->edits_variable ?? 0) + 1;
-
+            }
+            // Si se envía edits_variable desde el frontend, usarlo directamente
+            if (isset($validated['edits_variable'])) {
+                $variable->edits_variable = $validated['edits_variable'];
+                \Log::info('Variable update - Using frontend edits_variable: ' . $validated['edits_variable']);
+            } else {
+                // Si no se envía, incrementar como antes
+                $oldValue = $variable->edits_variable ?? 0;
+                $variable->edits_variable = $oldValue + 1;
+                \Log::info('Variable update - Incrementing edits_variable from ' . $oldValue . ' to ' . $variable->edits_variable);
+            }
+            // Si se envía state desde el frontend, usarlo directamente
+            if (isset($validated['state'])) {
+                $variable->state = (string) $validated['state'];
+            }
             // Si es la tercera edición o más, bloquear solo la edición de la variable
             if ($variable->edits_variable >= 3) {
                 \Log::info('Variable update - Bloqueando edición de variable ID: ' . $variable->id);
             }
-
             $variable->save();
 
             \Log::info('Variable update - Final edits_variable: ' . $variable->edits_variable . ', Response data: ' . json_encode($variable));
@@ -142,7 +158,7 @@ class VariableController extends Controller
     {
         $variables = Variable::where('user_id', Auth::id())
             ->orderBy('id_variable', 'asc')
-            ->get(['id', 'id_variable', 'name_variable', 'now_condition', 'state']);
+            ->get(['id', 'id_variable', 'name_variable', 'now_condition', 'state', 'edits_now_condition']);
         return response()->json([
             'data' => $variables,
             'status' => 200,
@@ -159,6 +175,9 @@ class VariableController extends Controller
             $variable = Variable::where('user_id', Auth::id())->findOrFail($id);
             $userId = Auth::id();
 
+            \Log::info('Initial condition update - Request data: ' . json_encode($request->all()));
+            \Log::info('Initial condition update - Current edits_now_condition: ' . $variable->edits_now_condition);
+
             // Si ya está bloqueada la edición de la condición inicial, no permitir editar
             if ($variable->edits_now_condition >= 3) {
                 return response()->json([
@@ -169,15 +188,30 @@ class VariableController extends Controller
             }
 
             $validated = $request->validate([
-                'now_condition' => 'nullable|string|max:1000'
+                'now_condition' => 'nullable|string|max:1000',
+                'edits_now_condition' => 'nullable|integer',
+                'state' => 'nullable|integer'
             ]);
 
             $variable->now_condition = $validated['now_condition'] ?? '';
-            $variable->edits_now_condition = ($variable->edits_now_condition ?? 0) + 1;
+            
+            // Si se envía edits_now_condition desde el frontend, usarlo directamente
+            if (isset($validated['edits_now_condition'])) {
+                $variable->edits_now_condition = $validated['edits_now_condition'];
+                \Log::info('Initial condition update - Using frontend edits_now_condition: ' . $validated['edits_now_condition']);
+            } else {
+                // Si no se envía, incrementar como antes
+                $oldValue = $variable->edits_now_condition ?? 0;
+                $variable->edits_now_condition = $oldValue + 1;
+                \Log::info('Initial condition update - Incrementing edits_now_condition from ' . $oldValue . ' to ' . $variable->edits_now_condition);
+            }
 
-            // Si es la tercera edición o más, bloquear solo la edición de la condición inicial
+            // Si el contador es 3 o más, forzar el bloqueo
             if ($variable->edits_now_condition >= 3) {
-                \Log::info('Initial condition update - Bloqueando edición de condición inicial ID: ' . $variable->id);
+                $variable->state = '1';
+            } else if (isset($validated['state'])) {
+                // Solo si NO está bloqueado, usar el valor recibido
+                $variable->state = (string) $validated['state'];
             }
 
             $variable->save();
@@ -193,6 +227,31 @@ class VariableController extends Controller
             return response()->json([
                 'status' => 500,
                 'message' => 'Error al actualizar la condición inicial: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cierra todas las condiciones iniciales del usuario (bloquea todas)
+     */
+    public function closeAllInitialConditions(): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            $updated = \App\Models\Variable::where('user_id', $userId)
+                ->update([
+                    'edits_now_condition' => 3,
+                    'state' => '1' // También cerrar el estado
+                ]);
+            return response()->json([
+                'status' => 200,
+                'message' => 'Todas las condiciones iniciales han sido cerradas correctamente',
+                'updated' => $updated
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al cerrar las condiciones iniciales: ' . $e->getMessage()
             ], 500);
         }
     }

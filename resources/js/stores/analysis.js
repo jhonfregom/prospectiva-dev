@@ -71,9 +71,11 @@ export const useAnalysisStore = defineStore('analysis', {
                 if (response.data.status === 200) {
                     return response.data;
                 }
+                return null;
             } catch (error) {
                 this.error = error.message;
                 console.error('Error al obtener análisis:', error);
+                return null;
             } finally {
                 this.isLoading = false;
             }
@@ -158,6 +160,30 @@ export const useAnalysisStore = defineStore('analysis', {
             } catch (error) {
                 this.error = error.response?.data?.message || error.message;
                 console.error('Error al borrar todos los registros:', error);
+                return { success: false, message: this.error };
+            }
+        },
+
+        async closeAllAnalyses() {
+            try {
+                for (const row of this.rows) {
+                    // Buscar el análisis existente para la zona
+                    const response = await axios.get('/analysis');
+                    if (response.data.status === 200 && response.data.data) {
+                        const analysis = response.data.data.find(a => a.zone_id === row.key);
+                        if (analysis) {
+                            await axios.put(`/analysis/${analysis.id}`, {
+                                description: analysis.description || '',
+                                score: analysis.score || 0,
+                                state: '1'
+                            });
+                        }
+                    }
+                }
+                await this.fetchAnalyses();
+                return { success: true };
+            } catch (error) {
+                this.error = error.response?.data?.message || error.message;
                 return { success: false, message: this.error };
             }
         },

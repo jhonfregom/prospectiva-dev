@@ -378,4 +378,43 @@ class ConclusionController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Cerrar todas las conclusiones del usuario (actualizar todos los campos de edits a 3 y state a 1)
+     */
+    public function closeAll(Request $request): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            // Buscar todas las conclusiones del usuario
+            $conclusions = Conclusion::where('user_id', $userId)->get();
+
+            if ($conclusions->isEmpty()) {
+                return response()->json([
+                    'status' => 404,
+                    'message' => 'No se encontraron conclusiones para cerrar'
+                ], 404);
+            }
+
+            // Actualizar todas las conclusiones
+            foreach ($conclusions as $conclusion) {
+                $conclusion->update([
+                    'component_practice_edits' => 3,
+                    'actuality_edits' => 3,
+                    'aplication_edits' => 3,
+                    'state' => '1'
+                ]);
+            }
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Todas las conclusiones han sido cerradas correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 500,
+                'message' => 'Error al cerrar las conclusiones: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

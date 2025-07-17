@@ -136,4 +136,13 @@ return [
         'content_introduction' => 'La estrategia empresarial como clave para el desarrollo regional,  se impone como una tarea que debe ser tenida en cuenta desde el análisis de la actualidad empresarial y contrastada con el análisis de la actualidad del entorno empresarial. Esta de manera definitiva deber dar cuenta de los requerimientos que deben implementar las organizaciones frente a sus futuros más deseables, en un entorno cada vez más incierto. La generación de una visión a futuro generado con estrategias altamente efectivas aportará a las empresas y al sector al que pertenezca una gran ventaja competitiva, generando valor no solo para la organización sino para quienes estas logren impactar. Por lo tanto y con el presente ejercicio prospectivo se pretende hacer una revisión detallada de cada variable a intervenir y como mediante una evaluación consciente de las mismas es posible aportar estratégicamente a esa visión de futuro que las empresas cada vez requieren con mayor urgencia. A continuación, se relaciona la tendencia, el tópico o tema a ser analizado a lo largo de esta herramienta, ten en cuenta todas las indicaciones del manual para su fácil comprensión y ejecución.',
         
     ],
+    'conclusions_section' => [
+        'table' => [
+            'close' => 'Cerrar',
+        ],
+        'messages' => [
+            'close_success' => 'Conclusiones cerradas correctamente.',
+            'close_error' => 'Error al cerrar las conclusiones.'
+        ]
+    ],
 ];

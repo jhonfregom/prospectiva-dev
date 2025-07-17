@@ -49,6 +49,28 @@ export const useStrategicScenarioStore = defineStore('strategicScenario', {
             } finally {
                 this.loading = false;
             }
+        },
+        async closeAllScenarios() {
+            try {
+                for (let i = 1; i <= 4; i++) {
+                    const scenario = this[`scenario${i}`];
+                    if (scenario) {
+                        await axios.post('/scenarios', {
+                            ...scenario,
+                            state: 1,
+                            edits_year1: 3,
+                            edits_year2: 3,
+                            edits_year3: 3,
+                            num_scenario: i
+                        });
+                    }
+                }
+                await this.fetchScenarios();
+                return { success: true };
+            } catch (error) {
+                this.error = error.response?.data?.message || error.message;
+                return { success: false, message: this.error };
+            }
         }
     }
 }); 

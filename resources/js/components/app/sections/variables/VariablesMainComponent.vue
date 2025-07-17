@@ -69,6 +69,36 @@
             @close="closeModal">
         </variable-form-modal>
     </div>
+    <!-- Botón cerrar/regresar en la esquina inferior derecha -->
+    <div class="cerrar-container">
+      <button
+        class="cerrar-btn"
+        v-if="!cerrado"
+        @click="confirmarCerrar"
+        :disabled="cerrado"
+      >Cerrar</button>
+      <button
+        class="cerrar-btn"
+        v-else-if="tried !== null && tried < 2"
+        @click="confirmarRegresar"
+      >Regresar</button>
+    </div>
+    <!-- Modal de confirmación -->
+    <div v-if="mostrarModal" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
+        <button @click="cerrarModulo">Sí, cerrar</button>
+        <button @click="mostrarModal = false">Cancelar</button>
+      </div>
+    </div>
+    <!-- Modal de confirmación para regresar -->
+    <div v-if="mostrarModalRegresar" class="modal-confirm">
+      <div class="modal-content">
+        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
+        <button @click="regresarModulo">Sí, regresar</button>
+        <button @click="mostrarModalRegresar = false">Cancelar</button>
+      </div>
+    </div>
 </template>
 
 <script>
@@ -78,6 +108,10 @@ import { useTextsStore } from '../../../../stores/texts';
 import VariableFormModal from './VariableFormModal.vue';
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
+import { useSessionStore } from '../../../../stores/session';
+import axios from 'axios'; // Added axios import
+
+const CERRADO_KEY_PREFIX = 'variables_cerrado_';
 
 export default {
     components: {
@@ -88,6 +122,7 @@ export default {
         const variablesStore = useVariablesStore();
         const sectionStore = useSectionStore();
         const textsStore = useTextsStore();
+        const storeSession = useSessionStore();
         const { variables, isLoading } = storeToRefs(variablesStore);
 
         return { 
@@ -95,7 +130,8 @@ export default {
             sectionStore,
             textsStore,
             variables,
-            isLoading
+            isLoading,
+            storeSession
         };
     },
 
@@ -104,6 +140,10 @@ export default {
             showModal: false,
             editingRow: null,
             debouncedUpdate: null,
+            cerrado: false,
+            mostrarModal: false,
+            mostrarModalRegresar: false,
+            tried: null, // Se inicializa como null hasta cargar desde traceability
             steps: [
                 { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
                 { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
@@ -128,14 +168,33 @@ export default {
                 await this.updateVariableInServer(row);
             }
         }, 1000);
+
+        // Leer estado de cerrado desde localStorage
+        const user = JSON.parse(localStorage.getItem('user')) || {};
+        const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
+        const cerradoValue = localStorage.getItem(cerradoKey);
+        this.cerrado = cerradoValue === 'true';
     },
 
-    mounted() {
-        this.sectionStore.setTitleSection(this.textsStore.getText('variables_section.title'));
+    async mounted() {
+        this.sectionStore.setTitleSection(this.textsStore.getText('variables.title'));
+        await this.variablesStore.fetchVariables();
+        // Cargar el valor de tried desde traceability
+        await this.loadTriedValue();
+        // Inicializar 'cerrado' leyendo de localStorage directamente
+        if (typeof window !== 'undefined') {
+            const user = JSON.parse(localStorage.getItem('user')) || {};
+            const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
+            this.cerrado = localStorage.getItem(cerradoKey) === 'true';
+        }
         this.sectionStore.addDynamicButton(this.textsStore.getText('variables_section.table.new'), () => {
             this.showModal = true;
         });
-        this.loadVariables();
+    },
+
+    beforeUnmount() {
+        // Limpiar botones dinámicos al desmontar el componente
+        this.sectionStore.clearDynamicButtons();
     },
 
     methods: {
@@ -162,15 +221,12 @@ export default {
         },
 
         async handleEditSave(row) {
-            console.log('handleEditSave - Variable ID:', row.id, 'Current state:', row.state);
             
             if (row.state === '1') return;
 
             if (this.editingRow === row.id) {
                 // Guardar
-                console.log('Saving variable ID:', row.id);
                 await this.updateVariableInServer(row);
-                console.log('After save - Variable ID:', row.id, 'New state:', row.state);
                 this.editingRow = null;
             } else {
                 // Entrar en modo edición
@@ -233,6 +289,85 @@ export default {
 
         closeModal() {
             this.showModal = false;
+        },
+        confirmarCerrar() {
+          this.mostrarModal = true;
+        },
+        confirmarRegresar() {
+          this.mostrarModalRegresar = true;
+        },
+        async cerrarModulo() {
+          this.mostrarModal = false;
+          try {
+            // Cambia edits_variable a 3 en todas las variables y actualiza en el backend
+            for (const v of this.variables) {
+              v.edits_variable = 3;
+              await this.updateVariableInServer(v);
+            }
+            // Guardar acción pendiente en localStorage
+            localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'variables' }));
+            // Regresa a la vista principal
+            this.storeSession.setActiveContent('main');
+            // Guardar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+            const user = JSON.parse(localStorage.getItem('user')) || {};
+            const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
+            localStorage.setItem(cerradoKey, 'true');
+            this.cerrado = true;
+          } catch (error) {
+            this.$buefy.toast.open({
+              message: 'Error al cerrar el módulo de variables',
+              type: 'is-danger'
+            });
+          }
+        },
+        async loadTriedValue() {
+            try {
+                const response = await axios.get('/traceability/tried');
+                if (response.data && response.data.success && response.data.tried !== undefined) {
+                    this.tried = response.data.tried;
+                }
+            } catch (error) {
+                console.error('Error al cargar tried:', error);
+            }
+        },
+
+        async incrementTried() {
+            try {
+                await axios.put('/traceability/tried', { tried: 2 });
+                this.tried = 2;
+            } catch (error) {
+                console.error('Error al incrementar tried:', error);
+            }
+        },
+
+        async regresarModulo() {
+            this.mostrarModalRegresar = false;
+            try {
+                // Incrementar tried a 2
+                await this.incrementTried();
+                // Volver a cargar el valor actualizado de tried
+                await this.loadTriedValue();
+                // Cambia edits_variable y state a 0 en todas las variables y actualiza en el backend
+                for (const v of this.variables) {
+                    v.edits_variable = 0;
+                    v.state = 0;
+                    await this.updateVariableInServer(v);
+                }
+                // Guardar acción pendiente en localStorage
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'variables' }));
+                // Regresa a la vista principal
+                this.storeSession.setActiveContent('main');
+                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
+                localStorage.removeItem(cerradoKey);
+                this.cerrado = false;
+            } catch (error) {
+                this.$buefy.toast.open({
+                    message: 'Error al regresar el módulo de variables',
+                    type: 'is-danger'
+                });
+            }
         }
     }
 };
@@ -277,5 +412,52 @@ export default {
 :deep(.b-table .table tbody td) {
     vertical-align: middle !important;
     height: 80px !important;
+}
+.cerrar-container {
+  position: fixed;
+  bottom: 32px;
+  right: 48px;
+  z-index: 100;
+}
+.cerrar-btn {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cerrar-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+.modal-confirm {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.modal-content {
+  background: white;
+  padding: 32px 48px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  text-align: center;
+}
+.modal-content button {
+  margin: 0 12px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
 }
 </style>

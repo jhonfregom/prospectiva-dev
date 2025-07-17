@@ -1,3 +1,51 @@
+<template>
+    <section
+        class="title-section">
+        <div class="columns">
+            <div class="column is-11-desktop is-12-touch is-12-tablet is-offset-1-desktop content-title">
+                <template v-if="isMainSection">
+                    <div class="columns header">
+                        <div class="column">
+                            <span class="title-group">{{ capitalizeWords(storeTexts.main_section.modules_title) }}</span>
+                        </div>
+                        <div class="column">
+                            <span class="title-group">{{ capitalizeWords(storeTexts.main_section.queries_title) }}</span>
+                        </div>
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="title">{{ capitalizeWords(title) }}</div>
+                    <div class="content-actions">
+                        <a
+                            v-for="(button, index) in dynamicButtons"
+                            :key="index"
+                            href="#"
+                            v-on:click.prevent="button.action">
+                            {{ capitalizeWords(button.label) }}
+                        </a>
+                        <template v-for="(component, index) in customComponents">
+                            <!-- It's a custom component -->
+                            <component v-if="typeof component.value === 'object'"
+                                :is="component.value"
+                                :key="'component-'+index"
+                                v-on="component.actions"/>
+                            <!-- It's a string HTML -->
+                            <span v-else-if="typeof component === 'string'"
+                                v-html="component"
+                                :key="'html-'+index" />
+                        </template>
+                        <a
+                            v-if="isVisibleBackBtn"
+                            href="#"
+                            v-on:click.prevent="toBack()">
+                            {{ capitalizeWords(storeTexts.global.go_back) }}
+                        </a>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+</template>
 <script>
     //Import general functions
     import {
@@ -48,54 +96,7 @@
         }
     }
 </script>
-<template>
-    <section
-        class="title-section">
-        <div class="columns">
-            <div class="column is-11-desktop is-12-touch is-12-tablet is-offset-1-desktop content-title">
-                <template v-if="isMainSection">
-                    <div class="columns header">
-                        <div class="column">
-                            <span class="title-group">{{ capitalizeWords(storeTexts.main_section.modules_title) }}</span>
-                        </div>
-                        <div class="column">
-                            <span class="title-group">{{ capitalizeWords(storeTexts.main_section.queries_title) }}</span>
-                        </div>
-                    </div>
-                </template>
-                <template v-else>
-                    <div class="title">{{ capitalizeWords(title) }}</div>
-                    <div class="content-actions">
-                        <a
-                            v-for="(button, index) in dynamicButtons"
-                            :key="index"
-                            href="#"
-                            v-on:click.prevent="button.action">
-                            {{ capitalizeWords(button.label) }}
-                        </a>
-                        <template v-for="(component, index) in customComponents">
-                            <!-- It's a custom component -->
-                            <component v-if="typeof component.value === 'object'"
-                                :is="component.value"
-                                :key="'component-'+index"
-                                v-on="component.actions"/>
-                            <!-- It's a string HTML -->
-                            <span v-else-if="typeof component === 'string'"
-                                v-html="component"
-                                :key="'html-'+index" />
-                        </template>
-                        <a
-                            v-if="isVisibleBackBtn"
-                            href="#"
-                            v-on:click.prevent="toBack()">
-                            {{ capitalizeWords(storeTexts.global.go_back) }}
-                        </a>
-                    </div>
-                </template>
-            </div>
-        </div>
-    </section>
-</template>
+
 <style lang="scss" scoped>
     @use '../../../../sass/variables' as var;
 
