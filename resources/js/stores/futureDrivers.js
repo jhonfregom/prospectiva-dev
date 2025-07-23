@@ -39,8 +39,13 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
                 description: description,         // texto del textarea
                 secondary_hypothesis: secondaryHypothesis, // 'H0' o 'H1'
                 zone_id: zoneId,
-                state: state
             };
+            
+            // Solo enviar state si se especifica explícitamente (para cerrar/regresar módulo)
+            if (state !== undefined && state !== null) {
+                payload.state = state;
+            }
+            
             try {
                 // Buscar el driver existente
                 const existing = this.drivers.find(d => d.variable_id === variableId);
@@ -56,12 +61,13 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
                 }
                 
                 if (existing && recordId) {
-                    await axios.put(`/hypothesis/${recordId}`, payload);
+                    const response = await axios.put(`/hypothesis/${recordId}`, payload);
                 } else {
-                    await axios.post('/hypothesis', payload);
+                    const response = await axios.post('/hypothesis', payload);
                 }
                 return { success: true };
             } catch (error) {
+                console.error('saveDriver - Error:', error.response?.data || error.message);
                 this.error = error.response?.data?.message || error.message;
                 return { success: false, message: this.error };
             }
@@ -89,6 +95,35 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
                 return { success: false, message: this.error };
             }
         },
+
+        async closeAllHypotheses() {
+            try {
+                const response = await axios.post('/hypothesis/close-all');
+                if (response.data.status === 200) {
+                    await this.fetchDrivers();
+                    return { success: true };
+                }
+                return { success: false, message: response.data.message };
+            } catch (error) {
+                this.error = error.response?.data?.message || error.message;
+                return { success: false, message: this.error };
+            }
+        },
+
+        async reopenAllHypotheses() {
+            try {
+                const response = await axios.post('/hypothesis/reopen-all');
+                if (response.data.status === 200) {
+                    await this.fetchDrivers();
+                    return { success: true };
+                }
+                return { success: false, message: response.data.message };
+            } catch (error) {
+                this.error = error.response?.data?.message || error.message;
+                return { success: false, message: this.error };
+            }
+        },
+
         clearError() {
             this.error = null;
         }

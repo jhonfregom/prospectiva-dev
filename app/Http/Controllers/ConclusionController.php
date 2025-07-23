@@ -32,14 +32,18 @@ class ConclusionController extends Controller
      */
     private function createWithSpecificId(array $data, int $id): Conclusion
     {
+        // Obtener o crear el registro de traceability para el usuario
+        $traceability = \App\Models\Traceability::getOrCreateForUser($data['user_id']);
+        
         // Usar consulta SQL directa para insertar con ID específico
-        \DB::statement("INSERT INTO conclusions (id, user_id, component_practice, actuality, aplication, state, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())", [
+        \DB::statement("INSERT INTO conclusions (id, user_id, component_practice, actuality, aplication, state, tried_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())", [
             $id,
             $data['user_id'],
             $data['component_practice'] ?? '',
             $data['actuality'] ?? '',
             $data['aplication'] ?? '',
-            $data['state'] ?? '0'
+            $data['state'] ?? '0',
+            $traceability->id
         ]);
 
         // Retornar el modelo creado

@@ -18,6 +18,8 @@ class VariableMapAnalisys extends Model
         'zone_id',
         'user_id',
         'state',
+        'tried_id',
+        'edits',
     ];
 
     // Deshabilitar el auto-increment para permitir asignación manual de IDs

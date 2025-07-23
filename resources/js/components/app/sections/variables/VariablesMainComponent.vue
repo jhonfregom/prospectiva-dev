@@ -53,6 +53,7 @@
                     </b-button>
 
                     <b-button 
+                        v-if="isAdmin"
                         type="is-danger"
                         size="is-small"
                         icon-left="delete"
@@ -79,7 +80,7 @@
       >Cerrar</button>
       <button
         class="cerrar-btn"
-        v-else-if="tried !== null && tried < 2"
+        v-else-if="state !== null && state === '0'"
         @click="confirmarRegresar"
       >Regresar</button>
     </div>
@@ -110,6 +111,7 @@ import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios'; // Added axios import
+import { computed } from 'vue';
 
 const CERRADO_KEY_PREFIX = 'variables_cerrado_';
 
@@ -125,13 +127,20 @@ export default {
         const storeSession = useSessionStore();
         const { variables, isLoading } = storeToRefs(variablesStore);
 
+        // Computed property para verificar si el usuario es administrador
+        const isAdmin = computed(() => {
+            const user = JSON.parse(localStorage.getItem('user')) || {};
+            return user.role === 1;
+        });
+
         return { 
             variablesStore, 
             sectionStore,
             textsStore,
             variables,
             isLoading,
-            storeSession
+            storeSession,
+            isAdmin
         };
     },
 
@@ -143,7 +152,7 @@ export default {
             cerrado: false,
             mostrarModal: false,
             mostrarModalRegresar: false,
-            tried: null, // Se inicializa como null hasta cargar desde traceability
+            state: null, // Se inicializa como null hasta cargar desde traceability
             steps: [
                 { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
                 { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
@@ -221,11 +230,11 @@ export default {
         },
 
         async handleEditSave(row) {
-            
             if (row.state === '1') return;
 
             if (this.editingRow === row.id) {
-                // Guardar
+                // Guardar - incrementar edits_variable para ediciones manuales
+                row.edits_variable = (row.edits_variable || 0) + 1;
                 await this.updateVariableInServer(row);
                 this.editingRow = null;
             } else {
@@ -322,30 +331,30 @@ export default {
         },
         async loadTriedValue() {
             try {
-                const response = await axios.get('/traceability/tried');
-                if (response.data && response.data.success && response.data.tried !== undefined) {
-                    this.tried = response.data.tried;
+                const response = await axios.get('/traceability/current-route-state');
+                if (response.data && response.data.success && response.data.state !== undefined) {
+                    this.state = response.data.state;
                 }
             } catch (error) {
-                console.error('Error al cargar tried:', error);
+                console.error('Error al cargar state:', error);
             }
         },
 
         async incrementTried() {
             try {
-                await axios.put('/traceability/tried', { tried: 2 });
-                this.tried = 2;
+                await axios.put('/traceability/current-route-state', { state: '1' });
+                this.state = '1';
             } catch (error) {
-                console.error('Error al incrementar tried:', error);
+                console.error('Error al actualizar state:', error);
             }
         },
 
         async regresarModulo() {
             this.mostrarModalRegresar = false;
             try {
-                // Incrementar tried a 2
+                // Incrementar state a 1
                 await this.incrementTried();
-                // Volver a cargar el valor actualizado de tried
+                // Volver a cargar el valor actualizado de state
                 await this.loadTriedValue();
                 // Cambia edits_variable y state a 0 en todas las variables y actualiza en el backend
                 for (const v of this.variables) {

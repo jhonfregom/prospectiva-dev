@@ -80,7 +80,7 @@
       >Cerrar</button>
       <button
         class="cerrar-btn"
-        v-else-if="tried !== null && tried < 2"
+        v-else-if="state !== null && state === '0'"
         @click="confirmarRegresar"
       >Regresar</button>
     </div>
@@ -108,7 +108,7 @@ import { useTextsStore } from '../../../../stores/texts';
 import { useGraphicsStore } from '../../../../stores/graphics';
 import { useSectionStore } from '../../../../stores/section';
 import { useSessionStore } from '../../../../stores/session';
-import { onMounted, computed, ref } from 'vue';
+import { onMounted, computed, ref, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
 import { debounce } from 'lodash';
 import { useTraceabilityStore } from '../../../../stores/traceability';
@@ -124,11 +124,13 @@ export default {
 
     data() {
         return {
-            editingRow: null,
-            cerrado: false,
+            variables: [],
+            isLoading: false,
             mostrarModal: false,
             mostrarModalRegresar: false,
-            tried: null, // Se inicializa como null hasta cargar desde traceability
+            cerrado: false,
+            state: null, // Se inicializa como null hasta cargar desde traceability
+            debouncedSaveAnalysis: null, // Se inicializará en mounted
         };
     },
     created() {
@@ -147,6 +149,8 @@ export default {
         const traceabilityStore = useTraceabilityStore();
         const { rows } = storeToRefs(analysisStore);
         const { data } = storeToRefs(graphicsStore);
+        const editingRow = ref(null); // Usar ref para reactividad
+        
         const descriptionWithCount = computed(() => {
             const count = data.value ? data.value.length : 0;
             return textsStore.getText('analysis.description').replace(/de \d+ variables/i, `de ${count} variables`);
@@ -157,6 +161,7 @@ export default {
             return secciones && secciones.analysis === true;
         });
         // --- FIN NUEVO ---
+        
         return {
             analysisStore,
             textsStore,
@@ -167,19 +172,31 @@ export default {
             data,
             descriptionWithCount,
             traceabilityStore,
-            seccionesValidas
+            seccionesValidas,
+            editingRow,
         };
     },
     mounted() {
         this.sectionStore.setTitleSection(this.textsStore.getText('analysis.title'));
+        this.loadVariables();
         this.loadSavedAnalysis();
         // Cargar el valor de tried desde traceability
         this.loadTriedValue();
+        // Inicializar el debouncedSaveAnalysis
+        this.debouncedSaveAnalysis = debounce(async (row) => {
+            if (row.state !== '1') {
+                await this.saveOrCreateAnalysis(row, false);
+            }
+        }, 1000);
     },
 
     beforeUnmount() {
         // Limpiar botones dinámicos al desmontar el componente
         this.sectionStore.clearDynamicButtons();
+        // Limpiar el debounce
+        if (this.debouncedSaveAnalysis) {
+            this.debouncedSaveAnalysis.cancel();
+        }
     },
     methods: {
         async loadSavedAnalysis() {
@@ -197,6 +214,42 @@ export default {
                 }
             } catch (e) {
                 console.error('Error al cargar análisis:', e);
+            }
+        },
+        async loadVariables() {
+            try {
+                // Cargar los datos de gráficos que contienen las variables por zona
+                await this.graphicsStore.fetchGraphicsData();
+                
+                // Verificar que tenemos datos de la ruta actual
+                if (!this.data || this.data.length === 0) {
+                    console.warn('No hay datos de variables para la ruta actual');
+                    return;
+                }
+                
+                // Asignar las variables a las zonas correspondientes
+                this.rows.forEach(row => {
+                    const zoneVariables = this.data.filter(variable => {
+                        // Mapear las claves de zona a los nombres completos
+                        const zoneMapping = {
+                            'poder': 'ZONA DE PODER',
+                            'conflicto': 'ZONA DE CONFLICTO',
+                            'salida': 'ZONA DE SALIDA',
+                            'indiferencia': 'ZONA DE INDIFERENCIA'
+                        };
+                        return variable.zone === zoneMapping[row.key];
+                    });
+                    
+                    row.variables = zoneVariables;
+                });
+                
+                // Debug: mostrar las variables por zona
+                console.log('Variables por zona:', this.rows.map(row => ({
+                    zona: row.key,
+                    variables: row.variables.map(v => v.codigo)
+                })));
+            } catch (e) {
+                console.error('Error al cargar variables:', e);
             }
         },
         groupByRows(variables, itemsPerRow) {
@@ -230,17 +283,21 @@ export default {
         handleCommentChange(row) {
             const words = row.comment ? row.comment.split(/\s+/).filter(word => word.length > 0) : [];
             row.score = words.length;
+            // Usar debounce para evitar llamadas excesivas
             this.debouncedSaveAnalysis(row);
         },
-        debouncedSaveAnalysis: debounce(async function(row) {
-            if (row.state !== '1') {
-                await this.saveOrCreateAnalysis(row, false);
-            }
-        }, 1000),
         async saveOrCreateAnalysis(row, isManualSave = false) {
             try {
+                // Mapear la zona del frontend al nombre completo de la zona
+                const zoneMapping = {
+                    'poder': 'ZONA DE PODER',
+                    'conflicto': 'ZONA DE CONFLICTO',
+                    'salida': 'ZONA DE SALIDA',
+                    'indiferencia': 'ZONA DE INDIFERENCIA'
+                };
+                
                 const analysisData = {
-                    zone_id: row.key,
+                    zone_id: zoneMapping[row.key] || row.key,
                     description: row.comment || '',
                     score: Number(row.score) || 0,
                     state: String(row.state || 0),
@@ -249,6 +306,10 @@ export default {
                 const result = await this.analysisStore.saveAnalysis(analysisData);
                 if (result.success && result.data) {
                     row.state = result.data.state;
+                    // Solo recargar los datos si es un guardado manual
+                    if (isManualSave) {
+                        await this.loadSavedAnalysis();
+                    }
                 }
             } catch (e) {
                 console.error('Error al guardar análisis:', e);
@@ -279,11 +340,20 @@ export default {
         async handleEditSave(row) {
             if (row.state === '1') return;
             if (this.editingRow === row.key) {
+                // Cancelar el debounce antes de guardar manualmente
+                if (this.debouncedSaveAnalysis) {
                 this.debouncedSaveAnalysis.cancel();
+                }
+                try {
                 await this.saveOrCreateAnalysis(row, true);
+                } catch (error) {
+                    console.error('Error al guardar análisis:', error);
+                }
                 this.editingRow = null;
+                await nextTick();
             } else {
                 this.editingRow = row.key;
+                await nextTick();
             }
         },
         confirmarCerrar() {
@@ -319,6 +389,9 @@ export default {
         async regresarModulo() {
             this.mostrarModalRegresar = false;
             try {
+                // Reabrir todos los análisis en el backend y store
+                const result = await this.analysisStore.reopenAllAnalyses();
+                if (result.success) {
                 // Incrementar tried a 2
                 await this.incrementTried();
                 // Volver a cargar el valor actualizado de tried
@@ -335,6 +408,12 @@ export default {
                 const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
                 localStorage.removeItem(cerradoKey);
                 this.cerrado = false;
+                } else {
+                    this.$buefy.toast.open({
+                        message: 'Error al reabrir el módulo de análisis de variables',
+                        type: 'is-danger'
+                    });
+                }
             } catch (error) {
                 this.$buefy.toast.open({
                     message: 'Error al regresar el módulo de análisis de variables',
@@ -345,21 +424,21 @@ export default {
 
         async loadTriedValue() {
             try {
-                const response = await axios.get('/traceability/tried');
-                if (response.data && response.data.success && response.data.tried !== undefined) {
-                    this.tried = response.data.tried;
+                const response = await axios.get('/traceability/current-route-state');
+                if (response.data && response.data.success && response.data.state !== undefined) {
+                    this.state = response.data.state;
                 }
             } catch (error) {
-                console.error('Error al cargar tried:', error);
+                console.error('Error al cargar state:', error);
             }
         },
 
         async incrementTried() {
             try {
-                await axios.put('/traceability/tried', { tried: 2 });
-                this.tried = 2;
+                await axios.put('/traceability/current-route-state', { state: '1' });
+                this.state = '1';
             } catch (error) {
-                console.error('Error al incrementar tried:', error);
+                console.error('Error al actualizar state:', error);
             }
         }
     }

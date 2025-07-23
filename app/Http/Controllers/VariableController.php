@@ -11,8 +11,22 @@ class VariableController extends Controller
 {
     public function index(): JsonResponse
     {
-        $variables = Variable::orderBy('id', 'desc');
-        $variables = $variables->where('user_id', Auth::id())->get();
+        // Obtener la ruta actual del usuario
+        $currentRoute = \App\Models\Traceability::getCurrentRouteForUser(Auth::id());
+        
+        if (!$currentRoute) {
+            return response()->json([
+                'data' => [],
+                'status' => 200,
+                'message' => 'No se encontró ruta para el usuario'
+            ]);
+        }
+        
+        $variables = Variable::where('user_id', Auth::id())
+            ->where('tried_id', $currentRoute->id)
+            ->orderBy('id', 'desc')
+            ->get();
+            
         return response()->json([
             'data' => $variables,
             'status' => 200,
@@ -24,13 +38,28 @@ class VariableController extends Controller
     {
         try {
             $user = Auth::user();
-            $userVariablesCount = Variable::where('user_id', $user->id)->count();
+            
+            // Obtener la ruta actual del usuario
+            $currentRoute = \App\Models\Traceability::getCurrentRouteForUser($user->id);
+            
+            if (!$currentRoute) {
+                return response()->json([
+                    'data' => null,
+                    'status' => 400,
+                    'message' => 'No se encontró ruta para el usuario'
+                ], 400);
+            }
+            
+            // Contar variables de la ruta actual
+            $userVariablesCount = Variable::where('user_id', $user->id)
+                ->where('tried_id', $currentRoute->id)
+                ->count();
 
             if ($userVariablesCount >= 15) {
                 return response()->json([
                     'data' => null,
                     'status' => 400,
-                    'message' => 'Has alcanzado el límite máximo de 15 variables'
+                    'message' => 'Has alcanzado el límite máximo de 15 variables para esta ruta'
                 ], 400);
             }
 
@@ -38,14 +67,28 @@ class VariableController extends Controller
                 'name_variable' => 'required|string|max:80'
             ]);
 
-            // Buscar el siguiente id_variable disponible
-            $existingVariables = Variable::where('user_id', $user->id)->pluck('id_variable')->toArray();
+            // Buscar el siguiente id_variable disponible para esta ruta
+            $existingVariables = Variable::where('user_id', $user->id)
+                ->where('tried_id', $currentRoute->id)
+                ->pluck('id_variable')
+                ->toArray();
             $nextVariableNumber = 1;
             while (in_array('V' . $nextVariableNumber, $existingVariables)) {
                 $nextVariableNumber++;
             }
 
+            // Buscar el primer id disponible (hueco) en la tabla variables
+            $existingIds = Variable::orderBy('id')->pluck('id')->toArray();
+            $nextId = 1;
+            foreach ($existingIds as $existingId) {
+                if ($existingId > $nextId) {
+                    break;
+                }
+                $nextId = $existingId + 1;
+            }
+
             $variable = Variable::create([
+                'id' => $nextId,
                 'id_variable' => 'V' . $nextVariableNumber,
                 'name_variable' => $request->name_variable,
                 'description' => '',
@@ -53,7 +96,8 @@ class VariableController extends Controller
                 'state' => '0',
                 'edits_variable' => 0, // Inicializar el contador de ediciones
                 'edits_now_condition' => 0, // Inicializar el contador de condiciones iniciales
-                'user_id' => $user->id
+                'user_id' => $user->id,
+                'tried_id' => $currentRoute->id
             ]);
             // Al crear, inicializar el contador de ediciones en 0
             $sessionKey = 'variable_edit_count_' . $variable->id . '_user_' . $user->id;
@@ -132,6 +176,15 @@ class VariableController extends Controller
     public function destroy($id)
     {
         try {
+            // Verificar si el usuario es administrador
+            $user = Auth::user();
+            if ($user->role !== 1) {
+                return response()->json([
+                    'status' => 403,
+                    'message' => 'No tienes permisos para eliminar variables. Solo los administradores pueden realizar esta acción.'
+                ], 403);
+            }
+
             \Log::info('Intentando borrar variable ID: ' . $id);
             $variable = Variable::findOrFail($id);
             $variable->delete();
@@ -156,7 +209,19 @@ class VariableController extends Controller
      */
     public function getInitialConditions(): JsonResponse
     {
+        // Obtener la ruta actual del usuario
+        $currentRoute = \App\Models\Traceability::getCurrentRouteForUser(Auth::id());
+        
+        if (!$currentRoute) {
+            return response()->json([
+                'data' => [],
+                'status' => 200,
+                'message' => 'No se encontró ruta para el usuario'
+            ]);
+        }
+        
         $variables = Variable::where('user_id', Auth::id())
+            ->where('tried_id', $currentRoute->id)
             ->orderBy('id_variable', 'asc')
             ->get(['id', 'id_variable', 'name_variable', 'now_condition', 'state', 'edits_now_condition']);
         return response()->json([

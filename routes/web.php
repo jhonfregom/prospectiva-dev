@@ -51,8 +51,10 @@ Route::group(['middleware' => ['auth']], function(){
         Route::post('/analysis', 'store')->name('analysis.store');
         Route::put('/analysis/{id}', 'update')->name('analysis.update');
         Route::delete('/analysis/{id}', 'destroy')->name('analysis.destroy');
-        Route::post('/analysis/reset-auto-increment', 'resetAutoIncrement')->name('analysis.reset-auto-increment');
-        Route::post('/analysis/delete-all-reset', 'deleteAllAndReset')->name('analysis.delete-all-reset');
+        Route::post('/analysis/reset-auto-increment', 'resetAutoIncrement')->name('analysis.resetAutoIncrement');
+        Route::post('/analysis/delete-all-reset', 'deleteAllAndReset')->name('analysis.deleteAllAndReset');
+        Route::post('/analysis/close-all', 'closeAllAnalyses')->name('analysis.closeAllAnalyses');
+        Route::post('/analysis/reopen-all', 'reopenAllAnalyses')->name('analysis.reopenAllAnalyses');
     });
 
     // Rutas de hipótesis protegidas por autenticación
@@ -62,6 +64,8 @@ Route::group(['middleware' => ['auth']], function(){
         Route::put('/hypothesis/{id}', 'update')->name('hypothesis.update');
         Route::post('/hypothesis/reset-auto-increment', 'resetAutoIncrement')->name('hypothesis.reset-auto-increment');
         Route::post('/hypothesis/delete-all-reset', 'deleteAllAndReset')->name('hypothesis.delete-all-reset');
+        Route::post('/hypothesis/close-all', 'closeAllHypotheses')->name('hypothesis.closeAllHypotheses');
+        Route::post('/hypothesis/reopen-all', 'reopenAllHypotheses')->name('hypothesis.reopenAllHypotheses');
     });
 
     // Ruta de prueba para verificar autenticación
@@ -109,6 +113,18 @@ Route::group(['middleware' => ['auth']], function(){
         Route::post('/traceability/reset-edit-locks', [TraceabilityController::class, 'resetEditLocksFromSection'])->middleware('auth');
         Route::put('/traceability/tried', [App\Http\Controllers\TraceabilityController::class, 'updateTried']);
         Route::get('/traceability/tried', [App\Http\Controllers\TraceabilityController::class, 'getTried']);
+        Route::put('/traceability/state', [App\Http\Controllers\TraceabilityController::class, 'updateState']);
+        Route::get('/traceability/state', [App\Http\Controllers\TraceabilityController::class, 'getState']);
+        
+        // Nuevas rutas para sistema de múltiples rutas
+        Route::post('/traceability/create-new-route', 'createNewRoute')->name('traceability.createNewRoute');
+        Route::get('/traceability/current-route', 'getCurrentRoute')->name('traceability.getCurrentRoute');
+        Route::get('/traceability/user-routes', 'getUserRoutes')->name('traceability.getUserRoutes');
+        
+        // Rutas para manejar el estado de la ruta actual
+        Route::get('/traceability/current-route-state', 'getCurrentRouteState')->name('traceability.getCurrentRouteState');
+        Route::put('/traceability/current-route-state', 'updateCurrentRouteState')->name('traceability.updateCurrentRouteState');
+        Route::get('/traceability/section-closed/{section}', 'isSectionClosed')->name('traceability.isSectionClosed');
     });
 });
 
@@ -140,5 +156,6 @@ Route::controller(RegisterController::class)->group(function(){
 
 Route::get('/graphics', [GraphicsController::class, 'index']);
 Route::get('/results/users', [\App\Http\Controllers\UserController::class, 'apiList'])->name('results.users');
+Route::get('/results/users-by-route', [\App\Http\Controllers\UserController::class, 'apiListByRoute'])->name('results.usersByRoute');
 
 

@@ -22,5 +22,6 @@ class Scenarios extends Model
         'edits_year1',
         'edits_year2',
         'edits_year3',
+        'tried_id',
     ];
 } 

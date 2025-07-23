@@ -31,7 +31,7 @@ return new class extends Migration
             $table->integer('user_id');
             $table->datetime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->datetime('updated_at')->default(new Expression('CURRENT_TIMESTAMP'));
-            $table->primary([ 'id','user_id' ]);
+            $table->primary([ 'id' ]);
             $table->index([
                     'user_id',
                 ],

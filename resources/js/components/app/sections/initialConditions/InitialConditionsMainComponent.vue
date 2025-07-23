@@ -52,7 +52,7 @@
       >Cerrar</button>
       <button
         class="cerrar-btn"
-        v-else-if="tried !== null && tried < 2"
+        v-else-if="state !== null && state === '0'"
         @click="mostrarModalRegresar = true"
       >Regresar</button>
     </div>
@@ -133,7 +133,7 @@ export default {
         const cerrado = ref(initialCerrado);
         const mostrarModal = ref(false);
         const mostrarModalRegresar = ref(false);
-        const tried = ref(null); // Se inicializa como null hasta cargar desde traceability
+        const state = ref(null); // Se inicializa como null hasta cargar desde traceability
 
         onMounted(async () => {
             sectionStore.setTitleSection(textsStore.getText('initialConditions.title'));
@@ -149,7 +149,7 @@ export default {
                 cerrado.value = localStorage.getItem(cerradoKey) === 'true';
             }
             // Cargar el valor de tried desde traceability
-            await loadTriedValue();
+            await loadStateValue();
         });
 
         onBeforeUnmount(() => {
@@ -157,25 +157,25 @@ export default {
             sectionStore.clearDynamicButtons();
         });
 
-        // Función para cargar el valor de tried desde traceability
-        const loadTriedValue = async () => {
+        // Función para cargar el valor de state desde traceability
+        const loadStateValue = async () => {
             try {
-                const response = await axios.get('/traceability/tried');
-                if (response.data && response.data.success && response.data.tried !== undefined) {
-                    tried.value = response.data.tried;
+                const response = await axios.get('/traceability/current-route-state');
+                if (response.data && response.data.success && response.data.state !== undefined) {
+                    state.value = response.data.state;
                 }
             } catch (error) {
-                console.error('Error al cargar tried:', error);
+                console.error('Error al cargar state:', error);
             }
         };
 
-        // Función para incrementar tried
-        const incrementTried = async () => {
+        // Función para actualizar state
+        const incrementState = async () => {
             try {
-                await axios.put('/traceability/tried', { tried: 2 });
-                tried.value = 2;
+                await axios.put('/traceability/current-route-state', { state: '1' });
+                state.value = '1';
             } catch (error) {
-                console.error('Error al incrementar tried:', error);
+                console.error('Error al actualizar state:', error);
             }
         };
 
@@ -293,9 +293,9 @@ export default {
             mostrarModalRegresar.value = false;
             try {
                 // Incrementar tried a 2
-                await incrementTried();
+                await incrementState();
                 // Volver a cargar el valor actualizado de tried
-                await loadTriedValue();
+                await loadStateValue();
                 // Guardar acción pendiente en localStorage
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'initialconditions' }));
                 // Desbloquear módulos posteriores (eliminar su flag de cerrado en localStorage)
@@ -343,7 +343,7 @@ export default {
             cerrado,
             mostrarModal,
             mostrarModalRegresar,
-            tried,
+            state,
             handleEditSave,
             cerrarModulo,
             regresarModulo,

@@ -497,7 +497,7 @@
     >Cerrar</button>
     <button
       class="cerrar-btn"
-      v-else-if="tried !== null && tried < 2"
+      v-else-if="state !== null && state === '0'"
       @click="mostrarModalRegresar = true"
     >Regresar</button>
   </div>
@@ -538,7 +538,7 @@ export default {
         // Variables para el botón cerrar
         const cerrado = ref(false);
         const mostrarModal = ref(false);
-        const tried = ref(null); // Se inicializa como null hasta cargar desde traceability
+        const state = ref(null); // Se inicializa como null hasta cargar desde traceability
 
         // Constante para el límite de caracteres
         const MAX_CHARACTERS = 255;
@@ -549,7 +549,6 @@ export default {
             if (text.length > MAX_CHARACTERS) {
                 // Truncar el texto al límite
                 localValue.value = text.substring(0, MAX_CHARACTERS);
-                console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
             }
         };
 
@@ -570,9 +569,7 @@ export default {
                 if (availableSpace > 0) {
                     const truncatedPastedText = pastedText.substring(0, availableSpace);
                     localValue.value = currentText + truncatedPastedText;
-                    console.log(`Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
                 } else {
-                    console.log(`No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
                 }
             }
         };
@@ -584,7 +581,6 @@ export default {
                 // Prevenir escritura adicional
                 if (event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
                     event.preventDefault();
-                    console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
                 }
             }
         };
@@ -639,8 +635,8 @@ export default {
         onMounted(async () => {
             sectionStore.setTitleSection('Escenarios');
             await store.fetchScenarios();
-            // Cargar el valor de tried desde traceability
-            await loadTriedValue();
+            // Cargar el valor de state desde traceability
+            await loadStateValue();
             // Actualizar estado de cerrado al entrar (por si cambia en otra pestaña)
             if (typeof window !== 'undefined') {
                 const user = JSON.parse(localStorage.getItem('user')) || {};
@@ -702,25 +698,25 @@ export default {
             sectionStore.clearDynamicButtons();
         });
 
-        // Función para cargar el valor de tried desde traceability
-        const loadTriedValue = async () => {
+        // Función para cargar el valor de state desde traceability
+        const loadStateValue = async () => {
             try {
-                const response = await axios.get('/traceability/tried');
-                if (response.data && response.data.success && response.data.tried !== undefined) {
-                    tried.value = response.data.tried;
+                const response = await axios.get('/traceability/current-route-state');
+                if (response.data && response.data.success && response.data.state !== undefined) {
+                    state.value = response.data.state;
                 }
             } catch (error) {
-                console.error('Error al cargar tried:', error);
+                console.error('Error al cargar state:', error);
             }
         };
 
-        // Función para incrementar tried
-        const incrementTried = async () => {
+        // Función para actualizar state
+        const incrementState = async () => {
             try {
-                await axios.put('/traceability/tried', { tried: 2 });
-                tried.value = 2;
+                await axios.put('/traceability/current-route-state', { state: '1' });
+                state.value = '1';
             } catch (error) {
-                console.error('Error al incrementar tried:', error);
+                console.error('Error al actualizar state:', error);
             }
         };
 
@@ -794,18 +790,15 @@ export default {
             }
 
             if (!scenario || scenario.state === 1) {
-                console.log(`Escenario ${numScenario} bloqueado, no se puede editar`);
                 return;
             }
 
             if (editingRef.value) {
                 // Guardar
-                console.log(`Guardando escenario ${numScenario}, campo ${yearField}`);
                 const result = await store.saveScenario(numScenario, yearField, localValue.value);
                 if (result.success) {
                     editingRef.value = false;
                     editMessage.value[yearField] = '';
-                    console.log(`Escenario ${numScenario} guardado correctamente`);
                 } else {
                     editMessage.value[yearField] = textsStore.getText('strategic.messages.save_error');
                 }
@@ -820,7 +813,7 @@ export default {
             try {
                 const result = await store.updateScenario(scenarioId);
                 if (result.success) {
-                    console.log(`Escenario ${scenarioId} actualizado correctamente`);
+                    // Escenario actualizado correctamente
                 }
             } catch (error) {
                 console.error('Error al actualizar escenario:', error);
@@ -834,7 +827,7 @@ export default {
             sessionStore,
             cerrado,
             mostrarModal,
-            tried,
+            state,
             handleTextInput,
             handleTextPaste,
             handleTextKeyup,
@@ -920,13 +913,14 @@ export default {
                 });
             }
         },
+
         async regresarModulo() {
             this.mostrarModalRegresar = false;
             try {
-                // Incrementar tried a 2
-                await this.incrementTried();
-                // Volver a cargar el valor actualizado de tried
-                await this.loadTriedValue();
+                // Incrementar state a 2
+                await this.incrementState();
+                // Volver a cargar el valor actualizado de state
+                await this.loadStateValue();
                 // Guardar acción pendiente en localStorage
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'scenarios' }));
                 // Desbloquear módulos posteriores (eliminar su flag de cerrado en localStorage)

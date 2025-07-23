@@ -59,3 +59,89 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+# Proyecto Prospectiva
+
+## Instalación y primeros pasos
+
+### 1. Clona el repositorio
+```bash
+git clone <URL-del-repo>
+cd <carpeta-del-proyecto>
+```
+
+### 2. Instala dependencias backend (Laravel)
+```bash
+composer install
+```
+
+### 3. Instala dependencias frontend (Vite + Vue)
+```bash
+npm install
+```
+
+### 4. Copia el archivo de entorno y configura tu base de datos
+```bash
+cp .env.example .env
+```
+Edita `.env` con tus credenciales de base de datos.
+
+### 5. Genera la clave de la app
+```bash
+php artisan key:generate
+```
+
+### 6. Ejecuta las migraciones
+```bash
+php artisan migrate
+```
+
+### 7. Inicia los servidores de desarrollo
+En dos terminales diferentes:
+```bash
+npm run dev
+```
+y
+```bash
+php artisan serve
+```
+
+---
+
+## Dependencias importantes
+
+### PDF (backend y frontend)
+- **Backend:**
+  - barryvdh/laravel-dompdf
+  - dompdf/dompdf
+- **Frontend:**
+  - jspdf
+  - jspdf-autotable
+  - html2canvas
+
+### Gráficas
+- chart.js
+- chartjs-plugin-annotation
+- vue-chartjs
+
+Estas dependencias ya están incluidas en `composer.json` y `package.json`.
+
+---
+
+## Notas
+- Si tienes problemas con permisos, ejecuta:
+  ```bash
+  chmod -R 775 storage bootstrap/cache
+  ```
+- Si necesitas datos de prueba, revisa los seeders en `database/seeders` y ejecuta:
+  ```bash
+  php artisan db:seed
+  ```
+- Para producción, ejecuta:
+  ```bash
+  npm run build
+  ```
+
+---
+
+¡Listo! El proyecto debería funcionar completamente, incluyendo PDF y gráficas, tras estos pasos.

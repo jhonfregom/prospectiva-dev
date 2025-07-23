@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Variable;
 use App\Models\Matriz;
+use App\Models\Traceability;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,13 +14,26 @@ class MatrizController extends Controller
 {
     public function index(): JsonResponse
     {
-        // Obtener todas las variables del usuario actual
+        // Obtener la ruta actual del usuario
+        $currentRoute = Traceability::getCurrentRouteForUser(Auth::id());
+        
+        if (!$currentRoute) {
+            return response()->json([
+                'status' => 400,
+                'message' => 'No se encontró ruta para el usuario'
+            ]);
+        }
+        
+        // Obtener todas las variables del usuario actual de la ruta actual
         $variables = Variable::where('user_id', Auth::id())
-                           ->orderBy('id', 'asc')
-                           ->get(['id', 'id_variable as codigo', 'name_variable as nombre']);
+            ->where('tried_id', $currentRoute->id)
+            ->orderBy('id', 'asc')
+            ->get(['id', 'id_variable as codigo', 'name_variable as nombre']);
 
-        // Obtener los valores de la matriz existentes
-        $matriz = Matriz::where('user_id', Auth::id())->get();
+        // Obtener los valores de la matriz existentes de la ruta actual
+        $matriz = Matriz::where('user_id', Auth::id())
+            ->where('tried_id', $currentRoute->id)
+            ->get();
 
         // Comprobar el estado de la matriz. Si existe algún registro, el estado es el del primer registro.
         $matrizState = $matriz->isNotEmpty() ? $matriz->first()->state : 0;
@@ -44,9 +58,20 @@ class MatrizController extends Controller
             ]);
 
             $userId = Auth::id();
+            
+            // Obtener la ruta actual del usuario
+            $currentRoute = Traceability::getCurrentRouteForUser($userId);
+            
+            if (!$currentRoute) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'No se encontró ruta para el usuario'
+                ]);
+            }
 
             foreach ($data['matriz'] as $item) {
                 $matriz = Matriz::where('user_id', $userId)
+                    ->where('tried_id', $currentRoute->id)
                     ->where('id_variable', $item['id_variable'])
                     ->where('id_resp_depen', $item['id_resp_depen'])
                     ->first();
@@ -66,6 +91,7 @@ class MatrizController extends Controller
                     'id_resp_depen' => $item['id_resp_depen'],
                     'id_resp_influ' => $item['id_resp_influ'],
                         'user_id' => $userId,
+                        'tried_id' => $currentRoute->id,
                         'state' => '1'
                 ]);
                 }

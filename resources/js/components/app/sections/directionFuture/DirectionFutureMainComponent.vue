@@ -85,7 +85,7 @@
       >Cerrar</button>
       <button
         class="cerrar-btn"
-        v-else-if="tried !== null && tried < 2"
+        v-else-if="state !== null && state === '0'"
         @click="confirmarRegresar"
       >Regresar</button>
     </div>
@@ -133,7 +133,7 @@ export default {
         const cerrado = ref(false);
         const mostrarModal = ref(false);
         const mostrarModalRegresar = ref(false);
-        const tried = ref(null); // Se inicializa como null hasta cargar desde traceability
+        const state = ref(null); // Se inicializa como null hasta cargar desde traceability
 
         // Función para contar palabras
         const countWords = (text) => {
@@ -199,13 +199,14 @@ export default {
                 const h1Text = localDescriptionsH1.value[row.variable_id] || '';
                 
                 // Usar saveBothHypotheses que guarda H0 y H1 automáticamente
+                // No enviar state para que el backend maneje el conteo de ediciones
                 const result = await futureDriversStore.saveBothHypotheses(
                     row.variable_id,  // variableId
                     'H' + (index + 1), // nameHypothesis (H1 o H2)
                     h0Text,           // h0Text
                     h1Text,           // h1Text
                     row.zone_id || 1, // zoneId
-                    '0'  // state - siempre enviar '0' para que el backend maneje el conteo
+                    undefined         // state - no enviar para ediciones manuales
                 );
                 
                 if (result && result.success) {
@@ -269,6 +270,28 @@ export default {
             }
         };
 
+        // Método para cargar el valor de state desde traceability
+        const loadTriedValue = async () => {
+            try {
+                const response = await axios.get('/traceability/current-route-state');
+                if (response.data && response.data.success && response.data.state !== undefined) {
+                    state.value = response.data.state;
+                }
+            } catch (error) {
+                console.error('Error al cargar state:', error);
+            }
+        };
+
+        // Método para incrementar el valor de state
+        const incrementTried = async () => {
+            try {
+                await axios.put('/traceability/current-route-state', { state: '1' });
+                state.value = '1';
+            } catch (error) {
+                console.error('Error al actualizar state:', error);
+            }
+        };
+
         onMounted(async () => {
             
             sectionStore.setTitleSection('Direccionadores de futuro');
@@ -281,7 +304,7 @@ export default {
             // Cargar datos siempre al montar el componente
             await futureDriversStore.fetchDrivers();
             // Cargar el valor de tried desde traceability
-            await this.loadTriedValue();
+            await loadTriedValue();
             
         });
 
@@ -302,7 +325,7 @@ export default {
             cerrado,
             mostrarModal,
             mostrarModalRegresar,
-            tried,
+            state,
             countWords,
             limitWords,
             getWordCountClass,
@@ -311,6 +334,8 @@ export default {
             handleInput,
             handleKeyDown,
             handlePaste,
+            loadTriedValue,
+            incrementTried,
             steps: [
                 { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
                 { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
@@ -328,21 +353,13 @@ export default {
             async regresarModulo() {
                 mostrarModalRegresar.value = false;
                 try {
+                    // Reabrir todas las hipótesis en el backend y store
+                    const result = await futureDriversStore.reopenAllHypotheses();
+                    if (result.success) {
                     // Incrementar tried a 2
-                    await this.incrementTried();
+                        await incrementTried();
                     // Volver a cargar el valor actualizado de tried
-                    await this.loadTriedValue();
-                    // Cambiar stateH0 y stateH1 a '0' en todos los drivers y guardar en backend
-                    for (const driver of drivers.value) {
-                        await futureDriversStore.saveBothHypotheses(
-                            driver.variable_id,
-                            driver.name_hypothesis || 'H1',
-                            localDescriptionsH0.value[driver.variable_id] || '',
-                            localDescriptionsH1.value[driver.variable_id] || '',
-                            driver.zone_id || 1,
-                            '0' // Desbloquear
-                        );
-                    }
+                        await loadTriedValue();
                     // Guardar acción pendiente en localStorage
                     localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'hypothesis' }));
                     // Regresa a la vista principal
@@ -352,6 +369,14 @@ export default {
                     const cerradoKey = 'hypothesis_cerrado_' + (user.id || 'anon');
                     localStorage.removeItem(cerradoKey);
                     cerrado.value = false;
+                    } else {
+                        if (typeof window !== 'undefined' && window.$buefy) {
+                            window.$buefy.toast.open({
+                                message: 'Error al reabrir el módulo de direccionadores de futuro',
+                                type: 'is-danger'
+                            });
+                        }
+                    }
                 } catch (error) {
                     if (typeof window !== 'undefined' && window.$buefy) {
                         window.$buefy.toast.open({
@@ -368,17 +393,9 @@ export default {
         async cerrarModulo() {
             this.mostrarModal = false;
             try {
-                // Cambiar stateH0 y stateH1 a '1' en todos los drivers y guardar en backend
-                for (const driver of this.drivers) {
-                    await this.futureDriversStore.saveBothHypotheses(
-                        driver.variable_id,
-                        driver.name_hypothesis || 'H1',
-                        this.localDescriptionsH0[driver.variable_id] || '',
-                        this.localDescriptionsH1[driver.variable_id] || '',
-                        driver.zone_id || 1,
-                        '1' // Bloquear
-                    );
-                }
+                // Cerrar todas las hipótesis en el backend y store
+                const result = await this.futureDriversStore.closeAllHypotheses();
+                if (result.success) {
                 // Guardar acción pendiente en localStorage
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'hypothesis' }));
                 this.$buefy.toast.open({
@@ -391,6 +408,12 @@ export default {
                 const cerradoKey = 'hypothesis_cerrado_' + (user.id || 'anon');
                 localStorage.setItem(cerradoKey, 'true');
                 this.cerrado = true;
+                } else {
+                    this.$buefy.toast.open({
+                        message: 'Error al cerrar el módulo de direccionadores de futuro',
+                        type: 'is-danger'
+                    });
+                }
             } catch (error) {
                 this.$buefy.toast.open({
                     message: 'Error al cerrar el módulo de direccionadores de futuro',
@@ -405,21 +428,21 @@ export default {
 
         async loadTriedValue() {
             try {
-                const response = await axios.get('/traceability/tried');
-                if (response.data && response.data.success && response.data.tried !== undefined) {
-                    this.tried = response.data.tried;
+                const response = await axios.get('/traceability/current-route-state');
+                if (response.data && response.data.success && response.data.state !== undefined) {
+                    this.state = response.data.state;
                 }
             } catch (error) {
-                console.error('Error al cargar tried:', error);
+                console.error('Error al cargar state:', error);
             }
         },
 
         async incrementTried() {
             try {
-                await axios.put('/traceability/tried', { tried: 2 });
-                this.tried = 2;
+                await axios.put('/traceability/current-route-state', { state: '1' });
+                this.state = '1';
             } catch (error) {
-                console.error('Error al incrementar tried:', error);
+                console.error('Error al actualizar state:', error);
             }
         }
     }

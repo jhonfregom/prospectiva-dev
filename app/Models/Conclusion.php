@@ -19,7 +19,8 @@ class Conclusion extends Model
         'aplication',
         'aplication_edits',
         'state',
-        'user_id'
+        'user_id',
+        'tried_id'
     ];
 
     protected $casts = [

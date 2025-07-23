@@ -45,6 +45,7 @@ class Variable extends Model
         'state',
         'user_id',
         'now_condition',
+        'tried_id',
     ];
 
     /**

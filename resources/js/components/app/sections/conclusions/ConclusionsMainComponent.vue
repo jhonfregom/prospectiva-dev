@@ -139,7 +139,7 @@
       >Cerrar</button>
       <button
         class="cerrar-btn"
-        v-else-if="tried !== null && tried < 2"
+        v-else-if="state !== null && state === '0'"
         @click="mostrarModalRegresar = true"
       >Regresar</button>
     </div>
@@ -266,7 +266,7 @@ export default {
             mostrarModalRegresar: false,
             cerrado: false,
             forceRerender: 0,
-            tried: null, // Se inicializa como null hasta cargar desde traceability
+            state: null, // Se inicializa como null hasta cargar desde traceability
         };
     },
 
@@ -293,8 +293,8 @@ export default {
         this.loadConclusions().then(() => {
             this.forceRerender++;
         });
-        // Cargar el valor de tried desde traceability
-        this.loadTriedValue();
+        // Cargar el valor de state desde traceability
+        this.loadStateValue();
         // Inicializar 'cerrado' leyendo de localStorage directamente
         if (typeof window !== 'undefined') {
             const user = JSON.parse(localStorage.getItem('user')) || {};
@@ -475,33 +475,33 @@ export default {
                 });
             }
         },
-        async loadTriedValue() {
+        async loadStateValue() {
             try {
-                const response = await axios.get('/traceability/tried');
-                if (response.data && response.data.success && response.data.tried !== undefined) {
-                    this.tried = response.data.tried;
+                const response = await axios.get('/traceability/current-route-state');
+                if (response.data && response.data.success && response.data.state !== undefined) {
+                    this.state = response.data.state;
                 }
             } catch (error) {
-                console.error('Error al cargar tried:', error);
+                console.error('Error al cargar state:', error);
             }
         },
 
-        async incrementTried() {
+        async incrementState() {
             try {
-                await axios.put('/traceability/tried', { tried: 2 });
-                this.tried = 2;
+                await axios.put('/traceability/current-route-state', { state: '1' });
+                this.state = '1';
             } catch (error) {
-                console.error('Error al incrementar tried:', error);
+                console.error('Error al actualizar state:', error);
             }
         },
 
         async regresarModulo() {
             this.mostrarModalRegresar = false;
             try {
-                // Incrementar tried a 2
-                await this.incrementTried();
-                // Volver a cargar el valor actualizado de tried
-                await this.loadTriedValue();
+                // Incrementar state a 2
+                await this.incrementState();
+                // Volver a cargar el valor actualizado de state
+                await this.loadStateValue();
                 // Guardar acción pendiente en localStorage
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'conclusions' }));
                 // Desbloquear módulos posteriores (eliminar su flag de cerrado en localStorage)
@@ -519,13 +519,9 @@ export default {
                 const cerradoKey = 'conclusions_cerrado_' + (user.id || 'anon');
                 localStorage.removeItem(cerradoKey);
                 this.cerrado = false;
-                // Resetear flags de edición locales
-                this.isComponentPracticeEditing = false;
-                this.isActualityEditing = false;
-                this.isAplicationEditing = false;
-                // Recargar los datos de conclusiones para actualizar los estados de edición
-                await this.loadConclusions();
-                this.forceRerender++;
+                // Recargar los datos para actualizar los estados de edición
+                await this.conclusionsStore.fetchConclusions();
+                // Mostrar mensaje de éxito
                 this.$buefy.toast.open({
                     message: 'Módulo de conclusiones reabierto correctamente',
                     type: 'is-success'

@@ -8,7 +8,11 @@ class Traceability extends Model
 {
     protected $table = 'traceability';
     
+    // Deshabilitar el auto-increment para permitir asignación manual de IDs
+    public $incrementing = false;
+    
     protected $fillable = [
+        'id',
         'tried',
         'variables',
         'matriz',
@@ -46,22 +50,63 @@ class Traceability extends Model
      */
     public static function getOrCreateForUser($userId)
     {
-        return static::firstOrCreate(
-            ['user_id' => $userId],
-            [
-                'tried' => '1',
-                'variables' => '0',
-                'matriz' => '0',
-                'maps' => '0',
-                'hypothesis' => '0',
-                'shwartz' => '0',
-                'conditions' => '0',
-                'scenarios' => '0',
-                'conclusions' => '0',
-                'results' => '0',
-                'state' => '0'
-            ]
-        );
+        // Obtener la ruta actual (la que tiene el tried más alto)
+        $traceability = static::where('user_id', $userId)
+            ->orderBy('tried', 'desc')
+            ->first();
+        
+        if ($traceability) {
+            return $traceability;
+        }
+        
+        // Si no existe, crear uno nuevo con el siguiente ID disponible
+        $nextId = static::findNextAvailableId();
+        
+        return static::create([
+            'id' => $nextId,
+            'user_id' => $userId,
+            'tried' => '1',
+            'variables' => '0',
+            'matriz' => '0',
+            'maps' => '0',
+            'hypothesis' => '0',
+            'shwartz' => '0',
+            'conditions' => '0',
+            'scenarios' => '0',
+            'conclusions' => '0',
+            'results' => '0',
+            'state' => '0'
+        ]);
+    }
+
+    /**
+     * Obtiene la ruta actual del usuario (la que tiene el tried más alto)
+     */
+    public static function getCurrentRouteForUser($userId)
+    {
+        return static::where('user_id', $userId)
+            ->orderBy('tried', 'desc')
+            ->first();
+    }
+
+    /**
+     * Obtiene todas las rutas del usuario
+     */
+    public static function getAllRoutesForUser($userId)
+    {
+        return static::where('user_id', $userId)
+            ->orderBy('tried', 'asc')
+            ->get();
+    }
+
+    /**
+     * Obtiene una ruta específica por tried
+     */
+    public static function getRouteByTried($userId, $tried)
+    {
+        return static::where('user_id', $userId)
+            ->where('tried', $tried)
+            ->first();
     }
 
     /**
@@ -139,6 +184,32 @@ class Traceability extends Model
         } else {
             \Log::error('Sección no encontrada en el mapeo: ' . $section);
         }
+    }
+
+    /**
+     * Encuentra el primer ID disponible en la tabla
+     */
+    public static function findNextAvailableId(): int
+    {
+        // Obtener todos los IDs existentes ordenados
+        $existingIds = static::orderBy('id')->pluck('id')->toArray();
+        
+        if (empty($existingIds)) {
+            return 1; // Si no hay registros, empezar con 1
+        }
+        
+        // Buscar el primer hueco en la secuencia
+        $expectedId = 1;
+        foreach ($existingIds as $existingId) {
+            if ($existingId > $expectedId) {
+                // Encontramos un hueco, usar este ID
+                return $expectedId;
+            }
+            $expectedId = $existingId + 1;
+        }
+        
+        // Si no hay huecos, usar el siguiente ID después del último
+        return $expectedId;
     }
 
     /**

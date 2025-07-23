@@ -24,8 +24,23 @@ class HypothesisController extends Controller
             $userId = Auth::id();
             Log::info('HypothesisController::index - User ID: ' . $userId);
             
-            $matriz = Matriz::where('user_id', $userId)->get();
-            $variables = Variable::where('user_id', $userId)->get();
+            // Obtener la ruta actual del usuario
+            $currentRoute = \App\Models\Traceability::getCurrentRouteForUser($userId);
+            
+            if (!$currentRoute) {
+                return response()->json([
+                    'data' => [],
+                    'status' => 200,
+                    'message' => 'No se encontró ruta para el usuario'
+                ]);
+            }
+            
+            $matriz = Matriz::where('user_id', $userId)
+                ->where('tried_id', $currentRoute->id)
+                ->get();
+            $variables = Variable::where('user_id', $userId)
+                ->where('tried_id', $currentRoute->id)
+                ->get();
             
             Log::info('HypothesisController::index - Variables count: ' . $variables->count());
             Log::info('HypothesisController::index - Matriz count: ' . $matriz->count());
@@ -154,6 +169,7 @@ class HypothesisController extends Controller
             $selectedIds = array_map(fn($v) => $v['id'], $seleccionados);
             $selectedVars = $variables->whereIn('id', $selectedIds);
             $hypotheses = Hypothesis::where('user_id', $userId)
+                ->where('tried_id', $currentRoute->id)
                 ->whereIn('id_variable', $selectedVars->pluck('id'))
                 ->get();
 
@@ -258,13 +274,6 @@ class HypothesisController extends Controller
             ]);
 
             if ($hypothesis) {
-                // Contador de ediciones en sesión (por usuario y hipótesis)
-                $sessionKey = 'hypothesis_edit_count_' . $hypothesis->id . '_user_' . $userId;
-                $editCount = session($sessionKey, 0) + 1;
-                session([$sessionKey => $editCount]);
-
-                Log::info('Hypothesis update - ID: ' . $hypothesis->id . ', Edit count: ' . $editCount . ', Current state: ' . $hypothesis->state);
-
                 // Si ya está bloqueada, no permitir editar
                 if ($hypothesis->state === '1') {
                     return response()->json([
@@ -274,20 +283,24 @@ class HypothesisController extends Controller
                     ]);
                 }
 
+                // Incrementar el contador de ediciones en la base de datos
+                $hypothesis->edits = ($hypothesis->edits ?? 0) + 1;
+                
+                // Si es la tercera edición o más, bloquear
+                if ($hypothesis->edits >= 3) {
+                    $hypothesis->state = '1';
+                }
+
                 $hypothesis->update([
                     'zone_id' => $data['zone_id'] ?? $hypothesis->zone_id,
                     'description' => $data['description'],
                 ]);
 
-                // Si es la tercera edición o más, bloquear (después de la segunda)
-                if ($editCount >= 3) {
-                    $hypothesis->state = '1';
-                    $hypothesis->save();
-                    Log::info('Hypothesis update - Blocking hypothesis ID: ' . $hypothesis->id);
-                }
-
-                Log::info('Actualizado registro existente', ['id' => $hypothesis->id, 'final_state' => $hypothesis->state]);
+                Log::info('Actualizado registro existente', ['id' => $hypothesis->id, 'final_state' => $hypothesis->state, 'edits' => $hypothesis->edits]);
             } else {
+                // Obtener o crear el registro de traceability para el usuario
+                $traceability = \App\Models\Traceability::getOrCreateForUser($userId);
+                
                 $nextId = $this->findNextAvailableId();
                 $hypothesis = Hypothesis::create([
                     'id' => $nextId,
@@ -298,8 +311,10 @@ class HypothesisController extends Controller
                     'zone_id' => $data['zone_id'] ?? 1,
                     'user_id' => $userId,
                     'state' => isset($data['state']) ? (string)$data['state'] : '0',
+                    'edits' => 1, // Primera edición
+                    'tried_id' => $traceability->id,
                 ]);
-                Log::info('Creado nuevo registro', ['id' => $hypothesis->id, 'secondary_hypotheses' => $data['secondary_hypothesis']]);
+                Log::info('Creado nuevo registro', ['id' => $hypothesis->id, 'secondary_hypotheses' => $data['secondary_hypothesis'], 'edits' => 1]);
             }
 
             return response()->json([
@@ -346,6 +361,23 @@ class HypothesisController extends Controller
                     'status' => 404,
                     'message' => 'Hipótesis no encontrada.'
                 ], 404);
+            }
+
+            // Si ya está bloqueada, no permitir editar
+            if ($hypothesis->state === '1') {
+                return response()->json([
+                    'data' => $hypothesis,
+                    'status' => 200,
+                    'message' => 'Esta hipótesis ya está bloqueada y no se puede editar.'
+                ]);
+            }
+
+            // Incrementar el contador de ediciones en la base de datos
+            $hypothesis->edits = ($hypothesis->edits ?? 0) + 1;
+            
+            // Si es la tercera edición o más, bloquear
+            if ($hypothesis->edits >= 3) {
+                $hypothesis->state = '1';
             }
 
             // Actualizar los campos
@@ -444,6 +476,108 @@ class HypothesisController extends Controller
                 'data' => null,
                 'status' => 500,
                 'message' => 'Error al borrar registros: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cerrar todas las hipótesis de un usuario (establecer edits a 3 y bloquear)
+     */
+    public function closeAllHypotheses(): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            // Obtener la ruta actual del usuario
+            $currentRoute = \App\Models\Traceability::getCurrentRouteForUser($userId);
+            if (!$currentRoute) {
+                return response()->json([
+                    'data' => null,
+                    'status' => 400,
+                    'message' => 'No se encontró ruta para el usuario.'
+                ], 400);
+            }
+            // Obtener variables de la ruta actual
+            $variables = \App\Models\Variable::where('user_id', $userId)
+                ->where('tried_id', $currentRoute->id)
+                ->get();
+            // Para cada variable, asegurar que existan H0 y H1
+            foreach ($variables as $variable) {
+                foreach (['H0', 'H1'] as $secondary) {
+                    $exists = Hypothesis::where('user_id', $userId)
+                        ->where('id_variable', $variable->id)
+                        ->where('secondary_hypotheses', $secondary)
+                        ->where('tried_id', $currentRoute->id)
+                        ->first();
+                    if (!$exists) {
+                        Hypothesis::create([
+                            'id_variable' => $variable->id,
+                            'name_hypothesis' => 'H1', // o lo que corresponda
+                            'secondary_hypotheses' => $secondary,
+                            'description' => '',
+                            'zone_id' => 1,
+                            'user_id' => $userId,
+                            'state' => '1',
+                            'edits' => 3,
+                            'tried_id' => $currentRoute->id,
+                        ]);
+                    }
+                }
+            }
+            // Ahora cerrar todas las hipótesis
+            $hypotheses = Hypothesis::where('user_id', $userId)
+                ->where('tried_id', $currentRoute->id)
+                ->get();
+            foreach ($hypotheses as $hypothesis) {
+                $hypothesis->update([
+                    'state' => '1',
+                    'edits' => 3
+                ]);
+            }
+            return response()->json([
+                'data' => null,
+                'status' => 200,
+                'message' => 'Todas las hipótesis han sido cerradas correctamente.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al cerrar hipótesis: ' . $e->getMessage());
+            return response()->json([
+                'data' => null,
+                'status' => 500,
+                'message' => 'Error al cerrar hipótesis: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reabrir todas las hipótesis de un usuario (establecer edits a 0 y desbloquear)
+     */
+    public function reopenAllHypotheses(): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            
+            // Obtener todas las hipótesis del usuario
+            $hypotheses = Hypothesis::where('user_id', $userId)->get();
+            
+            foreach ($hypotheses as $hypothesis) {
+                // Establecer edits a 0 y desbloquear
+                $hypothesis->update([
+                    'state' => '0',
+                    'edits' => 0
+                ]);
+            }
+
+            return response()->json([
+                'data' => null,
+                'status' => 200,
+                'message' => 'Todas las hipótesis han sido reabiertas correctamente.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al reabrir hipótesis: ' . $e->getMessage());
+            return response()->json([
+                'data' => null,
+                'status' => 500,
+                'message' => 'Error al reabrir hipótesis: ' . $e->getMessage()
             ], 500);
         }
     }

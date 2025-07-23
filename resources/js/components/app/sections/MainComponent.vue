@@ -11,11 +11,21 @@
             :steps="steps"
             @update:modelValue="onStepperInput"
         />
+        
+        <!-- Botón Nueva Ruta - solo aparece cuando se completa la ruta -->
+        <div v-if="showNewRouteButton" class="new-route-row">
+            <button @click="createNewRoute" class="button is-primary is-large">
+                <span class="icon">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span>Nueva Ruta</span>
+            </button>
+        </div>
     </div>
 </template>
 
 <script>
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
 import { useTextsStore } from '../../../stores/texts';
 import { useSessionStore } from '../../../stores/session';
 import { useTraceabilityStore } from '../../../stores/traceability';
@@ -54,6 +64,44 @@ export default {
             'conclusions',
             'results'
         ];
+        
+        // Computed para mostrar el botón de nueva ruta
+        const showNewRouteButton = computed(() => {
+            return traceabilityStore.availableSections && 
+                   traceabilityStore.availableSections.results === true;
+        });
+        
+        // Función para crear nueva ruta
+        const createNewRoute = async () => {
+            try {
+                const response = await fetch('/traceability/create-new-route', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Recargar las secciones disponibles
+                    await traceabilityStore.loadAvailableSections();
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Nueva ruta creada exitosamente. Ahora puedes crear hasta 15 variables adicionales.');
+                    
+                    // Recargar la página para aplicar los cambios
+                    window.location.reload();
+                } else {
+                    alert('Error al crear nueva ruta: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error creating new route:', error);
+                alert('Error al crear nueva ruta');
+            }
+        };
+        
         // Elimina activeStep y los watchers relacionados
         // Función para el stepper custom: cambia el módulo cuando el usuario hace clic
         function onStepperInput(idx) {
@@ -110,7 +158,14 @@ export default {
             }
         });
         // --- FIN NUEVO ---
-        return { storeTexts, storeSession, steps, onStepperInput };
+        return { 
+            storeTexts, 
+            storeSession, 
+            steps, 
+            onStepperInput, 
+            showNewRouteButton, 
+            createNewRoute 
+        };
     }
 }
 </script>
@@ -136,5 +191,31 @@ export default {
 .intro-section p {
     margin-bottom: 10px;
     font-size: 1rem;
+}
+
+.new-route-section {
+    /* Eliminado: ya no se usa el contenedor */
+    display: none;
+}
+
+.new-route-row {
+    display: flex;
+    justify-content: flex-end;
+    margin: 80px 0 0 0;
+}
+
+.new-route-row .button {
+    font-size: 1.2rem;
+    padding: 15px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+.new-route-row .button:hover {
+    background: #5b21b6;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
 }
 </style>

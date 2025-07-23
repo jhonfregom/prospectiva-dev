@@ -83,17 +83,51 @@ export const useAnalysisStore = defineStore('analysis', {
 
         async saveAnalysis(analysisData) {
             try {
+                // Si es un guardado manual, incluir el campo edits
+                if (analysisData.is_manual_save) {
+                    // Buscar el análisis existente para obtener el contador actual
+                    const analyses = await this.fetchAnalyses();
+                    if (analyses && analyses.data) {
+                        const existingAnalysis = analyses.data.find(analysis => {
+                            const zoneMapping = {
+                                'ZONA DE PODER': 'poder',
+                                'ZONA DE CONFLICTO': 'conflicto',
+                                'ZONA DE SALIDA': 'salida',
+                                'ZONA DE INDIFERENCIA': 'indiferencia'
+                            };
+                            const zoneKey = zoneMapping[analysisData.zone_id] || analysisData.zone_id;
+                            return analysis.zone_id === zoneKey;
+                        });
+                        
+                        if (existingAnalysis) {
+                            // Si existe, incrementar el contador
+                            analysisData.edits = (existingAnalysis.edits || 0) + 1;
+                        } else {
+                            // Si es nuevo, establecer en 1 (primera edición)
+                            analysisData.edits = 1;
+                        }
+                    } else {
+                        // Si no hay análisis existentes, establecer en 1 (primera edición)
+                        analysisData.edits = 1;
+                    }
+                }
+                
                 const response = await axios.post('/analysis', analysisData);
-                console.log('Analysis save response:', response.data);
                 
                 if (response.data.status === 201) {
                     // Actualizar el state en el store si la respuesta incluye el análisis actualizado
                     if (response.data.data) {
-                        const zoneKey = analysisData.zone_id;
+                        // Mapear el nombre de la zona de vuelta a la clave del frontend
+                        const zoneMapping = {
+                            'ZONA DE PODER': 'poder',
+                            'ZONA DE CONFLICTO': 'conflicto',
+                            'ZONA DE SALIDA': 'salida',
+                            'ZONA DE INDIFERENCIA': 'indiferencia'
+                        };
+                        const zoneKey = zoneMapping[analysisData.zone_id] || analysisData.zone_id;
                         const rowIndex = this.rows.findIndex(row => row.key === zoneKey);
                         if (rowIndex !== -1) {
                             this.rows[rowIndex].state = response.data.data.state;
-                            console.log('Analysis updated, new state:', this.rows[rowIndex].state);
                         }
                     }
                     return { success: true, data: response.data.data, message: response.data.message };
@@ -166,22 +200,26 @@ export const useAnalysisStore = defineStore('analysis', {
 
         async closeAllAnalyses() {
             try {
-                for (const row of this.rows) {
-                    // Buscar el análisis existente para la zona
-                    const response = await axios.get('/analysis');
-                    if (response.data.status === 200 && response.data.data) {
-                        const analysis = response.data.data.find(a => a.zone_id === row.key);
-                        if (analysis) {
-                            await axios.put(`/analysis/${analysis.id}`, {
-                                description: analysis.description || '',
-                                score: analysis.score || 0,
-                                state: '1'
-                            });
+                const response = await axios.post('/analysis/close-all');
+                if (response.data.status === 200) {
+                    await this.fetchAnalyses();
+                    return { success: true };
                         }
-                    }
+                return { success: false, message: response.data.message };
+            } catch (error) {
+                this.error = error.response?.data?.message || error.message;
+                return { success: false, message: this.error };
+            }
+        },
+
+        async reopenAllAnalyses() {
+            try {
+                const response = await axios.post('/analysis/reopen-all');
+                if (response.data.status === 200) {
+                    await this.fetchAnalyses();
+                    return { success: true };
                 }
-                await this.fetchAnalyses();
-                return { success: true };
+                return { success: false, message: response.data.message };
             } catch (error) {
                 this.error = error.response?.data?.message || error.message;
                 return { success: false, message: this.error };

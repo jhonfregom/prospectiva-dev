@@ -19,7 +19,11 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        $traceability = Traceability::getOrCreateForUser($user->id);
+        $traceability = Traceability::getCurrentRouteForUser($user->id);
+        
+        if (!$traceability) {
+            $traceability = Traceability::getOrCreateForUser($user->id);
+        }
         
         return response()->json([
             'success' => true,
@@ -48,7 +52,15 @@ class TraceabilityController extends Controller
             ]);
         }
 
-        $traceability = Traceability::getOrCreateForUser($user->id);
+        $traceability = Traceability::getCurrentRouteForUser($user->id);
+        
+        if (!$traceability) {
+            return response()->json([
+                'success' => false,
+                'canAccess' => false,
+                'reason' => 'no_route_found'
+            ]);
+        }
         
         // Los usuarios normales solo pueden acceder a variables inicialmente
         if ($section === 'variables') {
@@ -88,7 +100,13 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        $traceability = Traceability::getOrCreateForUser($user->id);
+        $traceability = Traceability::getCurrentRouteForUser($user->id);
+        
+        if (!$traceability) {
+            \Log::error('No se encontró ruta para el usuario');
+            return response()->json(['error' => 'No se encontró ruta para el usuario'], 404);
+        }
+        
         \Log::info('Traceability antes de marcar: ' . json_encode($traceability->toArray()));
         
         $traceability->markSectionCompleted($section);
@@ -115,7 +133,13 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        $traceability = \App\Models\Traceability::getOrCreateForUser($user->id);
+        $traceability = Traceability::getCurrentRouteForUser($user->id);
+        
+        if (!$traceability) {
+            \Log::error('No se encontró ruta para el usuario');
+            return response()->json(['error' => 'No se encontró ruta para el usuario'], 404);
+        }
+        
         $traceability->reverseSectionCompleted($section);
 
         return response()->json([
@@ -135,10 +159,10 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        $traceability = Traceability::getOrCreateForUser($user->id);
+        $traceability = Traceability::getCurrentRouteForUser($user->id);
         
         \Log::info('Traceability - Usuario: ' . json_encode(['id' => $user->id, 'role' => $user->role, 'email' => $user->user]));
-        \Log::info('Traceability - Estado actual: ' . json_encode($traceability->toArray()));
+        \Log::info('Traceability - Estado actual: ' . json_encode($traceability ? $traceability->toArray() : 'null'));
         
         // Los administradores tienen acceso a todas las secciones
         if ($user->role === 1) {
@@ -163,15 +187,15 @@ class TraceabilityController extends Controller
         // Para usuarios normales, verificar cada sección
         $sections = [
             'variables' => true, // Siempre accesible
-            'matrix' => $traceability->canAccessSection('matrix'),
-            'graphics' => $traceability->canAccessSection('graphics'),
-            'analysis' => $traceability->canAccessSection('analysis'),
-            'hypothesis' => $traceability->canAccessSection('hypothesis'),
-            'schwartz' => $traceability->canAccessSection('schwartz'),
-            'initialconditions' => $traceability->canAccessSection('initialconditions'),
-            'scenarios' => $traceability->canAccessSection('scenarios'),
-            'conclusions' => $traceability->canAccessSection('conclusions'),
-            'results' => $traceability->canAccessSection('results')
+            'matrix' => $traceability ? $traceability->canAccessSection('matrix') : false,
+            'graphics' => $traceability ? $traceability->canAccessSection('graphics') : false,
+            'analysis' => $traceability ? $traceability->canAccessSection('analysis') : false,
+            'hypothesis' => $traceability ? $traceability->canAccessSection('hypothesis') : false,
+            'schwartz' => $traceability ? $traceability->canAccessSection('schwartz') : false,
+            'initialconditions' => $traceability ? $traceability->canAccessSection('initialconditions') : false,
+            'scenarios' => $traceability ? $traceability->canAccessSection('scenarios') : false,
+            'conclusions' => $traceability ? $traceability->canAccessSection('conclusions') : false,
+            'results' => $traceability ? $traceability->canAccessSection('results') : false
         ];
         
         \Log::info('Traceability - Secciones disponibles para usuario normal: ' . json_encode($sections));
@@ -300,6 +324,234 @@ class TraceabilityController extends Controller
         return response()->json([
             'success' => true,
             'tried' => $traceability->tried
+        ]);
+    }
+
+    /**
+     * Crea una nueva ruta para el usuario
+     */
+    public function createNewRoute(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        try {
+            // Verificar si el usuario ya tiene una ruta completada (results = '1')
+            $currentTraceability = Traceability::where('user_id', $user->id)
+                ->where('results', '1')
+                ->first();
+
+            if (!$currentTraceability) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Debes completar la ruta actual antes de crear una nueva'
+                ]);
+            }
+
+            // Verificar si ya existe una ruta con tried = 2
+            $existingRoute2 = Traceability::where('user_id', $user->id)
+                ->where('tried', '2')
+                ->first();
+
+            if ($existingRoute2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya existe una segunda ruta para este usuario'
+                ]);
+            }
+
+            // Crear nueva ruta con tried = 2
+            $nextId = Traceability::findNextAvailableId();
+            
+            $newTraceability = Traceability::create([
+                'id' => $nextId,
+                'user_id' => $user->id,
+                'tried' => '2',
+                'variables' => '1', // Habilitar variables para la nueva ruta
+                'matriz' => '0',
+                'maps' => '0',
+                'hypothesis' => '0',
+                'shwartz' => '0',
+                'conditions' => '0',
+                'scenarios' => '0',
+                'conclusions' => '0',
+                'results' => '0',
+                'state' => '0'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Nueva ruta creada exitosamente',
+                'data' => $newTraceability
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating new route: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear nueva ruta: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Obtiene la ruta actual del usuario
+     */
+    public function getCurrentRoute(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        // Obtener la ruta activa (la que tiene el tried más alto)
+        $currentRoute = Traceability::where('user_id', $user->id)
+            ->orderBy('tried', 'desc')
+            ->first();
+
+        if (!$currentRoute) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró ruta para el usuario'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $currentRoute
+        ]);
+    }
+
+    /**
+     * Obtiene todas las rutas del usuario
+     */
+    public function getUserRoutes(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        $routes = Traceability::where('user_id', $user->id)
+            ->orderBy('tried', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $routes
+        ]);
+    }
+
+    /**
+     * Obtiene el estado de la ruta actual
+     */
+    public function getCurrentRouteState(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        $currentRoute = Traceability::getCurrentRouteForUser($user->id);
+        
+        if (!$currentRoute) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró ruta para el usuario'
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'state' => $currentRoute->state
+        ]);
+    }
+
+    /**
+     * Actualiza el estado de la ruta actual
+     */
+    public function updateCurrentRouteState(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+        $state = $request->input('state');
+        
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        $currentRoute = Traceability::getCurrentRouteForUser($user->id);
+        
+        if (!$currentRoute) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró ruta para el usuario'
+            ]);
+        }
+
+        $currentRoute->state = $state;
+        $currentRoute->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Estado de la ruta actualizado correctamente'
+        ]);
+    }
+
+    /**
+     * Verifica si una sección está cerrada en la ruta actual
+     */
+    public function isSectionClosed(Request $request, $section): JsonResponse
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        $currentRoute = Traceability::getCurrentRouteForUser($user->id);
+        
+        if (!$currentRoute) {
+            return response()->json([
+                'success' => false,
+                'closed' => false,
+                'message' => 'No se encontró ruta para el usuario'
+            ]);
+        }
+
+        // Verificar si la sección está cerrada basándose en el campo correspondiente
+        $sectionMap = [
+            'variables' => 'variables',
+            'matrix' => 'matriz',
+            'graphics' => 'matriz',
+            'analysis' => 'maps',
+            'hypothesis' => 'hypothesis',
+            'schwartz' => 'shwartz',
+            'initialconditions' => 'conditions',
+            'scenarios' => 'scenarios',
+            'conclusions' => 'conclusions',
+            'results' => 'results'
+        ];
+
+        if (!isset($sectionMap[$section])) {
+            return response()->json([
+                'success' => false,
+                'closed' => false,
+                'message' => 'Sección no válida'
+            ]);
+        }
+
+        $field = $sectionMap[$section];
+        $isClosed = $currentRoute->$field === '1';
+
+        return response()->json([
+            'success' => true,
+            'closed' => $isClosed
         ]);
     }
 } 

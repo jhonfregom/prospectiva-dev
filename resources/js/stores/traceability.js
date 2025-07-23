@@ -6,6 +6,8 @@ export const useTraceabilityStore = defineStore('traceability', {
         return {
             userTraceability: null,
             availableSections: null,
+            currentRoute: null,
+            userRoutes: [],
             isLoading: false,
             error: null
         };
@@ -28,6 +30,16 @@ export const useTraceabilityStore = defineStore('traceability', {
             const user = JSON.parse(localStorage.getItem('user')) || {};
             const isAdmin = user.role === 1;
             return isAdmin;
+        },
+
+        // Obtiene la ruta actual
+        getCurrentRoute: (state) => {
+            return state.currentRoute;
+        },
+
+        // Obtiene todas las rutas del usuario
+        getUserRoutes: (state) => {
+            return state.userRoutes;
         }
     },
 
@@ -56,6 +68,42 @@ export const useTraceabilityStore = defineStore('traceability', {
                     conclusions: '0',
                     results: '0'
                 };
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        // Carga la ruta actual del usuario
+        async loadCurrentRoute() {
+            this.isLoading = true;
+            this.error = null;
+            
+            try {
+                const response = await axios.get('/traceability/current-route');
+                if (response.data.success) {
+                    this.currentRoute = response.data.data;
+                }
+            } catch (error) {
+                console.error('Error loading current route:', error);
+                this.error = error.message;
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        // Carga todas las rutas del usuario
+        async loadUserRoutes() {
+            this.isLoading = true;
+            this.error = null;
+            
+            try {
+                const response = await axios.get('/traceability/user-routes');
+                if (response.data.success) {
+                    this.userRoutes = response.data.data;
+                }
+            } catch (error) {
+                console.error('Error loading user routes:', error);
+                this.error = error.message;
             } finally {
                 this.isLoading = false;
             }
@@ -191,6 +239,9 @@ export const useTraceabilityStore = defineStore('traceability', {
             // Cargar secciones disponibles desde la API
             await this.loadAvailableSections();
             
+            // Cargar ruta actual y todas las rutas del usuario
+            await this.loadCurrentRoute();
+            await this.loadUserRoutes();
         },
 
         // Fuerza la recarga de las secciones disponibles
@@ -215,6 +266,50 @@ export const useTraceabilityStore = defineStore('traceability', {
                 await this.forceReloadSections();
             } catch (error) {
                 console.error('Error al revertir la sección completada:', error);
+            }
+        },
+
+        // Obtiene el estado de la ruta actual
+        async getCurrentRouteState() {
+            try {
+                const response = await axios.get('/traceability/current-route-state');
+                if (response.data.success) {
+                    return response.data.state;
+                }
+                return null;
+            } catch (error) {
+                console.error('Error getting current route state:', error);
+                return null;
+            }
+        },
+
+        // Actualiza el estado de la ruta actual
+        async updateCurrentRouteState(state) {
+            try {
+                const response = await axios.put('/traceability/current-route-state', { state });
+                if (response.data.success) {
+                    // Recargar la ruta actual
+                    await this.loadCurrentRoute();
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('Error updating current route state:', error);
+                return false;
+            }
+        },
+
+        // Verifica si una sección está cerrada en la ruta actual
+        async isSectionClosed(section) {
+            try {
+                const response = await axios.get(`/traceability/section-closed/${section}`);
+                if (response.data.success) {
+                    return response.data.closed;
+                }
+                return false;
+            } catch (error) {
+                console.error('Error checking if section is closed:', error);
+                return false;
             }
         }
     }

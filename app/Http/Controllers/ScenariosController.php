@@ -69,6 +69,7 @@ class ScenariosController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        try {
         \Log::info('ScenariosController@store - Request data:', $request->all());
         
         $data = $request->validate([
@@ -98,7 +99,7 @@ class ScenariosController extends Controller
 
         if ($scenario) {
             // Actualizar
-            $scenario->titulo = $data['titulo'];
+                $scenario->titulo = $data['titulo'] ?? $scenario->titulo;
             $scenario->edits = $data['edits'];
             // Actualizar campos de año si vienen en el request
             if (array_key_exists('year1', $data)) {
@@ -142,9 +143,14 @@ class ScenariosController extends Controller
             $status = 200;
             $message = 'Escenario actualizado correctamente.';
         } else {
+                // Obtener o crear el registro de traceability para el usuario
+                $traceability = \App\Models\Traceability::getOrCreateForUser($data['user_id']);
+                
             // Crear con el primer id libre
             $nextId = $this->findNextAvailableId();
             $data['id'] = $nextId;
+                $data['tried_id'] = $traceability->id;
+                \Log::info('ScenariosController@store - Creating new scenario with data:', $data);
             $scenario = Scenarios::create($data);
             $status = 201;
             $message = 'Escenario creado correctamente.';
@@ -155,6 +161,15 @@ class ScenariosController extends Controller
             'status' => $status,
             'message' => $message
         ], $status);
+        } catch (\Exception $e) {
+            \Log::error('ScenariosController@store - Error: ' . $e->getMessage());
+            \Log::error('ScenariosController@store - Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'data' => null,
+                'status' => 500,
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function index(): JsonResponse

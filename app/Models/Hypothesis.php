@@ -17,5 +17,7 @@ class Hypothesis extends Model
         'secondary_hypotheses',
         'user_id',
         'state',
+        'tried_id',
+        'edits',
     ];
 }

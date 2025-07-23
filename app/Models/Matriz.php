@@ -18,6 +18,7 @@ class Matriz extends Model
         'id_resp_depen',
         'id_resp_influ',
         'user_id',
+        'tried_id',
         'state'
     ];
 
@@ -27,6 +28,7 @@ class Matriz extends Model
         'id_resp_depen' => 'integer',
         'id_resp_influ' => 'integer',
         'user_id' => 'integer',
+        'tried_id' => 'integer',
         'state' => 'string'
     ];
 
@@ -57,6 +59,21 @@ class Matriz extends Model
     public function variable()
     {
         return $this->belongsTo(Variable::class, 'id_variable');
+    }
+
+    /**
+     * Relación con el modelo Traceability
+     * 
+     * Define una relación belongsTo con el modelo Traceability, lo que permite:
+     * - Acceder a la ruta de traceability asociada
+     * - Mantener integridad referencial en la base de datos
+     * - Facilitar consultas relacionadas
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function traceability()
+    {
+        return $this->belongsTo(Traceability::class, 'tried_id');
     }
 } 
 

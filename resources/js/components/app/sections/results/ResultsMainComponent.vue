@@ -55,22 +55,22 @@
     <!-- Tabla de resultados con columnas alineadas -->
   <div class="tabla-scroll-contenedor">
     <b-table :data="filteredUsers" :loading="isLoading" :striped="true" :hoverable="true" icon-pack="fas" table-class="tabla-grande">
-        <b-table-column v-if="isAdmin" field="id" :label="textsStore.getText('results_section.table.id')" width="10%" centered v-slot="props">
+        <b-table-column v-if="isAdmin" field="id" :label="textsStore.getText('results_section.table.id')" width="8%" centered v-slot="props">
           {{ props.row.id }}
         </b-table-column>
-        <b-table-column field="first_name" :label="textsStore.getText('results_section.table.first_name')" width="12%" centered v-slot="props">
+        <b-table-column field="first_name" :label="textsStore.getText('results_section.table.first_name')" width="10%" centered v-slot="props">
           {{ props.row.first_name }}
         </b-table-column>
-        <b-table-column field="last_name" :label="textsStore.getText('results_section.table.last_name')" width="12%" centered v-slot="props">
+        <b-table-column field="last_name" :label="textsStore.getText('results_section.table.last_name')" width="10%" centered v-slot="props">
           {{ props.row.last_name }}
         </b-table-column>
-        <b-table-column field="document_id" :label="textsStore.getText('results_section.table.document_id')" width="12%" centered v-slot="props">
+        <b-table-column field="document_id" :label="textsStore.getText('results_section.table.document_id')" width="10%" centered v-slot="props">
           {{ props.row.document_id }}
         </b-table-column>
         <b-table-column
           field="user"
           :label="textsStore.getText('results_section.table.email')"
-          width="18%"
+          width="15%"
           centered
           class="email-column"
         >
@@ -78,12 +78,17 @@
             {{ props.row.user }}
           </template>
         </b-table-column>
-        <b-table-column field="variables_count" :label="textsStore.getText('results_section.table.variables_count') || 'Total Variables'" width="8%" centered v-slot="props">
+        <b-table-column field="route_name" label="Ruta" width="8%" centered v-slot="props">
+          <div class="centered-cell">
+            <b-tag type="is-success" size="is-medium">{{ props.row.route_name || 'N/A' }}</b-tag>
+          </div>
+        </b-table-column>
+        <b-table-column field="variables_count" :label="textsStore.getText('results_section.table.variables_count') || 'Total Variables'" width="7%" centered v-slot="props">
           <div class="centered-cell">
             <b-tag type="is-info" size="is-medium">{{ props.row.variables_count || 0 }}</b-tag>
           </div>
         </b-table-column>
-        <b-table-column field="variables_list" :label="textsStore.getText('results_section.table.variables_list') || 'Variables Creadas'" width="20%" centered v-slot="props">
+        <b-table-column field="variables_list" :label="textsStore.getText('results_section.table.variables_list') || 'Variables Creadas'" width="18%" centered v-slot="props">
           <div v-if="props.row.variables_list && props.row.variables_list.length > 0" class="variables-container">
             <div v-for="(variable, index) in props.row.variables_list" :key="variable.id_variable" class="variable-item">
               <span class="variable-link" @click="showVariableDescription(variable)">
@@ -93,7 +98,7 @@
           </div>
           <span v-else class="has-text-grey-light">Sin variables</span>
         </b-table-column>
-      <b-table-column field="matriz" :label="textsStore.getText('results_section.table.matriz') || 'Matriz'" width="15%" centered v-slot="props">
+      <b-table-column field="matriz" :label="textsStore.getText('results_section.table.matriz') || 'Matriz'" width="13%" centered v-slot="props">
         <div v-if="props.row.matriz && props.row.matriz.length > 0" class="matriz-container">
           <div class="matriz-summary">
             <span class="matriz-link" @click="showMatrizDescription(props.row.matriz, props.row.first_name, props.row.last_name, props.row.matriz_cruzada)">
@@ -104,23 +109,28 @@
         </div>
         <span v-else class="has-text-grey-light">Sin matriz</span>
       </b-table-column>
-      <b-table-column field="grafica" label="Gráfica" width="12%" centered v-slot="props">
-        <button class="button is-info is-light" @click="showGraphicsDescription(props.row.matriz, props.row.first_name, props.row.last_name, props.row.matriz_cruzada)">
+      <b-table-column field="grafica" label="Gráfica" width="10%" centered v-slot="props">
+        <button class="button is-info is-light" @click="() => { console.log('Fila seleccionada:', props.row); showGraphicsDescription(props.row.matriz, props.row.first_name, props.row.last_name, props.row.matriz_cruzada); }">
           Ver Gráfica
         </button>
         </b-table-column>
-        <b-table-column field="zone_analyses" :label="textsStore.getText('results_section.table.zone_analyses') || 'Análisis Mapa de Variables'" width="20%" centered v-slot="props">
-          <div v-if="props.row.zone_analyses && props.row.zone_analyses.length > 0" class="zone-analyses-container">
-            <div v-for="(analysis, index) in props.row.zone_analyses" :key="analysis.zone_id" class="zone-analysis-item">
-              <span class="zone-analysis-link" @click="showZoneAnalysisDescription(analysis)">
-                <strong>{{ analysis.zone_name }}:</strong> 
-                <span class="analysis-score">Puntaje: {{ analysis.score }}</span>
-              </span>
+        <b-table-column field="zone_analyses" :label="textsStore.getText('results_section.table.zone_analyses') || 'Análisis Mapa de Variables'" width="18%" centered v-slot="props">
+          <div v-if="props.row.matriz && props.row.matriz.length > 0">
+            <div v-for="(zone, zoneKey) in getVariablesByZone(props.row.matriz)" :key="zoneKey" class="zone-analyses-container">
+              <div class="zone-analysis-item">
+                <strong>{{ zoneKey }}:</strong>
+                <span v-if="zone.length > 0">
+                  <span v-for="variable in zone" :key="variable.id_variable" class="zone-variable-code">
+                    {{ variable.id_variable }}
+                  </span>
+                </span>
+                <span v-else class="has-text-grey-light">Sin variables</span>
+              </div>
             </div>
           </div>
           <span v-else class="has-text-grey-light">Sin análisis</span>
         </b-table-column>
-        <b-table-column field="future_drivers" :label="textsStore.getText('results_section.table.future_drivers') || 'Direccionadores de Futuro'" width="20%" centered v-slot="props">
+        <b-table-column field="future_drivers" :label="textsStore.getText('results_section.table.future_drivers') || 'Direccionadores de Futuro'" width="18%" centered v-slot="props">
           <div v-if="props.row.future_drivers && props.row.future_drivers.length > 0" class="future-drivers-container">
             <div v-for="(driver, index) in props.row.future_drivers" :key="driver.id" class="future-driver-item">
               <span class="future-driver-link" @click="showFutureDriverDescription(driver)">
@@ -131,12 +141,12 @@
           </div>
           <span v-else class="has-text-grey-light">Sin direccionadores</span>
         </b-table-column>
-      <b-table-column field="schwartz_graph" label="Ejes Schwartz" width="12%" centered v-slot="props">
+      <b-table-column field="schwartz_graph" label="Ejes Schwartz" width="10%" centered v-slot="props">
         <button class="button is-warning is-light" @click="showSchwartzModal(props.row.scenarios, props.row.first_name, props.row.last_name, props.row.future_drivers)">
           Ver Ejes Schwartz
         </button>
         </b-table-column>
-        <b-table-column field="initial_conditions" :label="textsStore.getText('results_section.table.initial_conditions') || 'Condiciones Iniciales'" width="20%" centered v-slot="props">
+        <b-table-column field="initial_conditions" :label="textsStore.getText('results_section.table.initial_conditions') || 'Condiciones Iniciales'" width="18%" centered v-slot="props">
           <div v-if="props.row.initial_conditions && props.row.initial_conditions.length > 0" class="initial-conditions-container">
             <div v-for="(condition, index) in props.row.initial_conditions" :key="condition.id" class="initial-condition-item">
               <span class="initial-condition-link" @click="showInitialConditionDescription(condition)">
@@ -147,7 +157,7 @@
           </div>
           <span v-else class="has-text-grey-light">Sin condiciones</span>
         </b-table-column>
-        <b-table-column field="scenarios" :label="textsStore.getText('results_section.table.scenarios') || 'Escenarios'" width="20%" centered v-slot="props">
+        <b-table-column field="scenarios" :label="textsStore.getText('results_section.table.scenarios') || 'Escenarios'" width="18%" centered v-slot="props">
           <div v-if="props.row.scenarios && props.row.scenarios.length > 0" class="scenarios-container">
             <div v-for="(scenario, index) in props.row.scenarios" :key="scenario.id" class="scenario-item">
               <span class="scenario-link" @click="showScenarioDescription(scenario)">
@@ -158,26 +168,23 @@
           </div>
           <span v-else class="has-text-grey-light">Sin escenarios</span>
         </b-table-column>
-        <b-table-column field="conclusions" :label="textsStore.getText('results_section.table.conclusions') || 'Conclusiones'" width="20%" centered v-slot="props">
+        <b-table-column field="conclusions" :label="textsStore.getText('results_section.table.conclusions') || 'Conclusiones'" width="18%" centered v-slot="props">
           <div v-if="props.row.conclusions && props.row.conclusions.length > 0" class="conclusions-container">
-            <div v-for="(conclusion, index) in props.row.conclusions" :key="conclusion.id" class="conclusion-item">
-              <span class="conclusion-link" @click="showConclusionDescription(conclusion)">
-                <strong>Conclusión {{ index + 1 }}:</strong> 
-                <span class="conclusion-title">{{ conclusion.component_practice ? 'Con datos' : 'Sin datos' }}</span>
-              </span>
-            </div>
+            <button class="button is-info is-light" @click="showConclusionDescription(null, props.row.conclusions, props.row.first_name, props.row.last_name)">
+              Ver Conclusiones
+            </button>
           </div>
           <span v-else class="has-text-grey-light">Sin conclusiones</span>
         </b-table-column>
-      <b-table-column label="Imprimir" width="10%" centered v-slot="props">
+      <b-table-column label="Imprimir" width="8%" centered v-slot="props">
         <div class="pdf-button-container">
           <button
             class="button is-primary is-light pdf-button"
             @click="imprimirUsuario(props.row)"
-            :disabled="loadingPdfId === props.row.id"
+            :disabled="loadingPdfId === (props.row.id + '-' + (props.row.route_id || 'default'))"
           >
             <span class="button-content">
-              <i v-if="loadingPdfId === props.row.id" class="fas fa-spinner fa-spin"></i>
+              <span v-if="loadingPdfId === (props.row.id + '-' + (props.row.route_id || 'default'))" class="custom-spinner"></span>
               <i v-else class="fas fa-file-pdf"></i>
             </span>
           </button>
@@ -375,37 +382,44 @@
       <div class="modal-background" @click="showConclusionModal = false"></div>
       <div class="modal-card">
         <header class="modal-card-head">
-          <p class="modal-card-title">Detalles de la Conclusión</p>
+          <p class="modal-card-title">Conclusiones de {{ selectedConclusionUser }}</p>
           <button class="delete" aria-label="close" @click="showConclusionModal = false"></button>
         </header>
         <section class="modal-card-body">
-          <div class="modal-info">
-            <p><strong>Título:</strong> {{ selectedConclusion?.title || 'Sin título' }}</p>
-          </div>
-          
-          <div v-if="selectedConclusion?.component_practice" class="modal-section">
-            <h4 class="modal-section-title">Componente Práctico</h4>
-            <div class="modal-content">
-              {{ selectedConclusion.component_practice }}
+          <div v-if="selectedConclusions && selectedConclusions.length > 0" class="conclusions-modal-content">
+            <div v-for="(conclusion, index) in selectedConclusions" :key="conclusion.id" class="conclusion-section">
+              <h4 class="conclusion-title">{{ conclusion.title }}</h4>
+              
+              <div v-if="conclusion.component_practice" class="modal-section">
+                <h5 class="modal-section-title">Componente Práctico</h5>
+                <div class="modal-content">
+                  {{ conclusion.component_practice }}
+                </div>
+              </div>
+              
+              <div v-if="conclusion.actuality" class="modal-section">
+                <h5 class="modal-section-title">Actualidad</h5>
+                <div class="modal-content">
+                  {{ conclusion.actuality }}
+                </div>
+              </div>
+              
+              <div v-if="conclusion.aplication" class="modal-section">
+                <h5 class="modal-section-title">Aplicación</h5>
+                <div class="modal-content">
+                  {{ conclusion.aplication }}
+                </div>
+              </div>
+              
+              <div v-if="!conclusion.component_practice && !conclusion.actuality && !conclusion.aplication" class="no-content">
+                <p class="has-text-grey-light">Sin contenido disponible</p>
+              </div>
+              
+              <hr v-if="index < selectedConclusions.length - 1" class="conclusion-divider">
             </div>
           </div>
-          
-          <div v-if="selectedConclusion?.actuality" class="modal-section">
-            <h4 class="modal-section-title">Actualidad</h4>
-            <div class="modal-content">
-              {{ selectedConclusion.actuality }}
-            </div>
-          </div>
-          
-          <div v-if="selectedConclusion?.aplication" class="modal-section">
-            <h4 class="modal-section-title">Aplicación</h4>
-            <div class="modal-content">
-              {{ selectedConclusion.aplication }}
-            </div>
-          </div>
-          
-          <div v-if="!selectedConclusion?.component_practice && !selectedConclusion?.actuality && !selectedConclusion?.aplication" class="no-content">
-            <p class="has-text-grey-light">Sin contenido disponible</p>
+          <div v-else class="no-content">
+            <p class="has-text-grey-light">No hay conclusiones disponibles</p>
           </div>
         </section>
         <footer class="modal-card-foot">
@@ -527,8 +541,8 @@
     <!-- Gráficas ocultas para impresión PDF -->
   <div
     v-for="user in filteredUsers"
-    :key="'grafica-variables-' + user.id"
-    :id="'grafica-variables-' + user.id"
+    :key="'grafica-variables-' + user.id + '-' + (user.route_id || 'default')"
+    :id="'grafica-variables-' + user.id + '-' + (user.route_id || 'default')"
     style="position: absolute; left: -9999px; top: 0; width: 800px; height: 560px; background: white;"
     class="pdf-graphic-container"
   >
@@ -538,8 +552,8 @@
   <!-- Canvas oculto para la gráfica de Schwartz (para PDF) -->
   <div
     v-for="user in filteredUsers"
-    :key="'grafica-schwartz-' + user.id"
-    :id="'grafica-schwartz-' + user.id"
+    :key="'grafica-schwartz-' + user.id + '-' + (user.route_id || 'default')"
+    :id="'grafica-schwartz-' + user.id + '-' + (user.route_id || 'default')"
     style="position: absolute; left: -9999px; top: 0; width: 800px; height: 640px; background: white;"
     class="pdf-graphic-container"
   >
@@ -549,8 +563,8 @@
   <!-- Diagrama de Schwartz oculto solo para PDF -->
   <div
     v-for="user in filteredUsers"
-    :key="'schwartz-diagram-' + user.id"
-    :id="'schwartz-diagram-' + user.id"
+    :key="'schwartz-diagram-' + user.id + '-' + (user.route_id || 'default')"
+    :id="'schwartz-diagram-' + user.id + '-' + (user.route_id || 'default')"
     style="position: absolute; left: -9999px; top: 0; width: 900px; height: 700px; background: white;"
   >
     <SchwartzMainComponent
@@ -576,6 +590,7 @@ import SchwartzPDFEditableCanvas from '../Schwartz/SchwartzPDFEditableCanvas.vue
 import { useSectionStore } from '../../../../stores/section';
 import { useTextsStore } from '../../../../stores/texts';
 import { useResultsStore } from '../../../../stores/results';
+import { useTraceabilityStore } from '../../../../stores/traceability';
 import { storeToRefs } from 'pinia';
 import { ref, computed } from 'vue';
 import GraphicsMainComponent from '../graphics/GraphicsMainComponent.vue';
@@ -595,6 +610,7 @@ export default {
         const sectionStore = useSectionStore();
         const textsStore = useTextsStore();
         const resultsStore = useResultsStore();
+        const traceabilityStore = useTraceabilityStore();
         const { users, isLoading } = storeToRefs(resultsStore);
         
         // Obtener el usuario autenticado desde localStorage o Pinia según tu app
@@ -635,6 +651,8 @@ export default {
         const selectedVariable = ref(null);
         const selectedScenario = ref(null);
         const selectedConclusion = ref(null);
+        const selectedConclusions = ref([]);
+        const selectedConclusionUser = ref('');
         const selectedZoneAnalysis = ref(null);
         const selectedFutureDriver = ref(null);
         const selectedInitialCondition = ref(null);
@@ -655,8 +673,9 @@ export default {
             showZoneAnalysisModal.value = true;
         }
 
-        function showConclusionDescription(conclusion) {
-            selectedConclusion.value = conclusion;
+        function showConclusionDescription(conclusion, conclusions, firstName, lastName) {
+            selectedConclusions.value = conclusions || [];
+            selectedConclusionUser.value = `${firstName} ${lastName}`;
             showConclusionModal.value = true;
         }
 
@@ -788,51 +807,47 @@ export default {
         const selectedGraphicsData = ref([]);
         const selectedGraphicsUser = ref('');
         function showGraphicsDescription(matriz, firstName, lastName, matrizCruzada = []) {
-          // Si no hay datos, no hacer nada
-          if (!matriz || !matrizCruzada || matriz.length === 0 || matrizCruzada.length === 0) {
-            selectedGraphicsData.value = [];
-            selectedGraphicsUser.value = `${firstName} ${lastName}`;
-            showGraphicsModal.value = true;
-            return;
+          // Permitir mostrar gráfica aunque solo haya una variable
+          let graphicsData = [];
+          if (matriz && matriz.length > 0) {
+            if (matrizCruzada && matrizCruzada.length > 0) {
+              // Lógica original para varias variables
+              const variables = [...new Set(matrizCruzada.map(m => m.origen))].sort();
+              const matrizMap = {};
+              matrizCruzada.forEach(item => {
+                matrizMap[`${item.origen}-${item.destino}`] = item.valor;
+              });
+              graphicsData = variables.map(variable => {
+                const dependencia = variables.reduce((sum, destino) => {
+                  if (variable !== destino) {
+                    return sum + (matrizMap[`${variable}-${destino}`] || 0);
+                  }
+                  return sum;
+                }, 0);
+                const influencia = variables.reduce((sum, origen) => {
+                  if (origen !== variable) {
+                    return sum + (matrizMap[`${origen}-${variable}`] || 0);
+                  }
+                  return sum;
+                }, 0);
+                return {
+                  id_variable: variable,
+                  dependencia: dependencia,
+                  influencia: influencia
+                };
+              });
+            } else {
+              // Solo una variable: graficar en (0,0) o con los datos de matriz
+              graphicsData = matriz.map(item => ({
+                id_variable: item.id_variable,
+                dependencia: item.dependencia || 0,
+                influencia: item.influencia || 0
+              }));
+            }
           }
-          // Ordenar variables por id_variable (V1, V2, ...)
-          const orderedVariables = [...matriz].sort((a, b) => {
-            const numA = parseInt(a.id_variable.replace('V', ''));
-            const numB = parseInt(b.id_variable.replace('V', ''));
-            return numA - numB;
-          });
-          // Construir mapa cruzado para acceso rápido
-          const matrizMap = {};
-          matrizCruzada.forEach(item => {
-            matrizMap[`${item.origen}-${item.destino}`] = item.valor;
-          });
-          // Funciones para totales personalizados
-          function getTotalDependencia(origen) {
-            let total = 0;
-            orderedVariables.forEach(destino => {
-              if (origen !== destino.id_variable) {
-                total += Number(matrizMap[`${origen}-${destino.id_variable}`]) || 0;
-              }
-            });
-            return total;
-          }
-          function getTotalInfluencia(destino) {
-            let total = 0;
-            orderedVariables.forEach(origen => {
-              if (origen.id_variable !== destino) {
-                total += Number(matrizMap[`${origen.id_variable}-${destino}`]) || 0;
-              }
-            });
-            return total;
-          }
-          // Armar datos para la gráfica personalizada
-          const graphicsData = orderedVariables.map(variable => ({
-            id_variable: variable.id_variable,
-            influencia: getTotalInfluencia(variable.id_variable), // Eje Y
-            dependencia: getTotalDependencia(variable.id_variable) // Eje X
-          }));
           selectedGraphicsData.value = graphicsData;
           selectedGraphicsUser.value = `${firstName} ${lastName}`;
+          console.log('Datos enviados a la gráfica:', selectedGraphicsData.value);
           showGraphicsModal.value = true;
         }
 
@@ -885,49 +900,51 @@ export default {
 
         // Función para convertir datos de matriz a formato de gráfica
         function convertMatrizToGraphicsData(matriz, matrizCruzada) {
-          if (!matriz || !matrizCruzada || matriz.length === 0 || matrizCruzada.length === 0) {
-            return [];
+          // Permitir un solo punto si matriz tiene datos pero matriz_cruzada está vacío
+          if (matriz && matriz.length > 0) {
+            if (matrizCruzada && matrizCruzada.length > 0) {
+              // Lógica original
+              const variables = [...new Set(matrizCruzada.map(m => m.origen))].sort();
+              const matrizMap = {};
+              matrizCruzada.forEach(item => {
+                matrizMap[`${item.origen}-${item.destino}`] = item.valor;
+              });
+              return variables.map(variable => {
+                const dependencia = variables.reduce((sum, destino) => {
+                  if (variable !== destino) {
+                    return sum + (matrizMap[`${variable}-${destino}`] || 0);
+                  }
+                  return sum;
+                }, 0);
+                const influencia = variables.reduce((sum, origen) => {
+                  if (origen !== variable) {
+                    return sum + (matrizMap[`${origen}-${variable}`] || 0);
+                  }
+                  return sum;
+                }, 0);
+                return {
+                  id_variable: variable,
+                  dependencia: dependencia,
+                  influencia: influencia
+                };
+              });
+            } else {
+              // Solo una variable: graficar en (0,0) o con los datos de matriz
+              return matriz.map(item => ({
+                id_variable: item.id_variable,
+                dependencia: item.dependencia || 0,
+                influencia: item.influencia || 0
+              }));
+            }
           }
-
-          // Obtener variables únicas ordenadas
-          const variables = [...new Set(matrizCruzada.map(m => m.origen))].sort();
-          
-          // Construir mapa cruzado para acceso rápido
-          const matrizMap = {};
-          matrizCruzada.forEach(item => {
-            matrizMap[`${item.origen}-${item.destino}`] = item.valor;
-          });
-
-          // Calcular dependencia e influencia para cada variable
-          const graphicsData = variables.map(variable => {
-            // Dependencia: suma de la fila (lo que la variable da a otras)
-            const dependencia = variables.reduce((sum, destino) => {
-              if (variable !== destino) {
-                return sum + (matrizMap[`${variable}-${destino}`] || 0);
-              }
-              return sum;
-            }, 0);
-
-            // Influencia: suma de la columna (lo que la variable recibe de otras)
-            const influencia = variables.reduce((sum, origen) => {
-              if (origen !== variable) {
-                return sum + (matrizMap[`${origen}-${variable}`] || 0);
-              }
-              return sum;
-            }, 0);
-
-            return {
-              id_variable: variable,
-              dependencia: dependencia,
-              influencia: influencia
-            };
-          });
-
-          return graphicsData;
+          return [];
         }
 
         async function imprimirUsuario(usuario) {
-          loadingPdfId.value = usuario.id;
+          // Usar un identificador único que incluya la ruta para evitar conflictos
+          const uniqueId = `${usuario.id}-${usuario.route_id || 'default'}`;
+          loadingPdfId.value = uniqueId;
+          await nextTick(); // Forzar re-render para mostrar el spinner
 
           // --- NUEVO: Contenedor invisible para gráficas ocultas ---
           let hiddenContainer = document.getElementById('pdf-graphics-container');
@@ -950,10 +967,11 @@ export default {
             document.body.appendChild(hiddenContainer);
           }
 
+          // Usar IDs únicos que incluyan la ruta
           const graphicsElementIds = [
-            `grafica-variables-${usuario.id}`,
-            `grafica-matriz-${usuario.id}`,
-            `grafica-schwartz-${usuario.id}`
+            `grafica-variables-${uniqueId}`,
+            `grafica-matriz-${uniqueId}`,
+            `grafica-schwartz-${uniqueId}`
           ];
           const originalParents = {};
           const originalNextSiblings = {};
@@ -973,7 +991,10 @@ export default {
             graphicsElementIds.forEach(id => {
               const el = document.getElementById(id);
               if (el && originalParents[id]) {
-                if (originalNextSiblings[id]) {
+                if (
+                  originalNextSiblings[id] &&
+                  originalNextSiblings[id].parentNode === originalParents[id]
+                ) {
                   originalParents[id].insertBefore(el, originalNextSiblings[id]);
                 } else {
                   originalParents[id].appendChild(el);
@@ -1063,9 +1084,9 @@ export default {
             const prepareGraphics = () => {
               // Asegurar que las gráficas ocultas estén listas
               const graphicsElements = [
-                `grafica-variables-${usuario.id}`,
-                `grafica-matriz-${usuario.id}`,
-                `grafica-schwartz-${usuario.id}`
+                `grafica-variables-${uniqueId}`,
+                `grafica-matriz-${uniqueId}`,
+                `grafica-schwartz-${uniqueId}`
               ];
               
               graphicsElements.forEach(id => {
@@ -1108,9 +1129,9 @@ export default {
             // Función para verificar que las gráficas estén listas
             const waitForGraphics = async () => {
               const graphicsElements = [
-                `grafica-variables-${usuario.id}`,
-                `grafica-matriz-${usuario.id}`,
-                `grafica-schwartz-${usuario.id}`
+                `grafica-variables-${uniqueId}`,
+                `grafica-matriz-${uniqueId}`,
+                `grafica-schwartz-${uniqueId}`
               ];
               
               for (const id of graphicsElements) {
@@ -1299,6 +1320,14 @@ export default {
           doc.setFont(undefined, 'normal');
           doc.text('Análisis Prospectivo de Variables', margin, y);
           y += 25;
+
+          // Agregar información de la ruta si está disponible
+          if (usuario.route_name) {
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Ruta: ${usuario.route_name}`, margin, y);
+            y += 20;
+          }
 
                       // 2. Información personal
           checkPageBreak(30);
@@ -1602,7 +1631,7 @@ export default {
             }
 
             // 4.1 Gráfica de Variables (Mapa de Variables) - Página dedicada
-            y = await captureGraphic(`grafica-variables-${usuario.id}`, 'GRÁFICA DE VARIABLES - MAPA DE ANÁLISIS', y, true);
+            y = await captureGraphic(`grafica-variables-${uniqueId}`, 'GRÁFICA DE VARIABLES - MAPA DE ANÁLISIS', y, true);
             if (y) {
               // y ya fue actualizado dentro de captureGraphic
             } else {
@@ -1957,10 +1986,43 @@ export default {
           }
         }
 
+        function getVariablesByZone(matriz) {
+          if (!matriz || matriz.length === 0) return {};
+          // Calcular máximos y centro
+          const dependencias = matriz.map(v => v.dependencia);
+          const influencias = matriz.map(v => v.influencia);
+          const maxX = Math.max(...dependencias, 10);
+          const maxY = Math.max(...influencias, 12);
+          const centroX = maxX / 2;
+          const centroY = maxY / 2;
+          // Agrupar por zona
+          const zonas = {
+            'ZONA DE PODER': [],
+            'ZONA DE CONFLICTO': [],
+            'ZONA DE SALIDA': [],
+            'ZONA DE INDIFERENCIA': []
+          };
+          matriz.forEach(variable => {
+            let zona = '';
+            if (variable.dependencia <= centroX && variable.influencia > centroY) {
+              zona = 'ZONA DE PODER';
+            } else if (variable.dependencia > centroX && variable.influencia >= centroY) {
+              zona = 'ZONA DE CONFLICTO';
+            } else if (variable.dependencia > centroX && variable.influencia < centroY) {
+              zona = 'ZONA DE SALIDA';
+            } else {
+              zona = 'ZONA DE INDIFERENCIA';
+            }
+            zonas[zona].push(variable);
+          });
+          return zonas;
+        }
+
         return { 
             sectionStore,
             textsStore, 
             resultsStore, 
+            traceabilityStore, 
             users, 
             isLoading, 
             isAdmin,
@@ -1979,6 +2041,8 @@ export default {
             selectedVariable,
             selectedScenario,
             selectedConclusion,
+            selectedConclusions,
+            selectedConclusionUser,
             selectedZoneAnalysis,
             selectedFutureDriver,
             selectedInitialCondition,
@@ -2013,6 +2077,7 @@ export default {
             convertMatrizToGraphicsData,
             loadingPdfId,
             imprimirUsuario,
+            getVariablesByZone,
         };
     },
     data() {
@@ -2032,9 +2097,14 @@ export default {
             ]
         };
     },
-    mounted() {
+    async mounted() {
         this.sectionStore.setTitleSection(this.textsStore.getText('results_section.title'));
-        this.resultsStore.fetchUsers();
+        
+        // Cargar la ruta actual primero
+        await this.traceabilityStore.loadCurrentRoute();
+        
+        // Obtener la ruta actual y cargar los datos por ruta
+        this.loadResultsByCurrentRoute();
         
         // Debug: verificar si los textos se cargan correctamente
         this.$nextTick(() => {
@@ -2045,6 +2115,23 @@ export default {
         });
     },
     methods: {
+        async loadResultsByCurrentRoute() {
+            try {
+                // Obtener la ruta actual usando el getter
+                const currentRoute = this.traceabilityStore.getCurrentRoute;
+                if (currentRoute && currentRoute.id) {
+                    // Cargar datos por ruta específica
+                    await this.resultsStore.fetchUsersByRoute(currentRoute.id);
+                } else {
+                    // Si no hay ruta actual, cargar todos los datos (comportamiento original)
+                    await this.resultsStore.fetchUsers();
+                }
+            } catch (error) {
+                console.error('Error al cargar resultados por ruta:', error);
+                // Fallback: cargar todos los datos
+                await this.resultsStore.fetchUsers();
+            }
+        },
         // Solo permitir números en el filtro de ID
         onIdInput(event) {
             const value = event.target.value;
@@ -2718,9 +2805,13 @@ export default {
 }
 
 .conclusion-title {
-  color: #666;
-  font-style: italic;
-  margin-left: 4px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #3273dc;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #3273dc;
+  text-align: center;
 }
 
 .conclusion-info {
@@ -3110,6 +3201,22 @@ canvas {
   box-shadow: none !important;
   padding: 0 !important;
 }
+
+.custom-spinner {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 3px solid #a78bfa;
+  border-top: 3px solid #7c3aed;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin: 0 2px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>
 
 <style>
@@ -3243,3 +3350,64 @@ canvas {
   border-color: #d12c4c !important;
 }
 </style>
+
+/* Estilos para el modal de conclusiones múltiples */
+.conclusions-modal-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.conclusion-section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fafafa;
+}
+
+.conclusion-section:last-child {
+  margin-bottom: 0;
+}
+
+.conclusion-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #3273dc;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #3273dc;
+}
+
+.conclusion-divider {
+  margin: 2rem 0;
+  border: none;
+  height: 1px;
+  background-color: #e0e0e0;
+}
+
+.modal-section {
+  margin-bottom: 1rem;
+}
+
+.modal-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #363636;
+  margin-bottom: 0.5rem;
+}
+
+.modal-content {
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 4px;
+  border-left: 3px solid #3273dc;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.no-content {
+  text-align: center;
+  padding: 1rem;
+  color: #7a7a7a;
+  font-style: italic;
+}

@@ -13,7 +13,20 @@ class VariablesMapController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $analyses = VariableMapAnalisys::where('user_id', Auth::id())->get();
+            // Obtener la ruta actual del usuario
+            $currentRoute = \App\Models\Traceability::getCurrentRouteForUser(Auth::id());
+            
+            if (!$currentRoute) {
+                return response()->json([
+                    'data' => [],
+                    'status' => 200,
+                    'message' => 'No se encontró ruta para el usuario'
+                ]);
+            }
+            
+            $analyses = VariableMapAnalisys::where('user_id', Auth::id())
+                ->where('tried_id', $currentRoute->id)
+                ->get();
             
             // Convertir los IDs de zona de vuelta a nombres para el frontend
             $analyses->each(function ($analysis) {
@@ -54,10 +67,22 @@ class VariablesMapController extends Controller
                 'zone_id' => 'required|string',
                 'state' => 'required|string|in:0,1',
                 'is_manual_save' => 'boolean',
+                'edits' => 'nullable|integer',
             ]);
 
             $data['user_id'] = Auth::id();
             $isManualSave = $data['is_manual_save'] ?? false;
+
+            // Obtener la ruta actual del usuario
+            $currentRoute = \App\Models\Traceability::getCurrentRouteForUser($data['user_id']);
+            
+            if (!$currentRoute) {
+                return response()->json([
+                    'data' => null,
+                    'status' => 400,
+                    'message' => 'No se encontró ruta para el usuario'
+                ]);
+            }
 
             // Buscar el ID de la zona por su nombre
             $zoneName = $data['zone_id'];
@@ -73,8 +98,9 @@ class VariablesMapController extends Controller
 
             $data['zone_id'] = $zone->id;
 
-            // Buscar si ya existe un análisis para este usuario y zona
+            // Buscar si ya existe un análisis para este usuario, zona y ruta
             $analysis = VariableMapAnalisys::where('user_id', $data['user_id'])
+                ->where('tried_id', $currentRoute->id)
                 ->where('zone_id', $data['zone_id'])
                 ->first();
 
@@ -88,19 +114,13 @@ class VariablesMapController extends Controller
                     ]);
                 }
 
-                // Solo contar como edición si es guardado manual
+                // Contar como edición si es guardado manual
                 if ($isManualSave) {
-                    // Contador de ediciones en sesión (por usuario y análisis)
-                    $sessionKey = 'analysis_edit_count_' . $analysis->id . '_user_' . $data['user_id'];
-                    $editCount = session($sessionKey, null);
-                    if ($editCount === null) {
-                        $editCount = 0;
-                    }
-                    $editCount++;
-                    session([$sessionKey => $editCount]);
+                    // Incrementar el contador de ediciones en la base de datos
+                    $analysis->edits = ($analysis->edits ?? 0) + 1;
 
                     // Si es la tercera edición o más, bloquear
-                    if ($editCount >= 3) {
+                    if ($analysis->edits >= 3) {
                         $data['state'] = '1';
                     }
                 }
@@ -111,12 +131,17 @@ class VariablesMapController extends Controller
                 $nextId = $this->findNextAvailableId();
                 $data['id'] = $nextId;
                 $data['state'] = '0';
+                $data['tried_id'] = $currentRoute->id;
+                
+                // Si es guardado manual, contar como la primera edición
+                if ($isManualSave) {
+                    $data['edits'] = 1;
+                } else {
+                    $data['edits'] = 0;
+                }
                 
                 // Crear el registro con el ID específico
                 $analysis = VariableMapAnalisys::create($data);
-                // Inicializar el contador de ediciones en 0 al crear
-                $sessionKey = 'analysis_edit_count_' . $analysis->id . '_user_' . $data['user_id'];
-                session([$sessionKey => 0]);
             }
 
             return response()->json([
@@ -266,6 +291,92 @@ class VariablesMapController extends Controller
                 'data' => null,
                 'status' => 500,
                 'message' => 'Error al borrar registros: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Cerrar todos los análisis de un usuario (crear si no existen y bloquear)
+     */
+    public function closeAllAnalyses(): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            $zones = Zones::all();
+            $traceability = \App\Models\Traceability::getOrCreateForUser($userId);
+            
+            foreach ($zones as $zone) {
+                // Buscar si ya existe un análisis para este usuario, zona y ruta actual
+                $analysis = VariableMapAnalisys::where('user_id', $userId)
+                    ->where('zone_id', $zone->id)
+                    ->where('tried_id', $traceability->id)
+                    ->first();
+
+                if ($analysis) {
+                    // Si existe, bloquearlo y establecer edits a 3
+                    $analysis->update([
+                        'state' => '1',
+                        'edits' => 3
+                    ]);
+                } else {
+                    // Si no existe, crear un registro vacío y bloquearlo
+                    $nextId = $this->findNextAvailableId();
+                    VariableMapAnalisys::create([
+                        'id' => $nextId,
+                        'description' => '',
+                        'score' => 0,
+                        'zone_id' => $zone->id,
+                        'user_id' => $userId,
+                        'state' => '1',
+                        'edits' => 3,
+                        'tried_id' => $traceability->id
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'data' => null,
+                'status' => 200,
+                'message' => 'Todos los análisis han sido cerrados correctamente.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'data' => null,
+                'status' => 500,
+                'message' => 'Error al cerrar análisis: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Regresar todos los análisis de un usuario (establecer edits a 0 y desbloquear)
+     */
+    public function reopenAllAnalyses(): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            
+            // Obtener todos los análisis del usuario
+            $analyses = VariableMapAnalisys::where('user_id', $userId)->get();
+            
+            foreach ($analyses as $analysis) {
+                // Establecer edits a 0 y desbloquear
+                $analysis->update([
+                    'state' => '0',
+                    'edits' => 0
+                ]);
+            }
+
+            return response()->json([
+                'data' => null,
+                'status' => 200,
+                'message' => 'Todos los análisis han sido reabiertos correctamente.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'data' => null,
+                'status' => 500,
+                'message' => 'Error al reabrir análisis: ' . $e->getMessage()
             ], 500);
         }
     }
