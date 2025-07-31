@@ -1,5 +1,10 @@
 <template>
     <div class="variables-container">
+        <!-- Letrero informativo -->
+        <info-banner-component
+            :description="textsStore.getText('variables_section.description')"
+        />
+        
         <!-- MiniStepper eliminado -->
         <b-table
             :data="variables"
@@ -7,11 +12,11 @@
             :striped="true"
             :hoverable="true"
             default-sort="id"
-            default-sort-direction="desc"
-            sort-icon="arrow-up"
+            default-sort-direction="asc"
+            :sort-icon="false"
             icon-pack="fas">
 
-            <b-table-column field="id" :label="textsStore.getText('variables_section.table.variable')" v-slot="props" width="100" sortable centered>
+            <b-table-column field="id" :label="textsStore.getText('variables_section.table.variable')" v-slot="props" width="100" centered>
                 {{ props.row.id_variable }}
             </b-table-column>
 
@@ -100,6 +105,8 @@
         <button @click="mostrarModalRegresar = false">Cancelar</button>
       </div>
     </div>
+    
+
 </template>
 
 <script>
@@ -107,6 +114,7 @@ import { useVariablesStore } from '../../../../stores/variables';
 import { useSectionStore } from '../../../../stores/section';
 import { useTextsStore } from '../../../../stores/texts';
 import VariableFormModal from './VariableFormModal.vue';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../../../../stores/session';
@@ -118,6 +126,7 @@ const CERRADO_KEY_PREFIX = 'variables_cerrado_';
 export default {
     components: {
         VariableFormModal,
+        InfoBannerComponent,
     },
 
     setup() {
@@ -403,7 +412,7 @@ export default {
 }
 
 .has-text-warning {
-    color: #ffdd57 !important;
+    color: #e6a700 !important;
     font-weight: 600;
 }
 
@@ -421,6 +430,11 @@ export default {
 :deep(.b-table .table tbody td) {
     vertical-align: middle !important;
     height: 80px !important;
+}
+
+/* Centrado de encabezados de tabla */
+:deep(.b-table .table thead th) {
+    text-align: center !important;
 }
 .cerrar-container {
   position: fixed;

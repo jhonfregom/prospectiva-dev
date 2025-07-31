@@ -1,5 +1,10 @@
 <template>
     <div class="scenery-container">
+        <!-- Letrero informativo -->
+        <info-banner-component
+            :description="textsStore.getText('scenarios.description')"
+        />
+        
         <!-- MiniStepper eliminado -->
         <div class="main-content">
             <StrategicScenarioTable />
@@ -9,12 +14,15 @@
 <script>
 
 import { useSectionStore } from '../../../../stores/section';
+import { useTextsStore } from '../../../../stores/texts';
 import StrategicScenarioTable from '../scenario/StrategicScenarioTable.vue';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
 
 export default {
     components: {
-        StrategicScenarioTable
+        StrategicScenarioTable,
+        InfoBannerComponent
     },
     data() {
         return {
@@ -35,9 +43,10 @@ export default {
     },
     setup() {
         const sectionStore = useSectionStore();
+        const textsStore = useTextsStore();
         return { 
             sectionStore,
-
+            textsStore
         };
     },
     mounted() {

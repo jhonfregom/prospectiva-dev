@@ -1,10 +1,12 @@
 <template>
     <div class="direction-future-container">
+        <!-- Letrero informativo -->
+        <info-banner-component
+            :description="textsStore.getText('hypothesis.description')"
+        />
+        
         <!-- MiniStepper eliminado -->
         <div class="variables-container">
-            <b-message type="is-info" has-icon>
-                {{ textsStore.getText('hypothesis.subtitle') }}
-            </b-message>
             <b-table :data="drivers" :striped="true" :hoverable="true" :bordered="false" :narrowed="true" :loading="futureDriversStore.isLoading" icon-pack="fas">
                 <b-table-column field="h" :label="textsStore.getText('hypothesis.table.h')" width="80" v-slot="props" centered>
                     <span>H{{ props.index + 1 }}</span>
@@ -115,10 +117,12 @@ import { ref, onMounted, onBeforeUnmount, watch, computed, getCurrentInstance, i
 import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
 export default {
     name: 'DirectionFutureMainComponent',
     components: {
+        InfoBannerComponent,
     },
     setup() {
         

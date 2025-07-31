@@ -1,7 +1,12 @@
 <template>
     <div class="main-content">
-    <!-- MiniStepper eliminado -->
-    <!-- Barra de filtros alineada con las columnas -->
+        <!-- Letrero informativo -->
+        <info-banner-component
+            :description="getResultsDescription"
+        />
+        
+        <!-- MiniStepper eliminado -->
+        <!-- Barra de filtros alineada con las columnas -->
     <div class="filters-bar" v-if="isAdmin">
     <div class="filters-container">
       <div class="filter-item">
@@ -44,6 +49,19 @@
               type="text"
               icon="fas fa-search"
             />
+          </b-field>
+        </div>
+      <div class="filter-item" v-if="isAdmin">
+          <b-field label="Filtrar por Estado">
+            <b-select
+              v-model="filterStatus"
+              placeholder="Seleccionar estado..."
+              icon="fas fa-filter"
+            >
+              <option value="">Todos</option>
+              <option value="Completado">Completado</option>
+              <option value="Sin terminar">Sin terminar</option>
+            </b-select>
           </b-field>
         </div>
       <div class="filter-spacer">
@@ -117,7 +135,7 @@
         <b-table-column field="zone_analyses" :label="textsStore.getText('results_section.table.zone_analyses') || 'Análisis Mapa de Variables'" width="18%" centered v-slot="props">
           <div v-if="props.row.matriz && props.row.matriz.length > 0">
             <div v-for="(zone, zoneKey) in getVariablesByZone(props.row.matriz)" :key="zoneKey" class="zone-analyses-container">
-              <div class="zone-analysis-item">
+              <div class="zone-analysis-item clickable-zone" @click="showZoneAnalysisDescription(getZoneAnalysis(props.row.zone_analyses, zoneKey), props.row.first_name, props.row.last_name, props.row.matriz, zoneKey)">
                 <strong>{{ zoneKey }}:</strong>
                 <span v-if="zone.length > 0">
                   <span v-for="variable in zone" :key="variable.id_variable" class="zone-variable-code">
@@ -176,6 +194,16 @@
           </div>
           <span v-else class="has-text-grey-light">Sin conclusiones</span>
         </b-table-column>
+        <b-table-column field="status" :label="textsStore.getText('results_section.table.status') || 'Estado'" width="10%" centered v-slot="props">
+          <div class="centered-cell">
+            <b-tag 
+              :type="props.row.status === 'Completado' ? 'is-success' : 'is-warning'" 
+              size="is-medium"
+            >
+              {{ props.row.status || 'Sin terminar' }}
+            </b-tag>
+          </div>
+        </b-table-column>
       <b-table-column label="Imprimir" width="8%" centered v-slot="props">
         <div class="pdf-button-container">
           <button
@@ -222,18 +250,19 @@
       <div class="modal-background" @click="showZoneAnalysisModal = false"></div>
       <div class="modal-card">
         <header class="modal-card-head">
-          <p class="modal-card-title">Detalles del Análisis de Zona</p>
+          <p class="modal-card-title">Detalles del Análisis de Zona - {{ selectedZoneAnalysisUser }}</p>
           <button class="delete" aria-label="close" @click="showZoneAnalysisModal = false"></button>
         </header>
         <section class="modal-card-body">
           <div class="modal-info">
+            <p><strong>Usuario:</strong> {{ selectedZoneAnalysisUser }}</p>
             <p><strong>Zona:</strong> {{ selectedZoneAnalysis?.zone_name }}</p>
             <p><strong>Puntaje:</strong> {{ selectedZoneAnalysis?.score }}</p>
             
-            <div v-if="selectedZoneAnalysis?.variables_in_zone && selectedZoneAnalysis.variables_in_zone.length > 0">
+            <div v-if="getVariablesByZone(selectedZoneAnalysisMatriz)[selectedZoneAnalysisZoneKey] && getVariablesByZone(selectedZoneAnalysisMatriz)[selectedZoneAnalysisZoneKey].length > 0">
               <p><strong>Variables en esta zona:</strong></p>
               <div class="modal-content">
-                <div v-for="variable in selectedZoneAnalysis.variables_in_zone" :key="variable.id_variable" class="zone-variable-item">
+                <div v-for="variable in getVariablesByZone(selectedZoneAnalysisMatriz)[selectedZoneAnalysisZoneKey]" :key="variable.id_variable" class="zone-variable-item">
                   <span class="zone-variable-code" :class="{ 'frontera': variable.frontera }">
                     {{ variable.id_variable }}
                   </span>
@@ -597,6 +626,7 @@ import GraphicsMainComponent from '../graphics/GraphicsMainComponent.vue';
 import SchwartzMainComponent from '../Schwartz/SchwartzMainComponent.vue';
 import SchwartzChartComponent from '../Schwartz/SchwartzChartComponent.vue';
 import SchwartzPDFComponent from '../Schwartz/SchwartzPDFComponent.vue';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
 export default {
     components: {
@@ -605,6 +635,7 @@ export default {
         SchwartzChartComponent,
         SchwartzPDFComponent,
         SchwartzPDFEditableCanvas,
+        InfoBannerComponent,
     },
     setup() {
         const sectionStore = useSectionStore();
@@ -622,6 +653,7 @@ export default {
         const filterFirstName = ref('');
         const filterLastName = ref('');
         const filterDocumentId = ref('');
+        const filterStatus = ref('');
         
         // Computed para filtrar usuarios
         const filteredUsers = computed(() => {
@@ -635,8 +667,9 @@ export default {
                     user.last_name.toLowerCase().includes(filterLastName.value.toLowerCase());
                 const documentIdMatch = !filterDocumentId.value || 
                     user.document_id.toString().includes(filterDocumentId.value);
+                const statusMatch = !filterStatus.value || user.status === filterStatus.value;
                 
-                return idMatch && firstNameMatch && lastNameMatch && documentIdMatch;
+                return idMatch && firstNameMatch && lastNameMatch && documentIdMatch && statusMatch;
             });
         });
         
@@ -654,6 +687,9 @@ export default {
         const selectedConclusions = ref([]);
         const selectedConclusionUser = ref('');
         const selectedZoneAnalysis = ref(null);
+        const selectedZoneAnalysisUser = ref('');
+        const selectedZoneAnalysisMatriz = ref(null);
+        const selectedZoneAnalysisZoneKey = ref('');
         const selectedFutureDriver = ref(null);
         const selectedInitialCondition = ref(null);
         const selectedMatriz = ref(null);
@@ -668,9 +704,19 @@ export default {
             showVariableModal.value = true;
         }
 
-        function showZoneAnalysisDescription(analysis) {
+        function showZoneAnalysisDescription(analysis, firstName, lastName, matriz, zoneKey) {
             selectedZoneAnalysis.value = analysis;
+            selectedZoneAnalysisUser.value = `${firstName} ${lastName}`;
+            selectedZoneAnalysisMatriz.value = matriz;
+            selectedZoneAnalysisZoneKey.value = zoneKey;
             showZoneAnalysisModal.value = true;
+        }
+
+        function getZoneAnalysis(zoneAnalyses, zoneKey) {
+            if (!zoneAnalyses || !Array.isArray(zoneAnalyses)) return null;
+            
+            // Buscar directamente por el nombre completo de la zona
+            return zoneAnalyses.find(analysis => analysis.zone_name === zoneKey) || null;
         }
 
         function showConclusionDescription(conclusion, conclusions, firstName, lastName) {
@@ -2018,6 +2064,14 @@ export default {
           return zonas;
         }
 
+        const getResultsDescription = computed(() => {
+            const description = textsStore.getText('results_section.description');
+            console.log('TextsStore disponible:', !!textsStore);
+            console.log('Results description:', description);
+            console.log('TextsStore completo:', textsStore);
+            return description || 'Descripción de resultados no encontrada';
+        });
+
         return { 
             sectionStore,
             textsStore, 
@@ -2026,10 +2080,12 @@ export default {
             users, 
             isLoading, 
             isAdmin,
+            getResultsDescription,
             filterId,
             filterFirstName,
             filterLastName,
             filterDocumentId,
+            filterStatus,
             filteredUsers,
             showVariableModal,
             showScenarioModal,
@@ -2044,6 +2100,9 @@ export default {
             selectedConclusions,
             selectedConclusionUser,
             selectedZoneAnalysis,
+            selectedZoneAnalysisUser,
+            selectedZoneAnalysisMatriz,
+            selectedZoneAnalysisZoneKey,
             selectedFutureDriver,
             selectedInitialCondition,
             selectedMatriz,
@@ -2051,6 +2110,7 @@ export default {
             selectedMatrizCruzada,
             showVariableDescription,
             showZoneAnalysisDescription,
+            getZoneAnalysis,
             showScenarioDescription,
             showConclusionDescription,
             showFutureDriverDescription,
@@ -2117,14 +2177,19 @@ export default {
     methods: {
         async loadResultsByCurrentRoute() {
             try {
-                // Obtener la ruta actual usando el getter
-                const currentRoute = this.traceabilityStore.getCurrentRoute;
-                if (currentRoute && currentRoute.id) {
-                    // Cargar datos por ruta específica
-                    await this.resultsStore.fetchUsersByRoute(currentRoute.id);
-                } else {
-                    // Si no hay ruta actual, cargar todos los datos (comportamiento original)
+                // Para administradores, siempre cargar todos los datos
+                if (this.isAdmin) {
                     await this.resultsStore.fetchUsers();
+                } else {
+                    // Para usuarios normales, cargar por ruta específica
+                    const currentRoute = this.traceabilityStore.getCurrentRoute;
+                    if (currentRoute && currentRoute.id) {
+                        // Cargar datos por ruta específica
+                        await this.resultsStore.fetchUsersByRoute(currentRoute.id);
+                    } else {
+                        // Si no hay ruta actual, cargar todos los datos (comportamiento original)
+                        await this.resultsStore.fetchUsers();
+                    }
                 }
             } catch (error) {
                 console.error('Error al cargar resultados por ruta:', error);
@@ -3349,6 +3414,50 @@ canvas {
   background-color: #d12c4c !important;
   border-color: #d12c4c !important;
 }
+
+/* Estilos para zonas clickeables */
+.clickable-zone {
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  color: #363636;
+  font-family: inherit;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.clickable-zone:hover {
+  background-color: #f0f8ff;
+  border-color: #3273dc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(50, 115, 220, 0.1);
+  color: #1976d2;
+}
+
+.clickable-zone:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(50, 115, 220, 0.2);
+}
+
+.clickable-zone strong {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.clickable-zone:hover strong {
+  color: #2e7d32;
+}
+
+.clickable-zone .zone-variable-code {
+  color: #3273dc;
+  font-weight: 500;
+}
+
+.clickable-zone:hover .zone-variable-code {
+  color: #1976d2;
+}
 </style>
 
 /* Estilos para el modal de conclusiones múltiples */
@@ -3411,3 +3520,4 @@ canvas {
   color: #7a7a7a;
   font-style: italic;
 }
+

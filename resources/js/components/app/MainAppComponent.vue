@@ -13,6 +13,12 @@
             v-if="isLoadedResources"
             />
         <!-- /Content Main -->
+        
+        <!-- Componente de notas flotantes - siempre disponible -->
+        <floating-note-component 
+          v-if="isLoadedResources"
+          :traceability-id="currentTraceabilityId"
+        />
     </div>
 </template>
 
@@ -29,10 +35,16 @@
     import { useFieldsStore } from '../../stores/fields';
     //Import session from store
     import { useSessionStore } from '../../stores/session';
+    //Import traceability from store
+    import { useTraceabilityStore } from '../../stores/traceability';
     //Import NavbarTop
     import navbarTop from './ui/navbar-top/NavbarTopMenuComponent.vue';
     //Import ContentMain
     import contentMain from './layouts/ContentMainComponent.vue';
+    //Import FloatingNoteComponent
+    import FloatingNoteComponent from './ui/FloatingNoteComponent.vue';
+    //Import Vue composables
+    import { computed } from 'vue';
 
     export default {
         setup() {
@@ -41,11 +53,24 @@
             const storeFields = useFieldsStore();
             const storeSession = useSessionStore();
 
-            return { storeUrls, storeTexts, storeFields, storeSession };
+            // Computed para obtener el traceabilityId actual
+            const currentTraceabilityId = computed(() => {
+                // Por ahora retornar null, el componente manejará la lógica internamente
+                return null;
+            });
+
+            return { 
+                storeUrls, 
+                storeTexts, 
+                storeFields, 
+                storeSession,
+                currentTraceabilityId
+            };
         },
         components: {
             navbarTop,
             contentMain,
+            FloatingNoteComponent,
         },
         props: {
             urls_json: {

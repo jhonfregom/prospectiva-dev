@@ -13,6 +13,7 @@
 //Layouts
 @use './layouts/main';
 @use './layouts/login';
+@use './layouts/register';
 
 //sections
 @use './sections/main' as main_section;

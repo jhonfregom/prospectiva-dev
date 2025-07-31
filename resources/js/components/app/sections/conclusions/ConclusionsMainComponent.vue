@@ -1,5 +1,10 @@
 <template>
     <div class="conclusions-container" :key="forceRerender">
+        <!-- Letrero informativo -->
+        <info-banner-component
+            :description="textsStore.getText('conclusions.description')"
+        />
+        
         <!-- MiniStepper eliminado -->
         <div class="conclusions-table">
             <div class="table-content">
@@ -168,6 +173,7 @@ import { useTextsStore } from '../../../../stores/texts';
 import { useConclusionsStore } from '../../../../stores/conclusions';
 import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
 
 export default {
@@ -240,7 +246,7 @@ export default {
     },
 
     components: {
-        
+        InfoBannerComponent,
     },
 
     data() {

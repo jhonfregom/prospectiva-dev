@@ -19,10 +19,19 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        $traceability = Traceability::getCurrentRouteForUser($user->id);
-        
-        if (!$traceability) {
-            $traceability = Traceability::getOrCreateForUser($user->id);
+        // Si es administrador, obtener todas las rutas de todos los usuarios
+        if ($user->role === 1) {
+            $traceability = Traceability::with('user')
+                ->orderBy('user_id', 'asc')
+                ->orderBy('tried', 'asc')
+                ->get();
+        } else {
+            // Si es usuario normal, obtener solo su ruta actual
+            $traceability = Traceability::getCurrentRouteForUser($user->id);
+            
+            if (!$traceability) {
+                $traceability = Traceability::getOrCreateForUser($user->id);
+            }
         }
         
         return response()->json([
@@ -86,32 +95,20 @@ class TraceabilityController extends Controller
      */
     public function markSectionCompleted(Request $request): JsonResponse
     {
-        \Log::info('=== MARCANDO SECCIÓN COMO COMPLETADA ===');
-        \Log::info('Request data: ' . json_encode($request->all()));
-        
         $user = auth()->user();
         $section = $request->input('section');
         
-        \Log::info('Usuario: ' . json_encode(['id' => $user->id, 'role' => $user->role, 'email' => $user->user]));
-        \Log::info('Sección a marcar: ' . $section);
-        
         if (!$user) {
-            \Log::error('Usuario no autenticado');
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
         $traceability = Traceability::getCurrentRouteForUser($user->id);
         
         if (!$traceability) {
-            \Log::error('No se encontró ruta para el usuario');
             return response()->json(['error' => 'No se encontró ruta para el usuario'], 404);
         }
         
-        \Log::info('Traceability antes de marcar: ' . json_encode($traceability->toArray()));
-        
         $traceability->markSectionCompleted($section);
-        
-        \Log::info('Traceability después de marcar: ' . json_encode($traceability->toArray()));
         
         return response()->json([
             'success' => true,
@@ -408,16 +405,24 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Obtener la ruta activa (la que tiene el tried más alto)
-        $currentRoute = Traceability::where('user_id', $user->id)
-            ->orderBy('tried', 'desc')
-            ->first();
+        // Si es administrador, obtener todas las rutas de todos los usuarios
+        if ($user->role === 1) {
+            $currentRoute = Traceability::with('user')
+                ->orderBy('user_id', 'asc')
+                ->orderBy('tried', 'desc')
+                ->get();
+        } else {
+            // Si es usuario normal, obtener solo su ruta activa
+            $currentRoute = Traceability::where('user_id', $user->id)
+                ->orderBy('tried', 'desc')
+                ->first();
 
-        if (!$currentRoute) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No se encontró ruta para el usuario'
-            ]);
+            if (!$currentRoute) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontró ruta para el usuario'
+                ]);
+            }
         }
 
         return response()->json([
@@ -437,9 +442,18 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        $routes = Traceability::where('user_id', $user->id)
-            ->orderBy('tried', 'asc')
-            ->get();
+        // Si es administrador, obtener todas las rutas de todos los usuarios
+        if ($user->role === 1) {
+            $routes = Traceability::with('user')
+                ->orderBy('user_id', 'asc')
+                ->orderBy('tried', 'asc')
+                ->get();
+        } else {
+            // Si es usuario normal, solo obtener sus propias rutas
+            $routes = Traceability::where('user_id', $user->id)
+                ->orderBy('tried', 'asc')
+                ->get();
+        }
 
         return response()->json([
             'success' => true,

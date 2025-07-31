@@ -1,5 +1,10 @@
 <template>
   <div class="graphics-container">
+            <!-- Letrero informativo -->
+        <info-banner-component
+            :description="textsStore.getText('graphics.description')"
+        />
+    
     <canvas ref="chartCanvas" width="800" height="560"></canvas>
   </div>
 </template>
@@ -12,6 +17,7 @@ import { useSectionStore } from '../../../../stores/section';
 import { storeToRefs } from 'pinia';
 import Chart from 'chart.js/auto';
 import annotationPlugin from 'chartjs-plugin-annotation';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
 Chart.register(annotationPlugin);
 
@@ -27,6 +33,7 @@ export default {
     }
   },
   components: {
+    InfoBannerComponent,
   },
   setup(props) {
     const graphicsStore = useGraphicsStore();

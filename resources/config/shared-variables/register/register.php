@@ -7,6 +7,13 @@ $list_urls = [
 ];
 
 $fields = [
+    'registration_type' => [
+        'label' => 'Tipo de Registro',
+        'placeholder' => 'Seleccione el tipo de registro',
+        'error' => false,
+        'msg' => '',
+    ],
+    // Campos para Persona Natural
     'first_name' => [
         'label' => __('register.first_name'),
         'placeholder' => __('register.first_name'),
@@ -19,9 +26,47 @@ $fields = [
         'error' => false,
         'msg' => '',
     ],
+    'document_id' => [
+        'label' => __('register.document_id'),
+        'placeholder' => __('register.document_id'),
+        'error' => false,
+        'msg' => 'Falta el documento de identidad',
+    ],
+    'city' => [
+        'label' => 'Ciudad / Región',
+        'placeholder' => 'Ciudad / Región',
+        'error' => false,
+        'msg' => '',
+    ],
+    // Campos para Empresa/Organización
+    'company_name' => [
+        'label' => 'Nombre de la empresa',
+        'placeholder' => 'Nombre de la empresa',
+        'error' => false,
+        'msg' => '',
+    ],
+    'nit' => [
+        'label' => 'NIT o número de identificación',
+        'placeholder' => 'NIT o número de identificación',
+        'error' => false,
+        'msg' => '',
+    ],
+    'company_city' => [
+        'label' => 'Ciudad / Región',
+        'placeholder' => 'Ciudad / Región',
+        'error' => false,
+        'msg' => '',
+    ],
+    'economic_sector' => [
+        'label' => 'Sector económico',
+        'placeholder' => 'Seleccione el sector económico',
+        'error' => false,
+        'msg' => '',
+    ],
+    // Campos comunes
     'user' => [
-        'label' => __('register.user'),
-        'placeholder' => __('register.user'),
+        'label' => 'Correo electrónico',
+        'placeholder' => 'Correo electrónico',
         'error' => false,
         'msg' => '',
     ],
@@ -36,12 +81,6 @@ $fields = [
         'placeholder' => __('register.confirm_password'),
         'error' => false,
         'msg' => '',
-    ],
-    'document_id' => [
-        'label' => __('register.document_id'),
-        'placeholder' => __('register.document_id'),
-        'error' => false,
-        'msg' => 'Falta el documento de identidad',
     ],
     'submit' => [
         'label' => __('register.submit'),

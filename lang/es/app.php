@@ -33,9 +33,7 @@ return [
             ],
             'matrix' => [
                 'title' =>  'matriz variables',
-                'description' => [
-                    'calificación variables',
-                ],
+                'description' => 'Como resultado de la definición y descripción de las variables, aquí podrás construir la matriz de relaciones cruzadas entre las variables seleccionadas.Evaluarás qué tanto influyen unas sobre otras y cuán dependientes son.Este ejercicio te permitirá identificar cuáles variables son estructurantes, cuáles son resultado del sistema y cuáles tienen efectos dominó.La matriz es una herramienta poderosa para descubrir conexiones ocultas y priorizar lo estratégico.En esta sección identificarás podrás incluir las variables clave que influyen o son influenciadas por el sistema que estás analizando.Pueden ser factores políticos, económicos, sociales, tecnológicos, ambientales, legales o de otra índole que, por su impacto o sensibilidad, deben ser observados de cerca. Este paso es esencial: define el punto de partida del análisis prospectivo. Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.<br><br>Al momento de valorar, ten en cuenta la siguiente convención:<br><br><strong>Influencia</strong><br>3 Influencia directa fuerte<br>2 Influencia directa media<br>1 Influencia débil o potencial<br>0 Influencia nula<br><br><strong>Dependencia</strong><br>3 Dependencia directa fuerte<br>2 Dependencia directa media<br>1 Dependencia débil o potencial<br>0 Dependencia nula<br><br>',
                 'save' => 'Guardar Matriz',
                 'no_variables_message' => 'No hay variables para mostrar.',
                 'create_variables_message_part1' => 'Por favor,',
@@ -50,6 +48,10 @@ return [
                 'medium_influence' => 'Influencia directa media',
                 'weak_influence' => 'Influencia débil o potencial',
                 'null_influence' => 'Influencia nula',
+                'strong_dependency' => 'Dependencia directa fuerte',
+                'medium_dependency' => 'Dependencia directa media',
+                'weak_dependency' => 'Dependencia débil o potencial',
+                'null_dependency' => 'Dependencia nula',
                 'summary' => 'RESUMEN',
                 'dependency' => 'DEPENDENCIA',
                 'influence' => 'INFLUENCIA',
@@ -59,9 +61,7 @@ return [
             ],
             'graphics' => [
                 'title' =>  'graficas variables',
-                'description' => [
-                    'matriz de variables',
-                ]
+                'description' => 'En esta sección visualizarás el resultado de la matriz de relaciones mediante un gráfico de influencia (Y) vs dependencia (X). Este gráfico te ayudará a interpretar de forma clara y rápida el papel que juega cada variable dentro del sistema, clasificando las variables en:<br><br>Zona de poder – Cuadrante superior izquierdo<br>Zona de indiferencia – Cuadrante inferior izquierdo<br>Zona de conflicto – Cuadrante superior derecho<br>Zona de salida - Cuadrante inferior derecho<br>Con esta vista podrás distinguir qué factores son clave para la transformación del futuro y cuáles son más reactivos.<br><br>'
             ],
             'analysis' =>  [
                 'title' =>  'análisis mapa de variables',
@@ -91,8 +91,7 @@ return [
             ],
             'initialconditions' => [
                 'title' =>  'condiciones iniciales',
-                'description' => [
-                ]
+                'description' => 'Esta sección te permite establecer las condiciones de contexto o supuestos que acompañan cada escenario, con respecto a las variables trabajadas. Aquí defines qué debe estar ocurriendo en el entorno para que ese futuro sea viable: políticas públicas, innovaciones tecnológicas, comportamientos sociales, entre otros. Las condiciones hacen que tus escenarios no sean solo imaginativos, sino coherentes y plausibles.<br>Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.'
             ],
             'scenarios' => [
                 'title' =>  'escenarios',
@@ -101,12 +100,27 @@ return [
             ],
             'conclusions' => [
                 'title' =>  'conclusiones',
-                'description' => [
-                ]
+                'description' => 'En esta sección analizarás lo aprendido del proceso prospectivo. Reflexionarás sobre los hallazgos clave, las tendencias detectadas, las alertas tempranas y las estrategias que deberían considerarse. Las conclusiones permiten traducir los escenarios en acciones, aprendizajes y decisiones para el presente. Para cumplir con este apartado, responde las siguientes preguntas:… .<br><br>Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.'
             ],
             'results' => [
                 'title' =>  'resultados',
                 'description' => [
+                ],
+                'table' => [
+                    'id' => 'ID',
+                    'first_name' => 'Nombre',
+                    'last_name' => 'Apellido',
+                    'document_id' => 'Identificación',
+                    'email' => 'Email',
+                    'variables_count' => 'Total Variables',
+                    'variables_list' => 'Variables Creadas',
+                    'matriz' => 'Matriz',
+                    'zone_analyses' => 'Análisis Mapa de Variables',
+                    'future_drivers' => 'Direccionadores de Futuro',
+                    'initial_conditions' => 'Condiciones Iniciales',
+                    'scenarios' => 'Escenarios',
+                    'conclusions' => 'Conclusiones',
+                    'status' => 'Estado'
                 ]
             ],
         ],

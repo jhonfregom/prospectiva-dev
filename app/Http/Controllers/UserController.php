@@ -83,23 +83,104 @@ class UserController extends Controller
     public function apiList(Request $request)
     {
         $user = Auth::user();
+        $result = [];
+        
+        \Log::info('UserController::apiList - Usuario: ' . json_encode(['id' => $user->id, 'role' => $user->role, 'email' => $user->user]));
+        
         if ($user->role == 1) {
-            // Admin: ve todos
+            // Admin: ve todos los usuarios con todas sus rutas
             $users = \App\Models\User::select('id', 'first_name', 'last_name', 'document_id', 'user')->get();
+            \Log::info('UserController::apiList - Usuarios encontrados: ' . $users->count());
+            
+            // Para cada usuario, crear una fila por cada ruta
+            foreach ($users as $userData) {
+                // Obtener todas las rutas del usuario
+                $userRoutes = \App\Models\Traceability::where('user_id', $userData->id)->get();
+                \Log::info('UserController::apiList - Usuario ' . $userData->id . ' tiene ' . $userRoutes->count() . ' rutas');
+                
+                if ($userRoutes->count() > 0) {
+                    // Si el usuario tiene rutas, crear una fila por cada ruta
+                    foreach ($userRoutes as $route) {
+                        $userRow = clone $userData;
+                        $userRow->route_id = $route->id;
+                        $userRow->route_name = 'Ruta ' . $route->tried;
+                        
+                        // Agregar datos específicos de esta ruta
+                        $this->addUserDataByRoute($userRow, $route->id);
+                        
+                        $result[] = $userRow;
+                    }
+                } else {
+                    // Si el usuario no tiene rutas, crear una fila vacía
+                    $userRow = clone $userData;
+                    $userRow->route_id = null;
+                    $userRow->route_name = 'Sin ruta';
+                    
+                    // Agregar datos vacíos
+                    $this->addEmptyUserData($userRow);
+                    
+                    $result[] = $userRow;
+                }
+            }
         } else {
-            // Usuario: solo ve el suyo
-            $users = \App\Models\User::select('id', 'first_name', 'last_name', 'document_id', 'user')->where('id', $user->id)->get();
+            // Usuario: solo ve el suyo con todas sus rutas
+            $userData = \App\Models\User::select('id', 'first_name', 'last_name', 'document_id', 'user')
+                ->where('id', $user->id)
+                ->first();
+            
+            if ($userData) {
+                // Obtener todas las rutas del usuario
+                $userRoutes = \App\Models\Traceability::where('user_id', $userData->id)->get();
+                
+                if ($userRoutes->count() > 0) {
+                    // Si el usuario tiene rutas, crear una fila por cada ruta
+                    foreach ($userRoutes as $route) {
+                        $userRow = clone $userData;
+                        $userRow->route_id = $route->id;
+                        $userRow->route_name = 'Ruta ' . $route->tried;
+                        
+                        // Agregar datos específicos de esta ruta
+                        $this->addUserDataByRoute($userRow, $route->id);
+                        
+                        $result[] = $userRow;
+                    }
+                } else {
+                    // Si el usuario no tiene rutas, crear una fila vacía
+                    $userRow = clone $userData;
+                    $userRow->route_id = null;
+                    $userRow->route_name = 'Sin ruta';
+                    
+                    // Agregar datos vacíos
+                    $this->addEmptyUserData($userRow);
+                    
+                    $result[] = $userRow;
+                }
+            }
         }
 
-        // Agregar información de variables para cada usuario
-        foreach ($users as $userData) {
-            $this->addUserData($userData);
-        }
-
+        \Log::info('UserController::apiList - Total de resultados: ' . count($result));
+        
         return response()->json([
             'status' => 200,
-            'data' => $users
+            'data' => $result
         ]);
+    }
+
+    /**
+     * Agrega datos vacíos para usuarios sin rutas
+     */
+    private function addEmptyUserData($userData)
+    {
+        $userData->variables_count = 0;
+        $userData->variables_list = [];
+        $userData->matriz = [];
+        $userData->matriz_cruzada = [];
+        $userData->zone_analyses = [];
+        $userData->future_drivers = [];
+        $userData->initial_conditions = [];
+        $userData->scenarios = [];
+        $userData->conclusions = [];
+        $userData->status = 'Sin terminar';
     }
 
     /**
@@ -158,6 +239,13 @@ class UserController extends Controller
         // Obtener la información de la ruta para mostrar el número tried
         $route = \App\Models\Traceability::find($routeId);
         $routeNumber = $route ? $route->tried : $routeId;
+        
+        // Agregar información de la ruta
+        $userData->route_id = $routeId;
+        $userData->route_name = 'Ruta ' . $routeNumber;
+        
+        // Agregar estado de completitud
+        $userData->status = $route->results === '1' ? 'Completado' : 'Sin terminar';
         
         // Obtener variables de la ruta específica
         $variables = \App\Models\Variable::where('user_id', $userData->id)

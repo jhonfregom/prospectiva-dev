@@ -16,7 +16,8 @@
             }
           ]"
           @click="onBubbleClick(idx)"
-          :style="bubbleStyle(idx)">
+          :style="bubbleStyle(idx)"
+          :title="getTooltipText(step.label)">
         <span class="step-circle">
           <i :class="['fas', step.icon]"></i>
         </span>
@@ -174,6 +175,23 @@ function bubbleStyle(idx) {
   return {
     left: `calc(${(idx / (props.steps.length - 1)) * 100}% - 24px)`
   };
+}
+
+function getTooltipText(stepLabel) {
+  const tooltips = {
+    'Variables': 'Define y describe las variables clave del sistema que analizarás',
+    'Matriz': 'Evalúa las relaciones de influencia y dependencia entre variables',
+    'Gráfica': 'Visualiza las variables en un mapa de influencia vs dependencia',
+    'Mapa': 'Analiza las variables en un mapa de análisis detallado',
+    'Direccionador': 'Identifica los factores que dirigen el futuro del sistema',
+    'Schwartz': 'Aplica los ejes de Peter Schwartz para el análisis prospectivo',
+    'Condiciones': 'Establece las condiciones iniciales del análisis',
+    'Escenarios': 'Desarrolla escenarios estratégicos futuros',
+    'Conclusiones': 'Extrae conclusiones clave del análisis prospectivo',
+    'Resultados': 'Revisa y consolida todos los resultados del análisis'
+  };
+  
+  return tooltips[stepLabel] || stepLabel;
 }
 </script>
 

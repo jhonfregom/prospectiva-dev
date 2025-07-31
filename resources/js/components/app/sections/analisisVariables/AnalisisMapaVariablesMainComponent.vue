@@ -23,7 +23,7 @@
                             <b-tag
                                 type="is-info"
                                 class="mr-1"
-                                :style="v.frontera ? 'border: 2px solid #f9d423; box-shadow: 0 0 4px #f9d423;' : ''"
+                                :style="v.frontera ? 'border: 2px solid #ff8c00; box-shadow: 0 0 4px #ff8c00;' : ''"
                                 :title="v.frontera ? 'En frontera: asignada a zona crítica' : ''"
                             >
                                 {{ v.codigo }}

@@ -12,16 +12,18 @@
             @update:modelValue="onStepperInput"
         />
         
-        <!-- Botón Nueva Ruta - solo aparece cuando se completa la ruta -->
+        <!-- Botón Nueva Ruta - solo aparece cuando tiene 1 ruta y está completada -->
         <div v-if="showNewRouteButton" class="new-route-row">
             <button @click="createNewRoute" class="button is-primary is-large">
                 <span class="icon">
                     <i class="fas fa-plus"></i>
                 </span>
-                <span>Nueva Ruta</span>
+                <span>Crear Segunda Ruta</span>
             </button>
         </div>
     </div>
+    
+
 </template>
 
 <script>
@@ -65,10 +67,25 @@ export default {
             'results'
         ];
         
+
+
         // Computed para mostrar el botón de nueva ruta
         const showNewRouteButton = computed(() => {
-            return traceabilityStore.availableSections && 
-                   traceabilityStore.availableSections.results === true;
+            // Solo mostrar si tiene exactamente 1 ruta y la ruta actual está completada
+            const hasOneRoute = traceabilityStore.userRoutes && traceabilityStore.userRoutes.length === 1;
+            const currentRouteCompleted = traceabilityStore.availableSections && 
+                                         traceabilityStore.availableSections.results === true;
+            
+            // Debug: mostrar información en consola
+            console.log('Debug botón nueva ruta:', {
+                userRoutes: traceabilityStore.userRoutes,
+                routesCount: traceabilityStore.userRoutes ? traceabilityStore.userRoutes.length : 0,
+                hasOneRoute,
+                availableSections: traceabilityStore.availableSections,
+                currentRouteCompleted
+            });
+            
+            return hasOneRoute && currentRouteCompleted;
         });
         
         // Función para crear nueva ruta
@@ -85,11 +102,12 @@ export default {
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Recargar las secciones disponibles
+                    // Recargar las secciones disponibles y rutas del usuario
                     await traceabilityStore.loadAvailableSections();
+                    await traceabilityStore.loadUserRoutes();
                     
                     // Mostrar mensaje de éxito
-                    alert('Nueva ruta creada exitosamente. Ahora puedes crear hasta 15 variables adicionales.');
+                    alert('Segunda ruta creada exitosamente. Ahora tienes 2 rutas disponibles.');
                     
                     // Recargar la página para aplicar los cambios
                     window.location.reload();
@@ -112,6 +130,9 @@ export default {
         }
         // --- NUEVO: Forzar recarga de secciones al montar el main ---
         onMounted(async () => {
+            // Cargar las rutas del usuario para el botón de nueva ruta
+            await traceabilityStore.loadUserRoutes();
+            
             const accion = JSON.parse(localStorage.getItem('accion_pendiente'));
             const sectionOrder = [
                 'variables', 'matrix', 'graphics', 'analysis', 'hypothesis', 'schwartz', 'initialconditions', 'scenarios', 'conclusions', 'results'
@@ -161,6 +182,7 @@ export default {
         return { 
             storeTexts, 
             storeSession, 
+            traceabilityStore,
             steps, 
             onStepperInput, 
             showNewRouteButton, 

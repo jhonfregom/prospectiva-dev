@@ -60,9 +60,22 @@
         'elements' => __('validation.attributes.elements'),
     ]);
 
+    //Texts graphics section
+    $text_graphics = [
+        'title' => 'Gráfica Variables',
+        'description' => 'En esta sección visualizarás el resultado de la matriz de relaciones mediante un gráfico de influencia (Y) vs dependencia (X). Este gráfico te ayudará a interpretar de forma clara y rápida el papel que juega cada variable dentro del sistema, clasificando las variables en:<br><br>Zona de poder – Cuadrante superior izquierdo<br>Zona de indiferencia – Cuadrante inferior izquierdo<br>Zona de conflicto – Cuadrante superior derecho<br>Zona de salida - Cuadrante inferior derecho<br><br>Con esta vista podrás distinguir qué factores son clave para la transformación del futuro y cuáles son más reactivos.<br><br>',
+        'zone_power' => 'Zona de Poder',
+        'zone_indifference' => 'Zona de Indiferencia',
+        'zone_conflict' => 'Zona de Conflicto',
+        'zone_exit' => 'Zona de Salida',
+        'x_axis' => 'DEPENDENCIA',
+        'y_axis' => 'INFLUENCIA'
+    ];
+
     //Texts schwartz section
     $text_schwartz = [
         'title' => 'Ejes de Peter Schwartz',
+        'description' => 'En esta sección podrás construir escenarios prospectivos utilizando el método de Schwartz, basado en el cruce de dos variables estratégicas con alto nivel de incertidumbre. A partir de las hipótesis que definas para cada variable, el sistema generará una matriz 2x2 con cuatro escenarios posibles. Cada cuadrante representa una combinación distinta de futuros, lo que te permitirá explorar realidades alternativas, anticipar riesgos y visualizar oportunidades. Edita y describe cada escenario para dar forma a narrativas coherentes y útiles para la toma de decisiones estratégicas.',
         'hypothesis' => [
             'h1_plus' => 'HIPÓTESIS 1+',
             'h1_minus' => 'HIPÓTESIS 1-',
@@ -90,6 +103,7 @@
     $text_variables_section = [
         'title' => 'Variables',
         'subtitle' => 'Gestiona las variables del proyecto',
+        'description' => 'En esta sección identificarás podrás incluir las variables clave que influyen o son influenciadas por el sistema que estás analizando. Pueden ser factores políticos, económicos, sociales, tecnológicos, ambientales, legales o de otra índole que, por su impacto o sensibilidad, deben ser observados de cerca. Este paso es esencial: define el punto de partida del análisis prospectivo. Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
         'table' => [
             'variable' => 'VARIABLE',
             'name' => 'NOMBRE',
@@ -124,10 +138,48 @@
         'description_placeholder' => 'Escriba la descripción de la variable'
     ];
 
+    //Texts conclusions section
+    $text_conclusions = [
+        'title' => 'Conclusiones',
+        'description' => 'En esta sección analizarás lo aprendido del proceso prospectivo. Reflexionarás sobre los hallazgos clave, las tendencias detectadas, las alertas tempranas y las estrategias que deberían considerarse. Las conclusiones permiten traducir los escenarios en acciones, aprendizajes y decisiones para el presente. Para cumplir con este apartado, responde las siguientes preguntas:… .<br><br>Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
+        'table' => [
+            'close' => 'Cerrar',
+            'save' => 'Guardar',
+            'edit' => 'Editar',
+            'locked' => 'BLOQUEADO'
+        ],
+        'messages' => [
+            'close_success' => 'Conclusiones cerradas correctamente.',
+            'close_error' => 'Error al cerrar las conclusiones.'
+        ]
+    ];
+
+    //Texts scenarios section
+    $text_scenarios = [
+        'title' => 'Escenarios',
+        'description' => 'Este es el corazón creativo del análisis prospectivo. Con base en las variables críticas, los direccionadores y las condiciones, redactarás y construirás narrativas de futuro. Cada escenario representa una visión alternativa del mañana (hipótesis), con sus riesgos, oportunidades y consecuencias. Aquí puedes pensar estratégicamente en el largo plazo y generar un plan de prospectiva estratégica para la generación de competitividad empresarial.<br><br>Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.'
+    ];
+
+    //Texts initial conditions section
+    $text_initial_conditions = [
+        'title' => 'Condiciones Iniciales',
+        'description' => 'Esta sección te permite establecer las condiciones de contexto o supuestos que acompañan cada escenario, con respecto a las variables trabajadas. Aquí defines qué debe estar ocurriendo en el entorno para que ese futuro sea viable: políticas públicas, innovaciones tecnológicas, comportamientos sociales, entre otros. Las condiciones hacen que tus escenarios no sean solo imaginativos, sino coherentes y plausibles.<br><br>Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
+        'table' => [
+            'variable' => 'VARIABLE',
+            'name' => 'NOMBRE',
+            'nowCondition' => 'CONDICIÓN ACTUAL',
+            'actions' => 'ACCIONES',
+            'edit' => 'Editar',
+            'save' => 'Guardar',
+            'locked' => 'BLOQUEADO'
+        ]
+    ];
+
     //Texts hypothesis section
     $text_hypothesis = [
         'title' => 'Direccionadores de futuro',
         'subtitle' => 'En esta sección se generan las hipótesis para las dos variables más cercanas a la zona de poder.',
+        'description' => 'En este espacio defines los grandes ejes estratégicos o vectores de cambio que orientarán la construcción de escenarios. Los direccionadores son como brújulas: te ayudan a no perder de vista lo verdaderamente importante. Surgen del análisis de las variables críticas y te permitirán trazar futuros posibles con sentido estratégico.<br><br>Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
         'table' => [
             'h' => 'H',
             'variable' => 'VARIABLE',
@@ -145,6 +197,7 @@
     $text_results_section = [
         'title' => 'Resultados',
         'subtitle' => 'Listado de usuarios y sus datos',
+        'description' => 'Aquí encontrarás una síntesis del proceso realizado: las variables prioritarias, los escenarios formulados, los direccionadores clave y las recomendaciones estratégicas. Esta sección te permite exportar o comunicar los resultados de forma clara y estructurada. Es la puerta de salida del análisis... y la entrada a la toma de decisiones.',
         'filters' => [
             'id' => 'ID',
             'first_name' => 'Nombre',
@@ -165,7 +218,8 @@
             'future_drivers' => 'Direccionadores de Futuro',
             'initial_conditions' => 'Condiciones Iniciales',
             'scenarios' => 'Escenarios',
-            'conclusions' => 'Conclusiones'
+            'conclusions' => 'Conclusiones',
+            'status' => 'Estado'
         ]
     ];
 
@@ -299,11 +353,15 @@
       //  "roles" => __('app.roles'),
         "variables" => $text_variables,
         "matriz" => $text_matriz,
+        "graphics" => $text_graphics,
         "schwartz" => $text_schwartz,
         "strategic" => $text_strategic,
         "variables_section" => $text_variables_section,
         "hypothesis" => $text_hypothesis,
-        "results" => $text_results_section,
+        "initialConditions" => $text_initial_conditions,
+        "scenarios" => $text_scenarios,
+        "conclusions" => $text_conclusions,
+        "results_section" => $text_results_section,
     ];
 
     //List urls to use global in store from pinia/vue

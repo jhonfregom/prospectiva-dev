@@ -12,6 +12,8 @@ use App\Http\Controllers\HypothesisController;
 use App\Http\Controllers\ScenariosController;
 use App\Http\Controllers\ConclusionController;
 use App\Http\Controllers\TraceabilityController;
+use App\Http\Controllers\NoteController;
+use App\Http\Controllers\UserActivationController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -103,6 +105,15 @@ Route::group(['middleware' => ['auth']], function(){
         Route::post('/conclusions/close-all', 'closeAll')->name('conclusions.closeAll');
     });
 
+    // Rutas de notas protegidas por autenticación
+    Route::controller(NoteController::class)->group(function(){
+        Route::get('/notes', 'index')->name('notes.index');
+        Route::get('/notes/latest', 'getLatest')->name('notes.latest');
+        Route::post('/notes', 'store')->name('notes.store');
+        Route::put('/notes/{id}', 'update')->name('notes.update');
+        Route::delete('/notes/{id}', 'destroy')->name('notes.destroy');
+    });
+
     // Rutas de traceability protegidas por autenticación
     Route::controller(TraceabilityController::class)->group(function(){
         Route::get('/traceability/user', 'getUserTraceability')->name('traceability.user');
@@ -157,5 +168,11 @@ Route::controller(RegisterController::class)->group(function(){
 Route::get('/graphics', [GraphicsController::class, 'index']);
 Route::get('/results/users', [\App\Http\Controllers\UserController::class, 'apiList'])->name('results.users');
 Route::get('/results/users-by-route', [\App\Http\Controllers\UserController::class, 'apiListByRoute'])->name('results.usersByRoute');
+
+// Rutas de activación de usuarios (públicas)
+Route::controller(UserActivationController::class)->group(function(){
+    Route::get('/user/activate/{userId}/{token}', 'showActivationPage')->name('user.activation');
+    Route::post('/user/activate/{userId}/{token}', 'activateUser')->name('user.activate');
+});
 
 

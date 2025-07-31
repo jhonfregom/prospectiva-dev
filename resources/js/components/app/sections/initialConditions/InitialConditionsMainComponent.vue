@@ -1,19 +1,18 @@
 <template>
     <div class="initial-conditions-container">
+        <!-- Letrero informativo -->
+        <info-banner-component
+            :description="textsStore.getText('initialConditions.description')"
+        />
+        
         <!-- MiniStepper eliminado -->
         <div class="main-content">
-            <b-message type="is-info" has-icon>
-                {{ textsStore.getText('initialConditions.subtitle') }}
-            </b-message>
             <b-table :data="initialConditionsStore.conditions" :striped="true" :hoverable="true" :bordered="true" :narrowed="true" :loading="initialConditionsStore.isLoading" icon-pack="fas">
                 <b-table-column field="id_variable" :label="textsStore.getText('initialConditions.table.variable')" v-slot="props" centered>
                     <span>{{ props.row.id_variable }}</span>
                 </b-table-column>
                 <b-table-column field="name_variable" :label="textsStore.getText('initialConditions.table.name')" v-slot="props" centered>
                     <span>{{ props.row.name_variable }}</span>
-                </b-table-column>
-                <b-table-column field="edits_now_condition" :label="'Ediciones'" v-slot="props" centered>
-                    <span>{{ props.row.edits_now_condition || 0 }}/3</span>
                 </b-table-column>
                 <b-table-column field="now_condition" :label="textsStore.getText('initialConditions.table.nowCondition')" v-slot="props" centered>
                     <div style="display: flex; justify-content: center; align-items: center; width: 100%;">
@@ -82,10 +81,12 @@ import { useTextsStore } from '../../../../stores/texts';
 import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
 import { useTraceabilityStore } from '../../../../stores/traceability';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
 export default {
     name: 'InitialConditionsMainComponent',
     components: {
+        InfoBannerComponent,
     },
     data() {
         return {

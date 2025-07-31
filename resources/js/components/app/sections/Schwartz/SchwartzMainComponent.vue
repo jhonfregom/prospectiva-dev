@@ -1,5 +1,10 @@
 <template>
-    <div class="schwartz-container" :style="{ justifyContent: 'center', alignItems: 'center', display: 'flex' }">
+    <div class="schwartz-container">
+        <!-- Letrero informativo -->
+        <info-banner-component
+            :description="textsStore.getText('schwartz.description')"
+        />
+        
         <div class="schwartz-matrix-container" :style="{ width: schwartzSize, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center' }">
             <div class="schwartz-matrix">
                 <!-- Ejes rojos -->
@@ -203,6 +208,7 @@ import { useSchwartzStore } from '../../../../stores/schwartz';
 import { useTextsStore } from '../../../../stores/texts';
 import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
 export default {
     name: 'SchwartzMainComponent',
@@ -229,6 +235,7 @@ export default {
         }
     },
     components: {
+        InfoBannerComponent,
     },
     setup(props) {
         const sectionStore = useSectionStore();

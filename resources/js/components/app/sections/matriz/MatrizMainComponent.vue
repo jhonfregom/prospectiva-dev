@@ -1,6 +1,11 @@
 <template>
     <div v-if="traceabilityStore.isLoading || !seccionesValidas" style="min-height:160px;"></div>
     <div v-else class="matriz-container">
+        <!-- Letrero informativo -->
+        <info-banner-component
+            :description="textsStore.getText('matriz.description')"
+        />
+        
         <!-- MiniStepper eliminado -->
         <div class="matriz-header">
             <b-button
@@ -91,6 +96,24 @@
                     <span>{{ textsStore.getText('matriz.null_influence') }}</span>
                 </div>
             </div>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <span class="legend-value legend-strong">3</span>
+                    <span>{{ textsStore.getText('matriz.strong_dependency') }}</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-value legend-medium">2</span>
+                    <span>{{ textsStore.getText('matriz.medium_dependency') }}</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-value legend-weak">1</span>
+                    <span>{{ textsStore.getText('matriz.weak_dependency') }}</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-value legend-none">0</span>
+                    <span>{{ textsStore.getText('matriz.null_dependency') }}</span>
+                </div>
+            </div>
         </div>
 
         <!-- Tabla de Resumen -->
@@ -162,9 +185,11 @@ import { storeToRefs } from 'pinia';
 import { useTraceabilityStore } from '../../../../stores/traceability';
 import { computed } from 'vue';
 import axios from 'axios';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
 export default {
     components: {
+        InfoBannerComponent,
     },
     setup() {
         const matrizStore = useMatrizStore();
