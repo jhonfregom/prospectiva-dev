@@ -66,7 +66,7 @@ class Traceability extends Model
             'id' => $nextId,
             'user_id' => $userId,
             'tried' => '1',
-            'variables' => '0',
+            'variables' => '1',
             'matriz' => '0',
             'maps' => '0',
             'hypothesis' => '0',

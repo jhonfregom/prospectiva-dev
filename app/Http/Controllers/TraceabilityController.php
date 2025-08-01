@@ -95,20 +95,32 @@ class TraceabilityController extends Controller
      */
     public function markSectionCompleted(Request $request): JsonResponse
     {
+        \Log::info('=== MARCANDO SECCIÓN COMO COMPLETADA ===');
+        \Log::info('Request data: ' . json_encode($request->all()));
+        
         $user = auth()->user();
         $section = $request->input('section');
         
+        \Log::info('Usuario: ' . json_encode(['id' => $user->id, 'role' => $user->role, 'email' => $user->user]));
+        \Log::info('Sección a marcar: ' . $section);
+        
         if (!$user) {
+            \Log::error('Usuario no autenticado');
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
         $traceability = Traceability::getCurrentRouteForUser($user->id);
         
         if (!$traceability) {
+            \Log::error('No se encontró ruta para el usuario');
             return response()->json(['error' => 'No se encontró ruta para el usuario'], 404);
         }
         
+        \Log::info('Traceability antes de marcar: ' . json_encode($traceability->toArray()));
+        
         $traceability->markSectionCompleted($section);
+        
+        \Log::info('Traceability después de marcar: ' . json_encode($traceability->toArray()));
         
         return response()->json([
             'success' => true,

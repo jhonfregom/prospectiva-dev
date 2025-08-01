@@ -13,16 +13,12 @@ class NewUserNotification extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $newUser;
-    public $activationUrl;
-
     /**
      * Create a new message instance.
      */
-    public function __construct($newUser, $activationUrl)
+    public function __construct()
     {
-        $this->newUser = $newUser;
-        $this->activationUrl = $activationUrl;
+        //
     }
 
     /**
@@ -31,7 +27,7 @@ class NewUserNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Nuevo usuario registrado - Requiere activación',
+            subject: 'New User Notification',
         );
     }
 
@@ -41,7 +37,7 @@ class NewUserNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.new-user-notification',
+            view: 'view.name',
         );
     }
 

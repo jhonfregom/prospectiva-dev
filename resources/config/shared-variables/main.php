@@ -29,7 +29,7 @@
 
     //Texts invetory section
     $text_variables = array_merge(
-        __('app.variables'), [
+        __('app.main.modules.variables'), [
         'item' => __('validation.attributes.item'),
         'elements' => __('validation.attributes.elements'),
         'opening_balances' => __('validation.attributes.opening_balances'),
@@ -104,6 +104,8 @@
         'title' => 'Variables',
         'subtitle' => 'Gestiona las variables del proyecto',
         'description' => 'En esta sección identificarás podrás incluir las variables clave que influyen o son influenciadas por el sistema que estás analizando. Pueden ser factores políticos, económicos, sociales, tecnológicos, ambientales, legales o de otra índole que, por su impacto o sensibilidad, deben ser observados de cerca. Este paso es esencial: define el punto de partida del análisis prospectivo. Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
+        'title_introduction' => __('app.variables.title_introduction'),
+        'content_introduction' => __('app.variables.content_introduction'),
         'table' => [
             'variable' => 'VARIABLE',
             'name' => 'NOMBRE',

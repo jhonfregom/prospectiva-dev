@@ -180,60 +180,42 @@
                     v-model="confirm_password" />
             </b-field>
 
-            <!-- Autorización de uso de datos -->
-            <div class="data-authorization-section">
-                <div class="authorization-container">
-                    <div class="authorization-label">
-                        <div class="custom-checkbox" @click="toggleAuthorization">
-                            <input 
-                                type="checkbox" 
-                                v-model="data_authorization" 
-                                name="data_authorization"
-                                class="authorization-checkbox">
-                            <span class="checkmark"></span>
-                        </div>
+            <!-- Autorización de datos -->
+            <b-field
+                v-bind:type="{ 'is-danger' : !data_authorization }"
+                :message="!data_authorization ? 'Debe autorizar el uso de sus datos para continuar' : ''">
+                <div class="data-authorization-container">
+                    <label class="checkbox">
+                        <input 
+                            type="checkbox" 
+                            name="data_authorization" 
+                            v-model="data_authorization"
+                            @change="toggleDataAuthorization">
+                        <span class="checkmark"></span>
                         <span class="authorization-text">
-                            Acepto la 
-                            <a href="#" @click.prevent="showDataAuthorizationModal = true" class="authorization-link">
-                                autorización de uso de datos
+                            <a 
+                                href="#" 
+                                @click.prevent="toggleAuthorizationText"
+                                class="authorization-link">
+                                <strong>Autorización de uso de datos personales</strong>
                             </a>
                         </span>
-                    </div>
-                    <div v-if="!data_authorization" class="authorization-error">
-                        Debe aceptar la autorización de uso de datos
+                    </label>
+                    <div v-if="showAuthorizationText" class="authorization-details">
+                        <p class="authorization-content">
+                            En cumplimiento de lo dispuesto por la Ley 1581 de 2012 y el Decreto 1377 de 2013, autorizo de manera previa, expresa e informada a <strong>Prospectiva UNAD</strong> para que recolecte, almacene, utilice y trate mis datos personales, con la finalidad de gestionar mi acceso al sistema, personalizar la experiencia de usuario y realizar análisis agregados para mejorar el servicio.
+                        </p>
+                        <p class="authorization-content">
+                            Entiendo que como titular de la información tengo derecho a conocer, actualizar, rectificar y suprimir mis datos personales, así como a revocar esta autorización en cualquier momento.
+                        </p>
                     </div>
                 </div>
-            </div>
+            </b-field>
 
             <b-button class="is-block is-info" size="is-large is-fullwidth" native-type="submit">
                 {{ fields.submit.label }}
             </b-button>
         </form>
-
-        <!-- Modal de autorización de uso de datos -->
-        <div v-if="showDataAuthorizationModal" class="modal-overlay" @click="showDataAuthorizationModal = false">
-            <div class="modal-content" @click.stop>
-                <div class="modal-header">
-                    <h3 class="modal-title">Autorización de uso de datos</h3>
-                    <button class="modal-close" @click="showDataAuthorizationModal = false">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p class="authorization-text">
-                        En cumplimiento de lo dispuesto por la Ley 1581 de 2012 y el Decreto 1377 de 2013, autorizo de manera previa, expresa e informada a <strong>Proyecto Prospectiva</strong> para que recolecte, almacene, utilice y trate mis datos personales, con la finalidad de gestionar mi acceso al sistema, personalizar la experiencia de usuario y realizar análisis agregados para mejorar el servicio.
-                    </p>
-                    <p class="authorization-text">
-                        Entiendo que como titular de la información tengo derecho a conocer, actualizar, rectificar y suprimir mis datos personales, así como a revocar esta autorización en cualquier momento.
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button class="button is-info" @click="showDataAuthorizationModal = false">
-                        Entendido
-                    </button>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 <script>
@@ -279,7 +261,7 @@ export default {
             password: '',
             confirm_password: '',
             data_authorization: false,
-            showDataAuthorizationModal: false,
+            showAuthorizationText: false,
             fields: [],
             copy_msg_user: '',
             // Sectores económicos
@@ -442,6 +424,12 @@ export default {
                 this.showEconomicSectorDropdown = false;
             }
         },
+        toggleDataAuthorization() {
+            // Este método se ejecuta cuando se marca/desmarca el checkbox
+        },
+        toggleAuthorizationText() {
+            this.showAuthorizationText = !this.showAuthorizationText;
+        },
         clickRegister(e) {
             e.preventDefault();
             
@@ -486,11 +474,8 @@ export default {
             this.fields.confirm_password.error = this.confirm_password === '';
             this.fields.confirm_password.msg = this.confirm_password === '' ? 'Este campo es requerido' : '';
 
-            // Validar autorización de datos
-            const dataAuthorizationError = !this.data_authorization;
-
             // Verificar si hay errores
-            const hasErrors = Object.values(this.fields).some(field => field.error) || dataAuthorizationError;
+            const hasErrors = Object.values(this.fields).some(field => field.error) || !this.data_authorization;
 
             if (!hasErrors && this.passwordMatch) {
                 const data = {
@@ -499,7 +484,7 @@ export default {
                     user: this.user,
                     password: this.password,
                     confirm_password: this.confirm_password,
-                    data_authorization: this.data_authorization ? "1" : "0"
+                    data_authorization: this.data_authorization
                 };
 
                 // Agregar campos según el tipo de registro
@@ -546,218 +531,8 @@ export default {
                         }
                     });
             }
-        },
-        toggleAuthorization() {
-            this.data_authorization = !this.data_authorization;
         }
     }
 }
 </script>
-
-<style scoped>
-/* Estilos para el checkbox de autorización */
-.data-authorization-section {
-    margin: 20px 0;
-}
-
-.authorization-container {
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.authorization-label {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 12px;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #495057;
-    user-select: none;
-}
-
-.custom-checkbox {
-    position: relative;
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-    cursor: pointer;
-    margin-top: 2px;
-}
-
-.authorization-checkbox {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
-}
-
-.checkmark {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 16px;
-    width: 16px;
-    background-color: #fff;
-    border: 2px solid #ddd;
-    border-radius: 3px;
-    transition: all 0.2s ease;
-    margin-top: 0;
-}
-
-.custom-checkbox:hover .checkmark {
-    border-color: #3273dc;
-}
-
-.authorization-checkbox:checked ~ .checkmark {
-    background-color: #3273dc;
-    border-color: #3273dc;
-}
-
-.checkmark:after {
-    content: "";
-    position: absolute;
-    display: none;
-    left: 4px;
-    top: 1px;
-    width: 4px;
-    height: 8px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-}
-
-.authorization-checkbox:checked ~ .checkmark:after {
-    display: block;
-}
-
-.authorization-text {
-    font-weight: 400;
-    text-align: center;
-}
-
-.authorization-checkbox {
-    margin: 0;
-    cursor: pointer;
-    width: 14px;
-    height: 14px;
-    accent-color: #3273dc;
-    flex-shrink: 0;
-    padding: 0;
-    border: none;
-    outline: none;
-}
-
-.authorization-link {
-    color: #3273dc;
-    text-decoration: underline;
-    font-weight: 500;
-    transition: color 0.2s ease;
-    pointer-events: auto;
-}
-
-.authorization-link:hover {
-    color: #2366d1;
-    text-decoration: none;
-}
-
-.authorization-error {
-    margin-top: 8px;
-    color: #dc3545;
-    font-size: 12px;
-    font-weight: 500;
-    text-align: center;
-}
-
-/* Estilos para el modal */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(2px);
-}
-
-.modal-content {
-    background: white;
-    border-radius: 12px;
-    max-width: 650px;
-    width: 90%;
-    max-height: 85vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    border: 1px solid #e9ecef;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 25px 25px 20px 25px;
-    border-bottom: 1px solid #e9ecef;
-    background: #f8f9fa;
-    border-radius: 12px 12px 0 0;
-}
-
-.modal-title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: #2c3e50;
-}
-
-.modal-close {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color: #6c757d;
-    padding: 8px;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-close:hover {
-    color: #495057;
-    background: #e9ecef;
-}
-
-.modal-body {
-    padding: 25px;
-    background: white;
-}
-
-.authorization-text {
-    margin: 0 0 20px 0;
-    line-height: 1.7;
-    color: #495057;
-    font-size: 15px;
-    text-align: justify;
-}
-
-.modal-footer {
-    padding: 20px 25px 25px 25px;
-    border-top: 1px solid #e9ecef;
-    text-align: right;
-    background: #f8f9fa;
-    border-radius: 0 0 12px 12px;
-}
-</style>
 

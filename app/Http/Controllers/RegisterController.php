@@ -5,11 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Traceability;
-use App\Models\StateUser;
-use App\Mail\NewUserNotification;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
 {
@@ -56,6 +52,12 @@ class RegisterController extends Controller
                 'error' => false,
                 'msg' => '',
             ],
+            'email' => [
+                'label' => 'Correo electrónico',
+                'placeholder' => 'Correo electrónico',
+                'error' => false,
+                'msg' => '',
+            ],
             'city' => [
                 'label' => 'Ciudad / Región',
                 'placeholder' => 'Ciudad / Región',
@@ -75,6 +77,12 @@ class RegisterController extends Controller
                 'error' => false,
                 'msg' => '',
             ],
+            'corporate_email' => [
+                'label' => 'Correo electrónico corporativo',
+                'placeholder' => 'Correo electrónico corporativo',
+                'error' => false,
+                'msg' => '',
+            ],
             'company_city' => [
                 'label' => 'Ciudad / Región',
                 'placeholder' => 'Ciudad / Región',
@@ -89,8 +97,8 @@ class RegisterController extends Controller
             ],
             // Campos comunes
             'user' => [
-                'label' => 'Correo electrónico',
-                'placeholder' => 'Correo electrónico',
+                'label' => 'Correo electrónico para el login',
+                'placeholder' => 'Correo electrónico para el login',
                 'error' => false,
                 'msg' => '',
             ],
@@ -114,71 +122,93 @@ class RegisterController extends Controller
         return view('register.register', compact('list_urls', 'texts', 'fields'));
     }
 
+    private function findNextAvailableId()
+    {
+        // Obtener todos los IDs existentes ordenados
+        $existingIds = User::orderBy('id')->pluck('id')->toArray();
+        
+        // Si no hay usuarios, empezar con ID 1
+        if (empty($existingIds)) {
+            return 1;
+        }
+        
+        // Buscar el primer hueco disponible
+        $expectedId = 1;
+        foreach ($existingIds as $existingId) {
+            if ($existingId > $expectedId) {
+                return $expectedId;
+            }
+            $expectedId = $existingId + 1;
+        }
+        
+        // Si no hay huecos, usar el siguiente ID después del último
+        return $expectedId;
+    }
+
+    private function getEconomicSectorText($sectorId)
+    {
+        $sectors = [
+            1 => 'Agricultura, ganadería, caza, silvicultura y pesca',
+            2 => 'Explotación de minas y canteras',
+            3 => 'Industrias manufactureras',
+            4 => 'Suministro de electricidad, gas, vapor y aire acondicionado',
+            5 => 'Distribución de agua; evacuación y tratamiento de aguas residuales, gestión de desechos y descontaminación',
+            6 => 'Construcción',
+            7 => 'Comercio al por mayor y al por menor; reparación de vehículos automotores y motocicletas',
+            8 => 'Transporte y almacenamiento',
+            9 => 'Alojamiento y servicios de comida',
+            10 => 'Información y comunicaciones',
+            11 => 'Actividades financieras y de seguros',
+            12 => 'Actividades inmobiliarias',
+            13 => 'Actividades profesionales, científicas y técnicas',
+            14 => 'Actividades de servicios administrativos y de apoyo',
+            15 => 'Administración pública y defensa; planes de seguridad social de afiliación obligatoria',
+            16 => 'Educación',
+            17 => 'Actividades de atención de la salud humana y de asistencia social',
+            18 => 'Actividades artísticas, de entretenimiento y recreativas',
+            19 => 'Otras actividades de servicios',
+            20 => 'Actividades de los hogares individuales en calidad de empleadores; actividades no diferenciadas de los hogares individuales como productores de bienes y servicios para uso propio',
+            21 => 'Actividades de organizaciones y entidades extraterritoriales'
+        ];
+        
+        return $sectors[$sectorId] ?? 'Sector no especificado';
+    }
+
     public function register(Request $request)
     {
-        try {
-            // Validar tipo de registro
+        // Validar tipo de registro
+        $request->validate([
+            'registration_type' => 'required|in:natural,company',
+            'user' => 'required|string|email|max:255|unique:users,user',
+            'password' => 'required|string|min:8',
+            'confirm_password' => 'required|string|min:8|same:password',
+            'data_authorization' => 'required|accepted',
+        ]);
+
+        // Validaciones específicas según el tipo de registro
+        if ($request->registration_type === 'natural') {
             $request->validate([
-                'registration_type' => 'required|in:natural,company',
-                'user' => 'required|string|email|max:255|unique:users,user',
-                'password' => 'required|string|min:8|max:255',
-                'confirm_password' => 'required|string|same:password',
+                'first_name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:100',
+                'document_id' => 'required|string|max:20|unique:users,document_id',
+                'city' => 'required|string|max:255',
             ]);
-
-            // Validaciones específicas según el tipo de registro
-            if ($request->registration_type === 'natural') {
-                $request->validate([
-                    'first_name' => 'required|string|max:255',
-                    'last_name' => 'required|string|max:100',
-                    'document_id' => 'required|string|max:20|unique:users,document_id',
-                    'city' => 'required|string|max:255',
-                ]);
-            } else {
-                $request->validate([
-                    'company_name' => 'required|string|max:255',
-                    'nit' => 'required|string|max:20|unique:users,document_id',
-                    'company_city' => 'required|string|max:255',
-                    'economic_sector' => 'required|integer|between:1,21',
-                ]);
-            }
-
-            // Validar autorización de datos
+        } else {
             $request->validate([
-                'data_authorization' => 'required|accepted',
+                'company_name' => 'required|string|max:255',
+                'nit' => 'required|string|max:20|unique:users,document_id',
+                'company_city' => 'required|string|max:255',
+                'economic_sector' => 'required|integer|between:1,21',
             ]);
+        }
 
-        // Obtener el siguiente ID disponible
-        $nextUserId = User::findNextAvailableId();
-        
-        // Mapeo de sectores económicos
-        $economicSectors = [
-            '1' => 'Agricultura, ganadería, caza, silvicultura y pesca',
-            '2' => 'Explotación de minas y canteras',
-            '3' => 'Industrias manufactureras',
-            '4' => 'Suministro de electricidad, gas, vapor y aire acondicionado',
-            '5' => 'Suministro de agua; gestión de residuos y saneamiento ambiental',
-            '6' => 'Construcción',
-            '7' => 'Comercio al por mayor y al por menor',
-            '8' => 'Transporte y almacenamiento',
-            '9' => 'Alojamiento y servicios de comida',
-            '10' => 'Información y comunicaciones',
-            '11' => 'Actividades financieras y de seguros',
-            '12' => 'Actividades inmobiliarias',
-            '13' => 'Actividades profesionales, científicas y técnicas',
-            '14' => 'Actividades administrativas y de apoyo',
-            '15' => 'Educación',
-            '16' => 'Salud humana y asistencia social',
-            '17' => 'Arte, entretenimiento y recreación',
-            '18' => 'Otros servicios (organizaciones sociales, sindicatos, ONG, etc.)',
-            '19' => 'Administración pública y defensa',
-            '20' => 'Actividades de los hogares como empleadores',
-            '21' => 'Organismos internacionales y otras instituciones extraterritoriales'
-        ];
+        // Obtener el próximo ID disponible
+        $nextId = $this->findNextAvailableId();
         
         // Crear usuario según el tipo de registro
         if ($request->registration_type === 'natural') {
             $user = User::create([
-                'id' => $nextUserId,
+                'id' => $nextId,
                 'document_id' => $request->document_id,
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
@@ -186,13 +216,12 @@ class RegisterController extends Controller
                 'user' => $request->user,
                 'password' => bcrypt($request->password),
                 'registration_type' => 'natural',
-                'data_authorization' => true,
-                'role' => 0, // Usuario normal por defecto
+                'data_authorization' => $request->data_authorization ? true : false,
                 'status_users_id' => 2, // Estado inactivo por defecto
             ]);
         } else {
             $user = User::create([
-                'id' => $nextUserId,
+                'id' => $nextId,
                 'document_id' => $request->nit,
                 'first_name' => $request->company_name,
                 'last_name' => '', // Campo vacío para empresas
@@ -200,42 +229,14 @@ class RegisterController extends Controller
                 'user' => $request->user,
                 'password' => bcrypt($request->password),
                 'registration_type' => 'company',
-                'economic_sector' => $economicSectors[$request->economic_sector] ?? $request->economic_sector,
-                'data_authorization' => true,
-                'role' => 0, // Usuario normal por defecto
+                'economic_sector' => $this->getEconomicSectorText($request->economic_sector),
+                'data_authorization' => $request->data_authorization ? true : false,
                 'status_users_id' => 2, // Estado inactivo por defecto
             ]);
         }
         
-        // Crear ruta de trazabilidad para el usuario
-        try {
-            $nextId = Traceability::findNextAvailableId();
-            Traceability::create([
-                'id' => $nextId,
-                'user_id' => $user->id,
-                'tried' => '1',
-                'variables' => '1', // Habilitada para empezar
-                'matriz' => '0',
-                'maps' => '0',
-                'hypothesis' => '0',
-                'shwartz' => '0',
-                'conditions' => '0',
-                'scenarios' => '0',
-                'conclusions' => '0',
-                'results' => '0',
-                'state' => '0'
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error creating traceability route: ' . $e->getMessage());
-            // No fallar el registro si la trazabilidad falla
-        }
-
-        // Enviar correo a todos los administradores
-        try {
-            $this->sendNotificationToAdmins($user);
-        } catch (\Exception $e) {
-            \Log::error('Error sending notification email: ' . $e->getMessage());
-        }
+        // Crear la ruta de trazabilidad para el usuario
+        Traceability::getOrCreateForUser($user->id);
         
         session()->flash('success', __('register.success'));
         
@@ -244,57 +245,5 @@ class RegisterController extends Controller
             'message' => __('register.success'),
             'redirect' => route('login')
         ]);
-        
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation error: ' . json_encode($e->errors()));
-            
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Errores de validación',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            \Log::error('Registration error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Error interno del servidor: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Envía notificación por correo a todos los administradores
-     */
-    private function sendNotificationToAdmins($newUser)
-    {
-        // Obtener todos los administradores
-        $admins = User::where('role', 1)->get();
-        
-        if ($admins->isEmpty()) {
-            \Log::warning('No hay administradores registrados para enviar notificación');
-            return;
-        }
-
-        // Generar URL de activación
-        $token = Hash::make($newUser->user);
-        $activationUrl = route('user.activation', [
-            'userId' => $newUser->id,
-            'token' => $token
-        ]);
-
-        // Log de la notificación (para pruebas)
-        \Log::info('Nuevo usuario registrado: ' . $newUser->first_name . ' ' . $newUser->last_name . ' (' . $newUser->user . ')');
-
-        // Enviar correo a cada administrador
-        foreach ($admins as $admin) {
-            try {
-                Mail::to($admin->user)->send(new NewUserNotification($newUser, $activationUrl));
-                \Log::info('Notificación enviada a administrador: ' . $admin->user);
-            } catch (\Exception $e) {
-                \Log::error('Error enviando correo a administrador ' . $admin->user . ': ' . $e->getMessage());
-            }
-        }
     }
 }

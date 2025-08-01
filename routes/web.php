@@ -13,7 +13,6 @@ use App\Http\Controllers\ScenariosController;
 use App\Http\Controllers\ConclusionController;
 use App\Http\Controllers\TraceabilityController;
 use App\Http\Controllers\NoteController;
-use App\Http\Controllers\UserActivationController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -168,11 +167,5 @@ Route::controller(RegisterController::class)->group(function(){
 Route::get('/graphics', [GraphicsController::class, 'index']);
 Route::get('/results/users', [\App\Http\Controllers\UserController::class, 'apiList'])->name('results.users');
 Route::get('/results/users-by-route', [\App\Http\Controllers\UserController::class, 'apiListByRoute'])->name('results.usersByRoute');
-
-// Rutas de activación de usuarios (públicas)
-Route::controller(UserActivationController::class)->group(function(){
-    Route::get('/user/activate/{userId}/{token}', 'showActivationPage')->name('user.activation');
-    Route::post('/user/activate/{userId}/{token}', 'activateUser')->name('user.activate');
-});
 
 

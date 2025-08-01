@@ -13,9 +13,6 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    // Deshabilitar el auto-increment para permitir asignación manual de IDs
-    public $incrementing = false;
-
     /**
      * The attributes that are mass assignable.
      *
@@ -23,15 +20,22 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'id',
+        'user_type',
+        'names',
+        'surnames',
+        'company_name',
+        'nit',
+        'city_region',
+        'economic_sector',
+        'data_authorization',
         'document_id',
+        'email',
+        'city',
+        'registration_type',
         'first_name',
         'last_name',
         'user',
         'password',
-        'city',
-        'registration_type',
-        'economic_sector',
-        'data_authorization',
         'role',
         'status_users_id',
     ];
@@ -65,28 +69,9 @@ class User extends Authenticatable
     }
 
     /**
-     * Encuentra el primer ID disponible en la tabla
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
      */
-    public static function findNextAvailableId(): int
-    {
-        // Obtener todos los IDs existentes ordenados
-        $existingIds = static::orderBy('id')->pluck('id')->toArray();
-        
-        if (empty($existingIds)) {
-            return 1; // Si no hay registros, empezar con 1
-        }
-        
-        // Buscar el primer hueco en la secuencia
-        $expectedId = 1;
-        foreach ($existingIds as $existingId) {
-            if ($existingId > $expectedId) {
-                // Encontramos un hueco, usar este ID
-                return $expectedId;
-            }
-            $expectedId = $existingId + 1;
-        }
-        
-        // Si no hay huecos, usar el siguiente ID después del último
-        return $expectedId;
-    }
+    public $incrementing = false;
 }

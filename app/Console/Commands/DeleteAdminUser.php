@@ -4,14 +4,14 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 
-class TestMailConfiguration extends Command
+class DeleteAdminUser extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:test-mail-configuration';
+    protected $signature = 'app:delete-admin-user';
 
     /**
      * The console command description.

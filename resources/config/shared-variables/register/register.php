@@ -32,6 +32,12 @@ $fields = [
         'error' => false,
         'msg' => 'Falta el documento de identidad',
     ],
+    'email' => [
+        'label' => 'Correo electrónico',
+        'placeholder' => 'Correo electrónico',
+        'error' => false,
+        'msg' => '',
+    ],
     'city' => [
         'label' => 'Ciudad / Región',
         'placeholder' => 'Ciudad / Región',
@@ -51,6 +57,12 @@ $fields = [
         'error' => false,
         'msg' => '',
     ],
+    'corporate_email' => [
+        'label' => 'Correo electrónico corporativo',
+        'placeholder' => 'Correo electrónico corporativo',
+        'error' => false,
+        'msg' => '',
+    ],
     'company_city' => [
         'label' => 'Ciudad / Región',
         'placeholder' => 'Ciudad / Región',
@@ -65,8 +77,8 @@ $fields = [
     ],
     // Campos comunes
     'user' => [
-        'label' => 'Correo electrónico',
-        'placeholder' => 'Correo electrónico',
+        'label' => 'Correo electrónico para el login',
+        'placeholder' => 'Correo electrónico para el login',
         'error' => false,
         'msg' => '',
     ],

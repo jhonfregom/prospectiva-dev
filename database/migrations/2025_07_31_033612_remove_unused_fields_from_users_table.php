@@ -12,14 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Eliminar campos no utilizados solo si existen
-            $columnsToDrop = ['names', 'surnames', 'company_name', 'nit', 'city_region', 'data_authorization', 'role'];
-            
-            foreach ($columnsToDrop as $column) {
-                if (Schema::hasColumn('users', $column)) {
-                    $table->dropColumn($column);
-                }
-            }
+            // Eliminar campos no utilizados
+            $table->dropColumn([
+                'names',
+                'surnames', 
+                'company_name',
+                'nit',
+                'city_region',
+                'data_authorization',
+                'role'
+            ]);
         });
     }
 
