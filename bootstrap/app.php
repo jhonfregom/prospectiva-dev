@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Excluir rutas de Ollama de la verificación CSRF
+        $middleware->validateCsrfTokens(except: [
+            'ollama/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

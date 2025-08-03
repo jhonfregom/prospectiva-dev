@@ -147,31 +147,8 @@ class RegisterController extends Controller
 
     private function getEconomicSectorText($sectorId)
     {
-        $sectors = [
-            1 => 'Agricultura, ganadería, caza, silvicultura y pesca',
-            2 => 'Explotación de minas y canteras',
-            3 => 'Industrias manufactureras',
-            4 => 'Suministro de electricidad, gas, vapor y aire acondicionado',
-            5 => 'Distribución de agua; evacuación y tratamiento de aguas residuales, gestión de desechos y descontaminación',
-            6 => 'Construcción',
-            7 => 'Comercio al por mayor y al por menor; reparación de vehículos automotores y motocicletas',
-            8 => 'Transporte y almacenamiento',
-            9 => 'Alojamiento y servicios de comida',
-            10 => 'Información y comunicaciones',
-            11 => 'Actividades financieras y de seguros',
-            12 => 'Actividades inmobiliarias',
-            13 => 'Actividades profesionales, científicas y técnicas',
-            14 => 'Actividades de servicios administrativos y de apoyo',
-            15 => 'Administración pública y defensa; planes de seguridad social de afiliación obligatoria',
-            16 => 'Educación',
-            17 => 'Actividades de atención de la salud humana y de asistencia social',
-            18 => 'Actividades artísticas, de entretenimiento y recreativas',
-            19 => 'Otras actividades de servicios',
-            20 => 'Actividades de los hogares individuales en calidad de empleadores; actividades no diferenciadas de los hogares individuales como productores de bienes y servicios para uso propio',
-            21 => 'Actividades de organizaciones y entidades extraterritoriales'
-        ];
-        
-        return $sectors[$sectorId] ?? 'Sector no especificado';
+        $sector = \App\Models\EconomicSector::find($sectorId);
+        return $sector ? $sector->name : 'Sector no especificado';
     }
 
     public function register(Request $request)
@@ -182,7 +159,6 @@ class RegisterController extends Controller
             'user' => 'required|string|email|max:255|unique:users,user',
             'password' => 'required|string|min:8',
             'confirm_password' => 'required|string|min:8|same:password',
-            'data_authorization' => 'required|accepted',
         ]);
 
         // Validaciones específicas según el tipo de registro
@@ -191,13 +167,11 @@ class RegisterController extends Controller
                 'first_name' => 'required|string|max:255',
                 'last_name' => 'required|string|max:100',
                 'document_id' => 'required|string|max:20|unique:users,document_id',
-                'city' => 'required|string|max:255',
             ]);
         } else {
             $request->validate([
                 'company_name' => 'required|string|max:255',
                 'nit' => 'required|string|max:20|unique:users,document_id',
-                'company_city' => 'required|string|max:255',
                 'economic_sector' => 'required|integer|between:1,21',
             ]);
         }
@@ -212,11 +186,10 @@ class RegisterController extends Controller
                 'document_id' => $request->document_id,
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
-                'city' => $request->city,
                 'user' => $request->user,
                 'password' => bcrypt($request->password),
                 'registration_type' => 'natural',
-                'data_authorization' => $request->data_authorization ? true : false,
+                'economic_sector' => $request->economic_sector ?? null,
                 'status_users_id' => 2, // Estado inactivo por defecto
             ]);
         } else {
@@ -225,12 +198,10 @@ class RegisterController extends Controller
                 'document_id' => $request->nit,
                 'first_name' => $request->company_name,
                 'last_name' => '', // Campo vacío para empresas
-                'city' => $request->company_city,
                 'user' => $request->user,
                 'password' => bcrypt($request->password),
                 'registration_type' => 'company',
-                'economic_sector' => $this->getEconomicSectorText($request->economic_sector),
-                'data_authorization' => $request->data_authorization ? true : false,
+                'economic_sector' => $request->economic_sector,
                 'status_users_id' => 2, // Estado inactivo por defecto
             ]);
         }

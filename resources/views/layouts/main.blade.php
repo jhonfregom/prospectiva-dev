@@ -18,6 +18,9 @@
         <div id="app">
             {{-- Content --}}
             @yield('content')
+            
+                    {{-- Floating Bubble Component --}}
+        <floating-bubble-component></floating-bubble-component>
         </div>
         <footer class="footer py-2 px-2 @yield('class-footer')">
             <div class="columns">

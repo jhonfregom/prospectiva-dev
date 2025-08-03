@@ -13,6 +13,13 @@ use App\Http\Controllers\ScenariosController;
 use App\Http\Controllers\ConclusionController;
 use App\Http\Controllers\TraceabilityController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\OllamaProxyController;
+use App\Http\Controllers\ChatGPTProxyController;
+use App\Http\Controllers\DeepSeekProxyController;
+use App\Http\Controllers\GeminiProxyController;
+use App\Http\Controllers\EconomicSectorController;
+use App\Http\Controllers\OpenRouterProxyController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -136,6 +143,8 @@ Route::group(['middleware' => ['auth']], function(){
         Route::put('/traceability/current-route-state', 'updateCurrentRouteState')->name('traceability.updateCurrentRouteState');
         Route::get('/traceability/section-closed/{section}', 'isSectionClosed')->name('traceability.isSectionClosed');
     });
+
+
 });
 
 // Sesion
@@ -167,5 +176,37 @@ Route::controller(RegisterController::class)->group(function(){
 Route::get('/graphics', [GraphicsController::class, 'index']);
 Route::get('/results/users', [\App\Http\Controllers\UserController::class, 'apiList'])->name('results.users');
 Route::get('/results/users-by-route', [\App\Http\Controllers\UserController::class, 'apiListByRoute'])->name('results.usersByRoute');
+
+    // Rutas del proxy de Ollama
+    Route::controller(OllamaProxyController::class)->group(function(){
+        Route::post('/ollama/generate', 'generate')->name('ollama.generate');
+        Route::get('/ollama/models', 'models')->name('ollama.models');
+    });
+
+    // Rutas del proxy de ChatGPT
+    Route::controller(ChatGPTProxyController::class)->group(function(){
+    Route::post('/chatgpt/generate', 'generate')->name('chatgpt.generate');
+    Route::get('/chatgpt/health', 'healthCheck')->name('chatgpt.health');
+});
+
+Route::controller(DeepSeekProxyController::class)->group(function(){
+    Route::post('/deepseek/generate', 'generate')->name('deepseek.generate');
+    Route::get('/deepseek/health', 'healthCheck')->name('deepseek.health');
+});
+
+Route::controller(GeminiProxyController::class)->group(function(){
+    Route::post('/gemini/generate', 'generate')->name('gemini.generate');
+    Route::get('/gemini/health', 'healthCheck')->name('gemini.health');
+});
+
+    // Rutas del proxy de OpenRouter
+    Route::controller(OpenRouterProxyController::class)->group(function(){
+        Route::post('/openrouter/generate', 'generate')->name('openrouter.generate');
+        Route::get('/openrouter/health', 'healthCheck')->name('openrouter.health');
+    });
+
+    // Rutas de sectores económicos
+    Route::get('/economic-sectors', [EconomicSectorController::class, 'index']);
+    Route::get('/economic-sectors/{id}', [EconomicSectorController::class, 'show']);
 
 

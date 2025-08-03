@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Note;
-use App\Models\Traceability;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +15,8 @@ class NoteController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = Auth::user();
-        $traceabilityId = $request->input('traceability_id');
         
-        $notes = Note::getByUserAndRoute($user->id, $traceabilityId);
+        $notes = Note::getByUser($user->id);
         
         return response()->json([
             'success' => true,
@@ -32,9 +30,8 @@ class NoteController extends Controller
     public function getLatest(Request $request): JsonResponse
     {
         $user = Auth::user();
-        $traceabilityId = $request->input('traceability_id');
         
-        $note = Note::getLatestByUser($user->id, $traceabilityId);
+        $note = Note::getLatestByUser($user->id);
         
         return response()->json([
             'success' => true,
@@ -51,27 +48,11 @@ class NoteController extends Controller
         
         $request->validate([
             'content' => 'required|string|max:10000', // Máximo 10,000 caracteres
-            'title' => 'nullable|string|max:255',
-            'traceability_id' => 'nullable|exists:traceability,id'
+            'title' => 'nullable|string|max:255'
         ]);
-
-        // Verificar que el traceability_id pertenece al usuario (si se proporciona)
-        if ($request->input('traceability_id')) {
-            $traceability = Traceability::where('id', $request->input('traceability_id'))
-                ->where('user_id', $user->id)
-                ->first();
-                
-            if (!$traceability) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ruta no válida'
-                ], 400);
-            }
-        }
 
         $note = Note::create([
             'user_id' => $user->id,
-            'traceability_id' => $request->input('traceability_id'),
             'content' => $request->input('content'),
             'title' => $request->input('title')
         ]);

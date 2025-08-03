@@ -21,15 +21,12 @@ class User extends Authenticatable
     protected $fillable = [
         'id',
         'user_type',
-        'names',
-        'surnames',
         'company_name',
         'nit',
         'city_region',
         'economic_sector',
         'data_authorization',
         'document_id',
-        'email',
         'city',
         'registration_type',
         'first_name',
@@ -66,6 +63,11 @@ class User extends Authenticatable
     public function stateUser(): BelongsTo
     {
         return $this->belongsTo(StateUser::class, 'status_users_id');
+    }
+
+    public function economicSector(): BelongsTo
+    {
+        return $this->belongsTo(EconomicSector::class, 'economic_sector');
     }
 
     /**

@@ -52,6 +52,9 @@ app.component('main-app', MainAppComponent);
 
 import RegisterFormComponent from './components/app/ui/RegisterFormComponent.vue';
 app.component('register-form', RegisterFormComponent);
+
+import FloatingBubbleComponent from './components/app/ui/FloatingBubbleComponent.vue';
+app.component('floating-bubble-component', FloatingBubbleComponent);
 //Mount the app
 app.mount('#app');
 

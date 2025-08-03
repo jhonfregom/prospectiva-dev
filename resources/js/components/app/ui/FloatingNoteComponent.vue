@@ -68,7 +68,16 @@
         <div class="note-body">
           <!-- Lista de notas -->
           <div v-if="showNoteList" class="notes-list-section">
-            <h4 class="title is-5">Mis Notas</h4>
+            <div class="notes-header">
+              <h4 class="title is-5">Mis Notas</h4>
+              <button 
+                class="button is-small is-info"
+                @click="refreshNotes"
+                title="Recargar notas"
+              >
+                <i class="fas fa-sync-alt"></i>
+              </button>
+            </div>
             <div v-if="isLoadingNotes" class="has-text-centered">
               <i class="fas fa-spinner fa-spin"></i> Cargando notas...
             </div>
@@ -154,6 +163,15 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import { useTraceabilityStore } from '../../../stores/traceability';
 
+// Configurar axios para incluir el token CSRF
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+if (csrfToken) {
+  axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+  console.log('🔑 CSRF Token configurado:', csrfToken.substring(0, 20) + '...');
+} else {
+  console.error('❌ No se pudo obtener el token CSRF');
+}
+
 export default {
   name: 'FloatingNoteComponent',
   props: {
@@ -206,59 +224,17 @@ export default {
       }
     });
 
-    // Cargar nota existente
+    // Cargar nota existente - DESHABILITADO
     const loadNote = async () => {
-      try {
-        // Verificar si el usuario está autenticado
-        const user = JSON.parse(localStorage.getItem('user')) || {};
-        if (!user.id) {
-          console.log('Usuario no autenticado, saltando carga de nota');
-          return;
-        }
-
-        const params = currentTraceabilityId.value ? { traceability_id: currentTraceabilityId.value } : {};
-        const response = await axios.get('/notes/latest', { params });
-        
-        if (response.data.success && response.data.data) {
-          const note = response.data.data;
-          noteContent.value = note.content || '';
-          noteTitle.value = note.title || '';
-          currentNoteId.value = note.id;
-          lastSaved.value = note.updated_at;
-        }
-      } catch (error) {
-        console.error('Error cargando nota:', error);
-        // No mostrar error si es 401 (no autenticado) o 404 (no hay notas)
-        if (error.response && (error.response.status === 401 || error.response.status === 404)) {
-          console.log('Usuario no autenticado o no hay notas disponibles');
-        }
-      }
+      console.log('📝 Funcionalidad de carga de nota deshabilitada');
+      return;
     };
 
-    // Cargar lista de notas
+    // Cargar lista de notas - DESHABILITADO
     const loadNotesList = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem('user')) || {};
-        if (!user.id) {
-          console.log('Usuario no autenticado, saltando carga de lista');
-          return;
-        }
-
-        isLoadingNotes.value = true;
-        const params = currentTraceabilityId.value ? { traceability_id: currentTraceabilityId.value } : {};
-        const response = await axios.get('/notes', { params });
-        
-        if (response.data.success) {
-          notes.value = response.data.data || [];
-        }
-      } catch (error) {
-        console.error('Error cargando lista de notas:', error);
-        if (error.response && error.response.status === 401) {
-          console.log('Usuario no autenticado');
-        }
-      } finally {
-        isLoadingNotes.value = false;
-      }
+      console.log('📝 Funcionalidad de carga de notas deshabilitada');
+      notes.value = [];
+      return;
     };
 
     // Seleccionar nota de la lista
@@ -281,21 +257,10 @@ export default {
       showNoteList.value = false;
     };
 
-    // Eliminar nota
+    // Eliminar nota - DESHABILITADO
     const deleteNote = async (noteId) => {
-      try {
-        const response = await axios.delete(`/notes/${noteId}`);
-        if (response.data.success) {
-          // Recargar lista
-          await loadNotesList();
-          // Si la nota eliminada era la actual, limpiar editor
-          if (currentNoteId.value === noteId) {
-            createNewNote();
-          }
-        }
-      } catch (error) {
-        console.error('Error eliminando nota:', error);
-      }
+      console.log('📝 Funcionalidad de eliminación de notas deshabilitada');
+      return;
     };
 
     // Funciones de UI
@@ -311,6 +276,12 @@ export default {
         loadNote();
         loadNotesList();
       }
+    };
+
+    // Limpiar caché y recargar notas - DESHABILITADO
+    const refreshNotes = async () => {
+      console.log('📝 Funcionalidad de refresh de notas deshabilitada');
+      return;
     };
 
     const closeNote = () => {
@@ -420,70 +391,16 @@ export default {
       savePosition();
     };
 
-    // Guardar nota
+    // Guardar nota - DESHABILITADO
     const saveNote = async () => {
-      if (!noteContent.value.trim()) {
-        return;
-      }
-
-      // Verificar si el usuario está autenticado
-      const user = JSON.parse(localStorage.getItem('user')) || {};
-      if (!user.id) {
-        console.log('Usuario no autenticado, no se puede guardar nota');
-        return;
-      }
-
-      isSaving.value = true;
-      
-      try {
-        const noteData = {
-          content: noteContent.value,
-          title: noteTitle.value
-        };
-
-        if (currentTraceabilityId.value) {
-          noteData.traceability_id = currentTraceabilityId.value;
-        }
-
-        let response;
-        if (currentNoteId.value) {
-          // Actualizar nota existente
-          response = await axios.put(`/notes/${currentNoteId.value}`, noteData);
-        } else {
-          // Crear nueva nota
-          response = await axios.post('/notes', noteData);
-        }
-
-        if (response.data.success) {
-          if (!currentNoteId.value) {
-            currentNoteId.value = response.data.data.id;
-          }
-          lastSaved.value = new Date().toISOString();
-          
-          // Recargar lista de notas
-          await loadNotesList();
-        }
-      } catch (error) {
-        console.error('Error guardando nota:', error);
-        // No mostrar error si es 401 (no autenticado)
-        if (error.response && error.response.status === 401) {
-          console.log('Usuario no autenticado, no se puede guardar nota');
-        }
-      } finally {
-        isSaving.value = false;
-      }
+      console.log('📝 Funcionalidad de guardado de notas deshabilitada');
+      return;
     };
 
     const autoSave = () => {
-      if (autoSaveTimeout.value) {
-        clearTimeout(autoSaveTimeout.value);
-      }
-      
-      autoSaveTimeout.value = setTimeout(() => {
-        if (noteContent.value.trim()) {
-          saveNote();
-        }
-      }, 2000);
+      // AutoSave deshabilitado
+      console.log('📝 AutoSave deshabilitado');
+      return;
     };
 
     // Formatear fecha
@@ -503,16 +420,12 @@ export default {
     };
 
     // Cargar posición al montar el componente
-    onMounted(() => {
+    onMounted(async () => {
       loadPosition();
       window.addEventListener('resize', handleWindowResize);
       
-      // Cargar nota inicial si el usuario está autenticado
-      const user = JSON.parse(localStorage.getItem('user')) || {};
-      if (user.id) {
-        loadNote();
-        loadNotesList();
-      }
+      // NOTAS DESHABILITADAS - No cargar ni guardar notas
+      console.log('📝 Funcionalidad de notas deshabilitada');
     });
 
     // Limpiar timeout al desmontar
@@ -548,6 +461,7 @@ export default {
       loadNote,
       loadNotesList,
       selectNote,
+      refreshNotes,
       createNewNote,
       deleteNote
     };
@@ -699,6 +613,13 @@ export default {
 .notes-list-section {
   max-height: 400px;
   overflow-y: auto;
+}
+
+.notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .notes-list {

@@ -264,30 +264,8 @@ export default {
             showAuthorizationText: false,
             fields: [],
             copy_msg_user: '',
-            // Sectores económicos
-            economicSectors: [
-                { value: '1', text: 'Agricultura, ganadería, caza, silvicultura y pesca' },
-                { value: '2', text: 'Explotación de minas y canteras' },
-                { value: '3', text: 'Industrias manufactureras' },
-                { value: '4', text: 'Suministro de electricidad, gas, vapor y aire acondicionado' },
-                { value: '5', text: 'Suministro de agua; gestión de residuos y saneamiento ambiental' },
-                { value: '6', text: 'Construcción' },
-                { value: '7', text: 'Comercio al por mayor y al por menor' },
-                { value: '8', text: 'Transporte y almacenamiento' },
-                { value: '9', text: 'Alojamiento y servicios de comida' },
-                { value: '10', text: 'Información y comunicaciones' },
-                { value: '11', text: 'Actividades financieras y de seguros' },
-                { value: '12', text: 'Actividades inmobiliarias' },
-                { value: '13', text: 'Actividades profesionales, científicas y técnicas' },
-                { value: '14', text: 'Actividades administrativas y de apoyo' },
-                { value: '15', text: 'Educación' },
-                { value: '16', text: 'Salud humana y asistencia social' },
-                { value: '17', text: 'Arte, entretenimiento y recreación' },
-                { value: '18', text: 'Otros servicios (organizaciones sociales, sindicatos, ONG, etc.)' },
-                { value: '19', text: 'Administración pública y defensa' },
-                { value: '20', text: 'Actividades de los hogares como empleadores' },
-                { value: '21', text: 'Organismos internacionales y otras instituciones extraterritoriales' }
-            ]
+            // Sectores económicos (se cargarán desde la API)
+            economicSectors: []
         }
     },
 
@@ -301,6 +279,9 @@ export default {
     mounted() {
         // Cerrar dropdowns al hacer clic fuera
         document.addEventListener('click', this.handleClickOutside);
+        
+        // Cargar sectores económicos desde la API
+        this.loadEconomicSectors();
     },
 
     beforeUnmount() {
@@ -422,6 +403,24 @@ export default {
             if (!event.target.closest('.custom-select')) {
                 this.showRegistrationTypeDropdown = false;
                 this.showEconomicSectorDropdown = false;
+            }
+        },
+        
+        async loadEconomicSectors() {
+            try {
+                const response = await fetch('/economic-sectors');
+                const data = await response.json();
+                
+                if (data.success) {
+                    this.economicSectors = data.data.map(sector => ({
+                        value: sector.id.toString(),
+                        text: sector.name
+                    }));
+                } else {
+                    console.error('Error al cargar sectores económicos:', data.message);
+                }
+            } catch (error) {
+                console.error('Error al cargar sectores económicos:', error);
             }
         },
         toggleDataAuthorization() {

@@ -35,4 +35,29 @@ return [
         ],
     ],
 
+    'google' => [
+        'search_api_key' => env('GOOGLE_SEARCH_API_KEY'),
+        'search_engine_id' => env('GOOGLE_SEARCH_ENGINE_ID'),
+    ],
+
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+    ],
+
+    'huggingface' => [
+        'api_key' => env('HUGGINGFACE_API_KEY'),
+    ],
+
+    'deepseek' => [
+        'api_key' => env('DEEPSEEK_API_KEY'),
+    ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+    ],
+
+    'openrouter' => [
+        'api_key' => env('OPENROUTER_API_KEY'),
+    ],
+
 ];

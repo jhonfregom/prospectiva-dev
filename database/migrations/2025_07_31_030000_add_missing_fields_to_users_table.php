@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Agregar campos faltantes
-            if (!Schema::hasColumn('users', 'email')) {
-                $table->string('email', 255)->nullable();
-            }
+            // Agregar campos faltantes (email eliminado permanentemente)
             if (!Schema::hasColumn('users', 'economic_sector')) {
                 $table->integer('economic_sector')->nullable();
             }
@@ -31,8 +28,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Remover campos agregados
-            $table->dropColumn(['email', 'economic_sector', 'registration_type']);
+            // Remover campos agregados (email no se restaura)
+            $table->dropColumn(['economic_sector', 'registration_type']);
         });
     }
 };

@@ -11,7 +11,6 @@ class Note extends Model
 
     protected $fillable = [
         'user_id',
-        'traceability_id',
         'content',
         'title'
     ];
@@ -24,43 +23,25 @@ class Note extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Relación con la trazabilidad (ruta)
-     */
-    public function traceability()
-    {
-        return $this->belongsTo(Traceability::class);
-    }
+
 
     /**
-     * Obtener notas por usuario y ruta
+     * Obtener notas por usuario
      */
-    public static function getByUserAndRoute($userId, $traceabilityId = null)
+    public static function getByUser($userId)
     {
-        $query = static::where('user_id', $userId);
-        
-        if ($traceabilityId) {
-            $query->where('traceability_id', $traceabilityId);
-        } else {
-            $query->whereNull('traceability_id');
-        }
-        
-        return $query->orderBy('created_at', 'desc')->get();
+        return static::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     /**
      * Obtener la nota más reciente del usuario
      */
-    public static function getLatestByUser($userId, $traceabilityId = null)
+    public static function getLatestByUser($userId)
     {
-        $query = static::where('user_id', $userId);
-        
-        if ($traceabilityId) {
-            $query->where('traceability_id', $traceabilityId);
-        } else {
-            $query->whereNull('traceability_id');
-        }
-        
-        return $query->orderBy('created_at', 'desc')->first();
+        return static::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->first();
     }
 } 

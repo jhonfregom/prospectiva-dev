@@ -1,10 +1,8 @@
 <template>
     <div class="main-content">
     <section class="intro-section">
-    <h2>{{ storeTexts.variables.title_introduction }}</h2>
-        <p>
-            {{ storeTexts.variables.content_introduction }}
-        </p>
+    <h2>{{ storeTexts.variables_section.title_introduction }}</h2>
+        <div v-html="storeTexts.variables_section.content_introduction"></div>
 </section>
         <!-- Nuevo Stepper visual custom -->
         <CustomStepper
@@ -42,6 +40,12 @@ export default {
         const storeTexts = useTextsStore();
         const storeSession = useSessionStore();
         const traceabilityStore = useTraceabilityStore();
+        
+        // Debug: verificar si los textos se cargan correctamente
+        console.log('StoreTexts:', storeTexts);
+        console.log('Variables section texts:', storeTexts.variables_section);
+        console.log('Title introduction:', storeTexts.variables_section?.title_introduction);
+        console.log('Content introduction:', storeTexts.variables_section?.content_introduction);
         const steps = [
             { label: 'Variables', icon: 'fa-list' },
             { label: 'Matriz', icon: 'fa-th' },
@@ -210,9 +214,10 @@ export default {
     margin-bottom: 15px;
 }
 
-.intro-section p {
+.intro-section div {
     margin-bottom: 10px;
     font-size: 1rem;
+    line-height: 1.6;
 }
 
 .new-route-section {

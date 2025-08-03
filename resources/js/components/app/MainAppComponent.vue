@@ -14,10 +14,9 @@
             />
         <!-- /Content Main -->
         
-        <!-- Componente de notas flotantes - siempre disponible -->
-        <floating-note-component 
+        <!-- Componente de burbuja flotante - siempre disponible -->
+        <floating-bubble-component 
           v-if="isLoadedResources"
-          :traceability-id="currentTraceabilityId"
         />
     </div>
 </template>
@@ -41,8 +40,8 @@
     import navbarTop from './ui/navbar-top/NavbarTopMenuComponent.vue';
     //Import ContentMain
     import contentMain from './layouts/ContentMainComponent.vue';
-    //Import FloatingNoteComponent
-    import FloatingNoteComponent from './ui/FloatingNoteComponent.vue';
+    //Import FloatingBubbleComponent
+import FloatingBubbleComponent from './ui/FloatingBubbleComponent.vue';
     //Import Vue composables
     import { computed } from 'vue';
 
@@ -70,7 +69,7 @@
         components: {
             navbarTop,
             contentMain,
-            FloatingNoteComponent,
+            FloatingBubbleComponent,
         },
         props: {
             urls_json: {
