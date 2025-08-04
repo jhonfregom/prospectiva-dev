@@ -11,7 +11,7 @@
       class="bubble-toggle"
       @click="toggleMenu"
       :class="{ 'is-active': isMenuOpen }"
-      title="Herramientas de prospectiva: Notas, IA e Información"
+      :title="textsStore.getText('floating_bubble.tools_title')"
     >
       <i class="fas fa-magic"></i>
     </div>
@@ -22,27 +22,27 @@
       :class="{ 'is-open': isMenuOpen }"
     >
       <!-- Opción de Notas -->
-      <div class="menu-option" @click="openNotes" title="Registrar observaciones y reflexiones sobre el entorno que influye en la organización">
+      <div class="menu-option" @click="openNotes" :title="textsStore.getText('floating_bubble.notes_tooltip')">
         <div class="option-icon">
           <i class="fas fa-sticky-note"></i>
         </div>
-        <span class="option-text">Notas</span>
+        <span class="option-text">{{ textsStore.getText('floating_bubble.notes') }}</span>
       </div>
 
              <!-- Opción de IA -->
-       <div class="menu-option" @click="openAI" title="Asistente IA para análisis, corrección y mejora de textos">
+       <div class="menu-option" @click="openAI" :title="textsStore.getText('floating_bubble.ai_tooltip')">
          <div class="option-icon">
            <i class="fas fa-robot"></i>
          </div>
-         <span class="option-text">Asistente IA</span>
+         <span class="option-text">{{ textsStore.getText('floating_bubble.ai_assistant') }}</span>
        </div>
 
        <!-- Opción de Información -->
-       <div class="menu-option" @click="showOrientingText" title="Ver texto orientador">
+       <div class="menu-option" @click="showOrientingText" :title="textsStore.getText('floating_bubble.info_tooltip')">
          <div class="option-icon">
            <i class="fas fa-info-circle"></i>
          </div>
-         <span class="option-text">Información</span>
+         <span class="option-text">{{ textsStore.getText('floating_bubble.information') }}</span>
        </div>
 
 
@@ -70,7 +70,7 @@
              <div class="notes-header">
                <h4>Mis Notas</h4>
                <button @click="newNote" class="new-note-btn">
-                 <i class="fas fa-plus"></i> Nueva
+                 <i class="fas fa-plus"></i> {{ textsStore.getText('floating_bubble.new_note') }}
                </button>
              </div>
              <div class="notes-list">
@@ -82,11 +82,11 @@
                  :class="{ 'selected': selectedNoteIndex === index }"
                >
                  <div class="note-preview">
-                   <h5>{{ note.title || 'Nota sin título' }}</h5>
-                   <p>{{ note.content ? (note.content.substring(0, 80) + (note.content.length > 80 ? '...' : '')) : 'Sin contenido' }}</p>
+                   <h5>{{ note.title || textsStore.getText('floating_bubble.note_without_title') }}</h5>
+                   <p>{{ note.content ? (note.content.substring(0, 80) + (note.content.length > 80 ? '...' : '')) : textsStore.getText('floating_bubble.no_content') }}</p>
                    <small>{{ formatDate(note.updated_at) }}</small>
                  </div>
-                 <button @click.stop="deleteNote(index)" class="delete-note-btn" title="Eliminar nota">
+                 <button @click.stop="deleteNote(index)" class="delete-note-btn" :title="textsStore.getText('floating_bubble.delete_note_tooltip')">
                    <i class="fas fa-trash"></i>
                  </button>
                </div>
@@ -101,12 +101,12 @@
                  class="note-title-input"
                />
                <button @click="saveNote" class="save-btn" :disabled="!currentNote.title.trim() && !currentNote.content.trim()">
-                 <i class="fas fa-save"></i> Guardar
+                 <i class="fas fa-save"></i> {{ textsStore.getText('floating_bubble.save') }}
                </button>
              </div>
              <textarea 
                v-model="currentNote.content" 
-               placeholder="Escribe tu nota aquí..."
+               :placeholder="textsStore.getText('floating_bubble.note_placeholder')"
                class="note-content-input"
                rows="25"
              ></textarea>
@@ -153,20 +153,8 @@
        >
          <div class="modal-header">
            <div class="header-content">
-             <h3>Asistente IA</h3>
-             <div class="ai-provider-selector">
-               <label>IA:</label>
-                                <select v-model="selectedAIProvider" @change="onAIProviderChange">
-                   <option value="openrouter">🦙 Llama 3 (OpenRouter)</option>
-                   <option value="ollama">🤖 Ollama (Local)</option>
-                 </select>
-                         <span class="provider-status" :class="selectedAIProvider">
-                         {{
-               selectedAIProvider === 'openrouter' ? '✅ Conectado' :
-               selectedAIProvider === 'ollama' ? '✅ Conectado' : ''
-             }}
-          </span>
-             </div>
+             <h3>🦙 Asistente IA Llama 3</h3>
+             <span class="provider-status openrouter">✅ Conectado</span>
            </div>
            <button @click="closeAI" class="close-btn">
              <i class="fas fa-times"></i>
@@ -210,7 +198,7 @@
            <textarea
              v-model="currentAIMessage"
              @keydown="handleAIKeydown"
-             placeholder="Escribe tu texto para que lo analice o corrija... (Shift+Enter para nueva línea, Enter para enviar)"
+             :placeholder="textsStore.getText('floating_bubble.ai_placeholder')"
              rows="4"
              :disabled="isTyping"
            ></textarea>
@@ -230,8 +218,15 @@
  </template>
 
 <script>
+import { useTextsStore } from '../../../stores/texts';
+
 export default {
   name: 'FloatingBubbleComponent',
+  setup() {
+    const textsStore = useTextsStore();
+    return { textsStore };
+  },
+  
   data() {
     return {
       // Posición de la burbuja
@@ -255,8 +250,6 @@ export default {
        aiMessages: [],
        currentAIMessage: '',
        isTyping: false,
-                    selectedAIProvider: 'openrouter', // 'openrouter', 'ollama'
-       ollamaUrl: '/ollama/generate',
        openrouterUrl: '/openrouter/generate',
         
 
@@ -534,17 +527,7 @@ export default {
     },
     
     initializeAIMessage() {
-      let providerText, welcomeMessage;
-      if (this.selectedAIProvider === 'openrouter') {
-        providerText = '🦙 Asistente IA Llama 3 (OpenRouter)';
-        welcomeMessage = `¡Hola! Soy tu ${providerText}. ¿En qué puedo ayudarte hoy? 😊`;
-      } else if (this.selectedAIProvider === 'ollama') {
-        providerText = '🤖 Asistente IA Local (Ollama)';
-        welcomeMessage = `¡Hola! Soy tu ${providerText}. ¿En qué puedo ayudarte hoy? 😊`;
-             } else {
-         providerText = '🤖 Asistente IA Local (Ollama)';
-         welcomeMessage = `¡Hola! Soy tu ${providerText}. ¿En qué puedo ayudarte hoy? 😊`;
-       }
+      const welcomeMessage = '¡Hola! Soy tu 🦙 Asistente IA Llama 3. ¿En qué puedo ayudarte hoy? 😊';
       this.addAIMessage({
         type: 'bot',
         text: welcomeMessage,
@@ -577,9 +560,8 @@ export default {
              try {
          let response;
          
-         // Usar solo Ollama
-           const prompt = this.createPrompt(userMessage);
-           response = await this.callAI(prompt);
+         const prompt = this.createPrompt(userMessage);
+         response = await this.callAI(prompt);
          
          // Reemplazar el mensaje de "pensando" con la respuesta real
          const thinkingMessageIndex = this.aiMessages.findIndex(msg => msg.isThinking);
@@ -652,30 +634,12 @@ ${conversationHistory}Usuario: ${userText}`;
     },
     
          async callAI(prompt) {
-       let url, requestBody;
-       if (this.selectedAIProvider === 'openrouter') {
-         url = this.openrouterUrl;
-         requestBody = {
-           prompt: prompt,
-           model: 'meta-llama/llama-3-8b-instruct',
-           temperature: 0.7
-         };
-       } else if (this.selectedAIProvider === 'ollama') {
-         url = this.ollamaUrl;
-         requestBody = {
-           model: 'gemma3:4b',
-           prompt: prompt,
-           stream: false,
-           options: {
-             temperature: 0.3,
-             top_p: 0.7,
-             max_tokens: 4000,
-             num_predict: 150,
-             top_k: 15,
-             repeat_penalty: 1.05
-           }
-         };
-       }
+       const url = this.openrouterUrl;
+       const requestBody = {
+         prompt: prompt,
+         model: 'meta-llama/llama-3-8b-instruct',
+         temperature: 0.7
+       };
        
        const response = await fetch(url, {
          method: 'POST',
@@ -692,11 +656,7 @@ ${conversationHistory}Usuario: ${userText}`;
        return data.response || 'No se recibió respuesta del modelo.';
      },
      
-     onAIProviderChange() {
-       // Limpiar mensajes cuando se cambia de proveedor
-       this.aiMessages = [];
-       this.initializeAIMessage();
-     },
+
      
 
     
@@ -1630,79 +1590,7 @@ ${conversationHistory}Usuario: ${userText}`;
   flex: 1;
 }
 
-.ai-provider-selector {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 8px 12px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-}
 
-.ai-provider-selector label {
-  color: white;
-  font-weight: 600;
-  font-size: 13px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.ai-provider-selector select {
-  padding: 6px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(5px);
-  min-width: 140px;
-}
-
-.ai-provider-selector select:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.ai-provider-selector select:focus {
-  outline: none;
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.7);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
-}
-
-.ai-provider-selector select option {
-  background: #2c3e50;
-  color: white;
-  padding: 8px;
-}
-
-/* Efectos adicionales para el selector de IA */
-.ai-provider-selector::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  border-radius: 12px;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.ai-provider-selector:hover::before {
-  opacity: 1;
-}
 
 /* Efecto sutil para el estado del proveedor */
 .provider-status:hover {
@@ -1722,11 +1610,7 @@ ${conversationHistory}Usuario: ${userText}`;
   transition: all 0.3s ease;
 }
 
-.provider-status.ollama {
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(76, 175, 80, 0.7));
-  color: white;
-  border-color: rgba(76, 175, 80, 0.5);
-}
+
 
 .provider-status.openrouter {
   background: linear-gradient(135deg, rgba(33, 150, 243, 0.9), rgba(33, 150, 243, 0.7));

@@ -219,6 +219,60 @@ export const useTextsStore = defineStore('texts', {
                 conclusions: 'Conclusiones'
             }
         },
+        
+        // Variables Section - Textos adicionales
+        variables_section: {
+            close_button: 'Cerrar',
+            return_button: 'Regresar',
+            close_confirm_title: 'Confirmar Cierre',
+            close_confirm_message: '¿Estás seguro de cerrar el módulo? No podrás editar más.',
+            return_confirm_title: 'Confirmar Regreso',
+            return_confirm_message: '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.',
+            confirm_yes: 'Sí, cerrar',
+            confirm_yes_return: 'Sí, regresar',
+            confirm_no: 'Cancelar',
+            cancel: 'Cancelar'
+        },
+        
+        // Floating Bubble - Textos del menú flotante
+        floating_bubble: {
+            notes: 'Notas',
+            ai_assistant: 'Asistente IA',
+            information: 'Información',
+            new_note: 'Nueva',
+            save: 'Guardar',
+            note_without_title: 'Nota sin título',
+            no_content: 'Sin contenido',
+            note_placeholder: 'Escribe tu nota aquí...',
+            ai_placeholder: 'Escribe tu texto para que lo analice o corrija... (Shift+Enter para nueva línea, Enter para enviar)',
+            tools_title: 'Herramientas de prospectiva: Notas, IA e Información',
+            notes_tooltip: 'Registrar observaciones y reflexiones sobre el entorno que influye en la organización',
+            ai_tooltip: 'Asistente IA para análisis, corrección y mejora de textos',
+            info_tooltip: 'Ver texto orientador',
+            delete_note_tooltip: 'Eliminar nota'
+        },
+        
+        // Register Form - Textos del formulario de registro
+        register: {
+            select_type_placeholder: 'Seleccione el tipo de registro',
+            natural_person: 'Persona Natural',
+            company: 'Empresa'
+        },
+        
+        // Steps/Navigation - Textos de navegación
+        steps: {
+            variables: 'Variables',
+            matrix: 'Matriz',
+            graphics: 'Gráfica',
+            analysis: 'Mapa',
+            hypothesis: 'Direccionador',
+            schwartz: 'Schwartz',
+            initial_conditions: 'Condiciones',
+            scenarios: 'Escenarios',
+            conclusions: 'Conclusiones',
+            results: 'Resultados',
+            new: 'Nueva'
+        },
     }),
     getters: {
         /**

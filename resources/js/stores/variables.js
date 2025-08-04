@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import { useTextsStore } from './texts';
 
 export const useVariablesStore = defineStore('variables', {
     state: () => ({
@@ -9,69 +10,74 @@ export const useVariablesStore = defineStore('variables', {
     }),
 
     getters: {
-        getColumns: () => [
-            {
-                field: 'id',
-                label: 'VARIABLE',
-                width: '100',
-                sortable: true,
-                customKey: 'id_variable',
-                class: 'has-text-centered'
-            },
-            {
-                field: 'name_variable',
-                label: 'NOMBRE',
-                width: '150',
-                class: 'has-text-left'
-            },
-            {
-                field: 'description',
-                label: 'DESCRIPCIÓN',
-                width: '400',
-                class: 'description-column has-text-left'
-            },
-            {
-                field: 'score',
-                label: 'SCORE',
-                width: '100',
-                numeric: true,
-                class: 'has-text-centered'
-            },
-            {
-                field: 'score',
-                label: 'ESTADO',
-                width: '150',
-                class: 'has-text-centered'
-            },
-            {
-                field: 'actions',
-                label: 'ACCIONES',
-                width: '200',
-                centered: true,
-                class: 'has-text-centered'
-            }
-        ],
+        getColumns: () => {
+            const textsStore = useTextsStore();
+            return [
+                {
+                    field: 'id',
+                    label: textsStore.getText('variables.table.variable'),
+                    width: '100',
+                    sortable: true,
+                    customKey: 'id_variable',
+                    class: 'has-text-centered'
+                },
+                {
+                    field: 'name_variable',
+                    label: textsStore.getText('variables.table.name'),
+                    width: '150',
+                    class: 'has-text-left'
+                },
+                {
+                    field: 'description',
+                    label: textsStore.getText('variables.table.description'),
+                    width: '400',
+                    class: 'description-column has-text-left'
+                },
+                {
+                    field: 'score',
+                    label: textsStore.getText('variables.table.score'),
+                    width: '100',
+                    numeric: true,
+                    class: 'has-text-centered'
+                },
+                {
+                    field: 'score',
+                    label: textsStore.getText('variables.table.state'),
+                    width: '150',
+                    class: 'has-text-centered'
+                },
+                {
+                    field: 'actions',
+                    label: textsStore.getText('variables.table.actions'),
+                    width: '200',
+                    centered: true,
+                    class: 'has-text-centered'
+                }
+            ];
+        },
 
         getVariableStatus: (state) => (score) => {
+            const textsStore = useTextsStore();
             if (score <= 25) {
-                return 'DEBES MEJORAR';
+                return textsStore.getText('analysis.diagnosis.0.text');
             } else if (score <= 50) {
-                return 'FALTA ALGO MAS';
+                return textsStore.getText('analysis.diagnosis.1.text');
             } else if (score <= 100) {
-                return 'UN ESFUERZO MAS';
+                return textsStore.getText('analysis.diagnosis.2.text');
             } else {
-                return 'LO LOGRASTE';
+                return textsStore.getText('analysis.diagnosis.3.text');
             }
         },
 
         getStateText: () => (state) => {
+            const textsStore = useTextsStore();
             const states = {
-                0: 'DEBES MEJORAR',
-                1: 'FALTA ALGO MAS',
-                2: 'UN ESFUERZO MAS',
-                3: 'LO LOGRASTE'
+                0: textsStore.getText('analysis.diagnosis.0.text'),
+                1: textsStore.getText('analysis.diagnosis.1.text'),
+                2: textsStore.getText('analysis.diagnosis.2.text'),
+                3: textsStore.getText('analysis.diagnosis.3.text')
             };
-            return states[state] || 'DEBES MEJORAR';
+            return states[state] || textsStore.getText('analysis.diagnosis.0.text');
         }
     },
 

@@ -69,17 +69,17 @@ class TestDataSeeder extends Seeder
 
         // Usuario de prueba original (admin)
         $testUser = User::create([
-            'id' => 1,
-            'first_name' => 'Test User',
-            'last_name' => 'Example',
-            'document_id' => 123456789,
-            'user' => 'test@example.com',
-            'password' => Hash::make('abcd1234'),
-            'status_users_id' => StateUser::STATUS_ACTIVE,
+                'id' => 1,
+                'first_name' => 'Test User',
+                'last_name' => 'Example',
+                'document_id' => 123456789,
+                'user' => 'test@example.com',
+                'password' => Hash::make('abcd1234'),
+                'status_users_id' => StateUser::STATUS_ACTIVE,
             'role' => 1, // Administrador
             'economic_sector' => 1, // Tecnología
             'registration_type' => 'natural'
-        ]);
+            ]);
 
         // Usuarios naturales (personas físicas)
         $naturalUsers = [
@@ -199,7 +199,7 @@ class TestDataSeeder extends Seeder
 
         // Crear todos los usuarios
         foreach (array_merge($naturalUsers, $companyUsers) as $userData) {
-            User::create($userData);
+                User::create($userData);
         }
 
         // Crear datos de trazabilidad para cada usuario

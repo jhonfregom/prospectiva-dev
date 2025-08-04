@@ -82,27 +82,27 @@
         v-if="!cerrado"
         @click="confirmarCerrar"
         :disabled="cerrado"
-      >Cerrar</button>
+      >{{ textsStore.getText('variables_section.close_button') }}</button>
       <button
         class="cerrar-btn"
         v-else-if="state !== null && state === '0'"
         @click="confirmarRegresar"
-      >Regresar</button>
+      >{{ textsStore.getText('variables_section.return_button') }}</button>
     </div>
     <!-- Modal de confirmación -->
     <div v-if="mostrarModal" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
-        <button @click="cerrarModulo">Sí, cerrar</button>
-        <button @click="mostrarModal = false">Cancelar</button>
+        <p>{{ textsStore.getText('variables_section.close_confirm_message') }}</p>
+        <button @click="cerrarModulo">{{ textsStore.getText('variables_section.confirm_yes') }}</button>
+        <button @click="mostrarModal = false">{{ textsStore.getText('variables_section.confirm_no') }}</button>
       </div>
     </div>
     <!-- Modal de confirmación para regresar -->
     <div v-if="mostrarModalRegresar" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
-        <button @click="regresarModulo">Sí, regresar</button>
-        <button @click="mostrarModalRegresar = false">Cancelar</button>
+        <p>{{ textsStore.getText('variables_section.return_confirm_message') }}</p>
+        <button @click="regresarModulo">{{ textsStore.getText('variables_section.confirm_yes_return') }}</button>
+        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('variables_section.confirm_no') }}</button>
       </div>
     </div>
     
@@ -142,6 +142,21 @@ export default {
             return user.role === 1;
         });
 
+        // Computed property para los steps con textos del store
+        const steps = computed(() => [
+            { key: 'variables', label: textsStore.getText('steps.variables'), icon: 'fas fa-list' },
+            { key: 'matrix', label: textsStore.getText('steps.matrix'), icon: 'fas fa-th' },
+            { key: 'graphics', label: textsStore.getText('steps.graphics'), icon: 'fas fa-chart-bar' },
+            { key: 'analysis', label: textsStore.getText('steps.analysis'), icon: 'fas fa-map' },
+            { key: 'hypothesis', label: textsStore.getText('steps.hypothesis'), icon: 'fas fa-bolt' },
+            { key: 'schwartz', label: textsStore.getText('steps.schwartz'), icon: 'fas fa-project-diagram' },
+            { key: 'initialconditions', label: textsStore.getText('steps.initial_conditions'), icon: 'fas fa-flag' },
+            { key: 'scenarios', label: textsStore.getText('steps.scenarios'), icon: 'fas fa-cubes' },
+            { key: 'conclusions', label: textsStore.getText('steps.conclusions'), icon: 'fas fa-lightbulb' },
+            { key: 'results', label: textsStore.getText('steps.results'), icon: 'fas fa-trophy' },
+            { key: 'nueva', label: textsStore.getText('steps.new'), icon: 'fas fa-star' },
+        ]);
+
         return { 
             variablesStore, 
             sectionStore,
@@ -149,7 +164,8 @@ export default {
             variables,
             isLoading,
             storeSession,
-            isAdmin
+            isAdmin,
+            steps
         };
     },
 
@@ -162,19 +178,7 @@ export default {
             mostrarModal: false,
             mostrarModalRegresar: false,
             state: null, // Se inicializa como null hasta cargar desde traceability
-            steps: [
-                { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
-                { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
-                { key: 'graphics', label: 'Gráfica', icon: 'fas fa-chart-bar' },
-                { key: 'analysis', label: 'Mapa', icon: 'fas fa-map' },
-                { key: 'hypothesis', label: 'Direccionador', icon: 'fas fa-bolt' },
-                { key: 'schwartz', label: 'Schwartz', icon: 'fas fa-project-diagram' },
-                { key: 'initialconditions', label: 'Condiciones', icon: 'fas fa-flag' },
-                { key: 'scenarios', label: 'Escenarios', icon: 'fas fa-cubes' },
-                { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
-                { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
-                { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
-            ]
+            steps: []
         };
     },
 

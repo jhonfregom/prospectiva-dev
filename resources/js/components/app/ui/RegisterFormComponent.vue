@@ -15,7 +15,7 @@
                         class="select-button"
                         @click="toggleRegistrationTypeDropdown"
                         :class="{ 'is-active': showRegistrationTypeDropdown }">
-                        <span v-if="!registration_type" class="placeholder">Seleccione el tipo de registro</span>
+                        <span v-if="!registration_type" class="placeholder">{{ textsStore.getText('register.select_type_placeholder') }}</span>
                         <span v-else>{{ getRegistrationTypeText(registration_type) }}</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
@@ -24,13 +24,13 @@
                             class="option" 
                             @click="selectRegistrationType('natural')"
                             :class="{ 'selected': registration_type === 'natural' }">
-                            Persona Natural
+                            {{ textsStore.getText('register.natural_person') }}
                         </div>
                         <div 
                             class="option" 
                             @click="selectRegistrationType('company')"
                             :class="{ 'selected': registration_type === 'company' }">
-                            Empresa u Organización
+                            {{ textsStore.getText('register.company') }}
                         </div>
                     </div>
                     <input type="hidden" name="registration_type" :value="registration_type">
@@ -221,11 +221,13 @@
 <script>
 import { capitalize } from '../../../../js/functions';
 import { useUrlsStore } from '../../../stores/urls';
+import { useTextsStore } from '../../../stores/texts';
 
 export default {
     setup() {
         const storeUrls = useUrlsStore();
-        return { storeUrls };
+        const textsStore = useTextsStore();
+        return { storeUrls, textsStore };
     },
     props: {
         csrf_token: {
@@ -391,8 +393,8 @@ export default {
             this.showEconomicSectorDropdown = false;
         },
         getRegistrationTypeText(value) {
-            if (value === 'natural') return 'Persona Natural';
-            if (value === 'company') return 'Empresa u Organización';
+            if (value === 'natural') return this.textsStore.getText('register.natural_person');
+            if (value === 'company') return this.textsStore.getText('register.company');
             return '';
         },
         getEconomicSectorText(value) {
