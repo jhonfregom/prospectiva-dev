@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class OllamaProxyController extends Controller
 {
-    private $ollamaUrl = 'http:
+    private $ollamaUrl = 'http://localhost:11434';
 
     public function generate(Request $request): JsonResponse
     {

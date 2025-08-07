@@ -39,7 +39,7 @@ class TestNotesFrontend extends Command
                 'Content-Type' => 'application/json',
                 'Cache-Control' => 'no-cache',
                 'Pragma' => 'no-cache'
-            ])->get('http:
+            ])->get('http://localhost:8000/api/notes');
             
             $this->info("Status: " . $response->status());
             $this->info("Response: " . $response->body());
@@ -68,7 +68,7 @@ class TestNotesFrontend extends Command
                 'X-CSRF-TOKEN' => $csrfToken,
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json'
-            ])->post('http:
+            ])->post('http://localhost:8000/api/notes', $noteData);
             
             $this->info("Status: " . $response->status());
             $this->info("Response: " . $response->body());
@@ -89,7 +89,7 @@ class TestNotesFrontend extends Command
                             'Content-Type' => 'application/json',
                             'Cache-Control' => 'no-cache',
                             'Pragma' => 'no-cache'
-                        ])->get('http:
+                        ])->get('http://localhost:8000/api/notes');
                         
                         if ($response2->successful()) {
                             $data2 = $response2->json();

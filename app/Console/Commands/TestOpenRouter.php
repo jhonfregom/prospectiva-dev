@@ -25,7 +25,7 @@ class TestOpenRouter extends Command
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(30)->post('https:
+            ])->timeout(30)->withoutVerifying()->post('https://openrouter.ai/api/v1/chat/completions', [
                 'model' => 'meta-llama/llama-3-8b-instruct',
                 'messages' => [
                                          ['role' => 'system', 'content' => 'Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Responde en español de manera natural y concisa.'],

@@ -17,7 +17,7 @@ class CheckOllama extends Command
     {
         $this->info('Verificando estado de Ollama...');
         
-        $ollamaUrl = 'http:
+        $ollamaUrl = 'http://localhost:11434';
         
         try {
             
@@ -86,7 +86,7 @@ class CheckOllama extends Command
             $this->line("   Error: {$e->getMessage()}");
             $this->info('');
             $this->info('Para solucionar esto:');
-            $this->line('1. Instala Ollama desde https:
+            $this->line('1. Instala Ollama desde https://ollama.ai');
             $this->line('2. Ejecuta: ollama serve');
             $this->line('3. En otra terminal, ejecuta: ollama pull gemma3:4b');
         }

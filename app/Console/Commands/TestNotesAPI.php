@@ -23,7 +23,7 @@ class TestNotesAPI extends Command
 
         $this->info("\n📝 Probando GET /notes");
         try {
-            $response = Http::get('http:
+            $response = Http::get('http://localhost:8000/api/notes');
             $this->info("Status: " . $response->status());
             $this->info("Response: " . $response->body());
         } catch (\Exception $e) {
@@ -37,7 +37,7 @@ class TestNotesAPI extends Command
                 'content' => 'Contenido de prueba creado vía API el ' . now()->format('Y-m-d H:i:s')
             ];
             
-            $response = Http::post('http:
+            $response = Http::post('http://localhost:8000/api/notes', $noteData);
             $this->info("Status: " . $response->status());
             $this->info("Response: " . $response->body());
             

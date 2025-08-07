@@ -31,13 +31,13 @@ class TestNotesAPIReal extends Command
         $csrfToken = csrf_token();
         $this->info("🔑 CSRF Token: " . substr($csrfToken, 0, 20) . "...");
 
-        $this->info("\n📝 Probando GET /notes");
+                    $this->info("\n📝 Probando GET /notes");
         try {
             $response = Http::withHeaders([
                 'X-CSRF-TOKEN' => $csrfToken,
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json'
-            ])->get('http:
+            ])->get('http://localhost:8000/api/notes');
             
             $this->info("Status: " . $response->status());
             $this->info("Response: " . $response->body());
@@ -67,7 +67,7 @@ class TestNotesAPIReal extends Command
                 'X-CSRF-TOKEN' => $csrfToken,
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json'
-            ])->post('http:
+            ])->post('http://localhost:8000/api/notes', $noteData);
             
             $this->info("Status: " . $response->status());
             $this->info("Response: " . $response->body());
@@ -86,7 +86,7 @@ class TestNotesAPIReal extends Command
                             'X-CSRF-TOKEN' => $csrfToken,
                             'Accept' => 'application/json',
                             'Content-Type' => 'application/json'
-                        ])->get('http:
+                        ])->get('http://localhost:8000/api/notes');
                         
                         if ($response2->successful()) {
                             $data2 = $response2->json();

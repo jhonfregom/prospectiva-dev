@@ -36,7 +36,7 @@ class TestNotesAPICSRF extends Command
                 'X-CSRF-TOKEN' => $csrfToken,
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json'
-            ])->post('http:
+            ])->post('http://localhost:8000/api/notes', $noteData);
             
             $this->info("Status: " . $response->status());
             $this->info("Response: " . $response->body());

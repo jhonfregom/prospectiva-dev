@@ -19,7 +19,7 @@ class TestOllamaProxy extends Command
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json'
-            ])->post('http:
+            ])->post('http://localhost:8000/api/ollama-proxy', [
                 'model' => 'gemma3:4b',
                 'prompt' => 'Hola, ¿cómo estás?',
                 'stream' => false,

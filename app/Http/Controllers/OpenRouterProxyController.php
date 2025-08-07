@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class OpenRouterProxyController extends Controller
 {
-    protected $baseUrl = 'https:
+    protected $baseUrl = 'https://openrouter.ai/api/v1';
     protected $apiKey;
 
     public function __construct()
@@ -40,7 +40,7 @@ class OpenRouterProxyController extends Controller
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(60)->post($this->baseUrl, [
+            ])->timeout(60)->withoutVerifying()->post($this->baseUrl . '/chat/completions', [
                 'model' => $model,
                 'messages' => [
                                          ['role' => 'system', 'content' => 'Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Responde en español de manera natural y concisa.'],

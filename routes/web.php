@@ -14,9 +14,6 @@ use App\Http\Controllers\ConclusionController;
 use App\Http\Controllers\TraceabilityController;
 use App\Http\Controllers\NoteController;
 use App\Http\Controllers\OllamaProxyController;
-use App\Http\Controllers\ChatGPTProxyController;
-use App\Http\Controllers\DeepSeekProxyController;
-use App\Http\Controllers\GeminiProxyController;
 use App\Http\Controllers\EconomicSectorController;
 use App\Http\Controllers\OpenRouterProxyController;
 use App\Http\Controllers\PasswordResetController;
@@ -159,20 +156,7 @@ Route::get('/results/users-by-route', [\App\Http\Controllers\UserController::cla
         Route::get('/ollama/models', 'models')->name('ollama.models');
     });
 
-    Route::controller(ChatGPTProxyController::class)->group(function(){
-    Route::post('/chatgpt/generate', 'generate')->name('chatgpt.generate');
-    Route::get('/chatgpt/health', 'healthCheck')->name('chatgpt.health');
-});
 
-Route::controller(DeepSeekProxyController::class)->group(function(){
-    Route::post('/deepseek/generate', 'generate')->name('deepseek.generate');
-    Route::get('/deepseek/health', 'healthCheck')->name('deepseek.health');
-});
-
-Route::controller(GeminiProxyController::class)->group(function(){
-    Route::post('/gemini/generate', 'generate')->name('gemini.generate');
-    Route::get('/gemini/health', 'healthCheck')->name('gemini.health');
-});
 
     Route::controller(OpenRouterProxyController::class)->group(function(){
         Route::post('/openrouter/generate', 'generate')->name('openrouter.generate');

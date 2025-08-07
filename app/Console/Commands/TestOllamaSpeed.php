@@ -14,7 +14,7 @@ class TestOllamaSpeed extends Command
     {
         $this->info('🚀 Probando velocidad de Ollama...');
         
-        $ollamaUrl = 'http:
+        $ollamaUrl = 'http://localhost:11434';
 
         $fastConfig = [
             'model' => 'gemma3:4b',
