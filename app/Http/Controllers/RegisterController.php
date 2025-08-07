@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Traceability;
 use Illuminate\Support\Facades\Auth;
+use App\Events\UserRegistered;
 
 class RegisterController extends Controller
 {
@@ -142,8 +143,15 @@ class RegisterController extends Controller
             $request->validate([
                 'registration_type' => 'required|in:natural,company',
                 'user' => 'required|string|email|max:255|unique:users,user',
-                'password' => 'required|string|min:8',
+                'password' => 'required|string|min:8|max:255|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
                 'confirm_password' => 'required|string|min:8|same:password',
+            ], [
+                'password.required' => 'La contraseña es obligatoria.',
+                'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+                'password.max' => 'La contraseña no puede exceder los 255 caracteres.',
+                'password.regex' => 'La contraseña debe contener al menos una letra mayúscula, una minúscula, un número y un carácter especial (@$!%*?&).',
+                'confirm_password.required' => 'La confirmación de contraseña es obligatoria.',
+                'confirm_password.same' => 'La confirmación de contraseña no coincide.',
             ]);
 
             // Validaciones específicas según el tipo de registro
@@ -190,6 +198,7 @@ class RegisterController extends Controller
                     'economic_sector' => null,
                     'city' => $request->city,
                     'status_users_id' => 2,
+                    'role' => 0,
                 ];
                 $user = User::create($userData);
             } else {
@@ -204,6 +213,7 @@ class RegisterController extends Controller
                     'economic_sector' => $request->economic_sector,
                     'city' => $request->company_city,
                     'status_users_id' => 2,
+                    'role' => 0,
                 ];
                 $user = User::create($userData);
             }

@@ -157,8 +157,36 @@
                     size="is-large"
                     type="password"
                     :placeholder="capitalize(fields.password.placeholder)"
-                    v-model="password" />
+                    v-model="password"
+                    @input="validatePassword" />
             </b-field>
+            
+            <!-- Lista de verificación de contraseña -->
+            <div class="password-requirements" v-if="password">
+                <p class="help">La contraseña debe cumplir con los siguientes requisitos:</p>
+                <ul class="password-checklist">
+                    <li :class="{ 'valid': passwordLength }">
+                        <i :class="passwordLength ? 'fas fa-check' : 'fas fa-times'"></i>
+                        Mínimo 8 caracteres
+                    </li>
+                    <li :class="{ 'valid': hasLowercase }">
+                        <i :class="hasLowercase ? 'fas fa-check' : 'fas fa-times'"></i>
+                        Al menos una letra minúscula
+                    </li>
+                    <li :class="{ 'valid': hasUppercase }">
+                        <i :class="hasUppercase ? 'fas fa-check' : 'fas fa-times'"></i>
+                        Al menos una letra mayúscula
+                    </li>
+                    <li :class="{ 'valid': hasNumber }">
+                        <i :class="hasNumber ? 'fas fa-check' : 'fas fa-times'"></i>
+                        Al menos un número
+                    </li>
+                    <li :class="{ 'valid': hasSpecialChar }">
+                        <i :class="hasSpecialChar ? 'fas fa-check' : 'fas fa-times'"></i>
+                        Al menos un carácter especial (@$!%*?&)
+                    </li>
+                </ul>
+            </div>
 
             <b-field
                 v-bind:type="{ 'is-danger' : !passwordMatch }"
@@ -256,7 +284,13 @@ export default {
             fields: [],
             copy_msg_user: '',
             // Sectores económicos (se cargarán desde la API)
-            economicSectors: []
+            economicSectors: [],
+            // Validaciones de contraseña
+            passwordLength: false,
+            hasLowercase: false,
+            hasUppercase: false,
+            hasNumber: false,
+            hasSpecialChar: false
         }
     },
 
@@ -478,6 +512,24 @@ export default {
                 });
             }
         },
+        validatePassword() {
+            const password = this.password;
+            
+            // Validar longitud mínima (8 caracteres)
+            this.passwordLength = password.length >= 8;
+            
+            // Validar letra minúscula
+            this.hasLowercase = /[a-z]/.test(password);
+            
+            // Validar letra mayúscula
+            this.hasUppercase = /[A-Z]/.test(password);
+            
+            // Validar número
+            this.hasNumber = /\d/.test(password);
+            
+            // Validar carácter especial
+            this.hasSpecialChar = /[@$!%*?&]/.test(password);
+        },
         clickRegister(e) {
             e.preventDefault();
             
@@ -601,4 +653,54 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.password-requirements {
+    margin-top: 10px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    border-left: 4px solid #3273dc;
+}
+
+.password-requirements .help {
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #363636;
+}
+
+.password-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.password-checklist li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.password-checklist li.valid {
+    color: #48c774;
+}
+
+.password-checklist li i {
+    margin-right: 8px;
+    font-size: 12px;
+    width: 16px;
+    text-align: center;
+}
+
+.password-checklist li.valid i {
+    color: #48c774;
+}
+
+.password-checklist li:not(.valid) i {
+    color: #f14668;
+}
+</style>
 

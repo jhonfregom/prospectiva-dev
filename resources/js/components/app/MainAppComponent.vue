@@ -1,20 +1,15 @@
 <template>
     <div class="main">
         <b-loading class="main-app" :is-full-page="true" v-model="isLoading" :can-cancel="false" />
-        <!--Navbar top -->
         <navbar-top
             v-if="isLoadedResources"
             v-bind:dataParticipantsUser="dataParticipantsUser"
             v-on:actionReloadGeneralData="reloadGeneralData"/>
-        <!-- /Navbar top -->
 
-        <!-- Content Main -->
         <content-main
             v-if="isLoadedResources"
             />
-        <!-- /Content Main -->
         
-        <!-- Componente de burbuja flotante - siempre disponible -->
         <floating-bubble-component 
           v-if="isLoadedResources"
         />
@@ -52,9 +47,7 @@ import FloatingBubbleComponent from './ui/FloatingBubbleComponent.vue';
             const storeFields = useFieldsStore();
             const storeSession = useSessionStore();
 
-            // Computed para obtener el traceabilityId actual
             const currentTraceabilityId = computed(() => {
-                // Por ahora retornar null, el componente manejará la lógica internamente
                 return null;
             });
 
@@ -111,7 +104,7 @@ import FloatingBubbleComponent from './ui/FloatingBubbleComponent.vue';
             this.initFieldsStore();
         },
         async mounted() {
-        //   await this.getInitData();
+
         },
         methods: {
             showErrors(resError){
@@ -170,7 +163,7 @@ import FloatingBubbleComponent from './ui/FloatingBubbleComponent.vue';
                             }
 
                             //Validate if has access from membership
-                            // this.validateAccessFromMembership();
+                    
                         }
                     },
                     error => {

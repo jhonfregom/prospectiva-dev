@@ -32,6 +32,8 @@ class User extends Authenticatable
         'password_reset_expires_at',
         'role',
         'status_users_id',
+        'activation_token',
+        'activation_token_expires_at',
     ];
 
     protected $hidden = [
@@ -44,12 +46,20 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'activation_token_expires_at' => 'datetime',
         ];
     }
 
     protected static function booted()
     {
         static::created(function ($user) {
+            \Log::info('Usuario creado, disparando evento UserRegistered', [
+                'user_id' => $user->id,
+                'user_email' => $user->user,
+                'registration_type' => $user->registration_type,
+                'timestamp' => now()->toDateTimeString(),
+                'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)
+            ]);
             event(new UserRegistered($user));
         });
     }

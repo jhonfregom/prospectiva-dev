@@ -6,7 +6,6 @@
     @mousedown="startDrag"
     @touchstart="startDrag"
   >
-    <!-- Botón principal de la burbuja -->
     <div 
       class="bubble-toggle"
       @click="toggleMenu"
@@ -16,12 +15,10 @@
       <i class="fas fa-magic"></i>
     </div>
 
-    <!-- Menú desplegable -->
     <div 
       class="bubble-menu"
       :class="{ 'is-open': isMenuOpen }"
     >
-      <!-- Opción de Notas -->
       <div class="menu-option" @click="openNotes" :title="textsStore.getText('floating_bubble.notes_tooltip')">
         <div class="option-icon">
           <i class="fas fa-sticky-note"></i>
@@ -29,7 +26,6 @@
         <span class="option-text">{{ textsStore.getText('floating_bubble.notes') }}</span>
       </div>
 
-             <!-- Opción de IA -->
        <div class="menu-option" @click="openAI" :title="textsStore.getText('floating_bubble.ai_tooltip')">
          <div class="option-icon">
            <i class="fas fa-robot"></i>
@@ -37,7 +33,6 @@
          <span class="option-text">{{ textsStore.getText('floating_bubble.ai_assistant') }}</span>
        </div>
 
-       <!-- Opción de Información -->
        <div class="menu-option" @click="showOrientingText" :title="textsStore.getText('floating_bubble.info_tooltip')">
          <div class="option-icon">
            <i class="fas fa-info-circle"></i>
@@ -47,7 +42,6 @@
 
     </div>
 
-         <!-- Modal de Notas -->
      <div 
        class="modal-overlay"
        :class="{ 'is-open': isNotesOpen }"
@@ -114,7 +108,6 @@
        </div>
      </div>
 
-     <!-- Modal del Texto Orientador -->
      <div 
        class="modal-overlay"
        :class="{ 'is-open': isOrientingTextOpen }"
@@ -140,7 +133,6 @@
        </div>
      </div>
 
-     <!-- Modal de IA -->
      <div 
        class="modal-overlay"
        :class="{ 'is-open': isAIOpen }"
@@ -374,7 +366,6 @@ export default {
         
         if (response.data.success) {
           this.notes = response.data.data || [];
-          // Filtrar notas que no sean null o undefined
           this.notes = this.notes.filter(note => note !== null && note !== undefined);
           console.log('✅ Notas cargadas:', this.notes.length);
         } else {

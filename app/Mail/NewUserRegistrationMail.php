@@ -9,21 +9,28 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Str;
 
-class UserRegistrationNotification extends Mailable
+class NewUserRegistrationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $newUser;
     public $activationToken;
+    public $activationUrl;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $newUser, $activationToken)
+    public function __construct(User $newUser)
     {
         $this->newUser = $newUser;
-        $this->activationToken = $activationToken;
+        
+        // Solo generar token si no se ha proporcionado uno desde el listener
+        if (!$this->activationToken) {
+            $this->activationToken = Str::random(64);
+            $this->activationUrl = 'http://localhost:8000/user-activation/' . $newUser->id . '/' . $this->activationToken;
+        }
     }
 
     /**
@@ -42,7 +49,7 @@ class UserRegistrationNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.user-registration',
+            view: 'emails.new-user-registration',
         );
     }
 

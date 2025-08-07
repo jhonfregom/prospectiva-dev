@@ -1,6 +1,5 @@
 <template>
   <div v-if="shouldShow" class="floating-chatbot">
-    <!-- Botón flotante para abrir/cerrar el chat -->
     <div 
       class="chatbot-toggle"
       @click="toggleChat"
@@ -10,12 +9,10 @@
       <span v-if="isOpen" class="close-icon">×</span>
     </div>
 
-    <!-- Ventana del chat -->
     <div 
       class="chatbot-window"
       :class="{ 'is-open': isOpen }"
     >
-      <!-- Header del chat -->
       <div class="chatbot-header">
         <h3>🤖 ProspecIA</h3>
         <button @click="toggleChat" class="close-btn">
@@ -23,7 +20,6 @@
         </button>
       </div>
 
-      <!-- Área de mensajes -->
       <div class="chatbot-messages" ref="messagesContainer">
         <div 
           v-for="(message, index) in messages" 
