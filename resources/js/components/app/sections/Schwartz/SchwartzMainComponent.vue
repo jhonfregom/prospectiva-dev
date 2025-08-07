@@ -175,27 +175,27 @@
         v-if="!cerrado"
         @click="confirmarCerrar"
         :disabled="cerrado"
-      >Cerrar</button>
+      >{{ textsStore.getText('schwartz_section.close_button') }}</button>
       <button
         class="cerrar-btn"
         v-else-if="state !== null && state === '0'"
         @click="confirmarRegresar"
-      >Regresar</button>
+      >{{ textsStore.getText('schwartz_section.return_button') }}</button>
     </div>
     <!-- Modal de confirmación -->
     <div v-if="mostrarModal" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
-        <button @click="cerrarModulo">Sí, cerrar</button>
-        <button @click="mostrarModal = false">Cancelar</button>
+        <p>{{ textsStore.getText('schwartz_section.close_confirm_message') }}</p>
+        <button @click="cerrarModulo">{{ textsStore.getText('schwartz_section.confirm_yes') }}</button>
+        <button @click="mostrarModal = false">{{ textsStore.getText('schwartz_section.confirm_no') }}</button>
       </div>
     </div>
     <!-- Modal de confirmación para regresar -->
     <div v-if="mostrarModalRegresar" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
-        <button @click="regresarModulo">Sí, regresar</button>
-        <button @click="mostrarModalRegresar = false">Cancelar</button>
+        <p>{{ textsStore.getText('schwartz_section.return_confirm_message') }}</p>
+        <button @click="regresarModulo">{{ textsStore.getText('schwartz_section.confirm_yes_return') }}</button>
+        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('schwartz_section.confirm_no') }}</button>
       </div>
     </div>
 </template>
@@ -206,6 +206,7 @@ import { useSectionStore } from '../../../../stores/section';
 import { useFutureDriversStore } from '../../../../stores/futureDrivers';
 import { useSchwartzStore } from '../../../../stores/schwartz';
 import { useTextsStore } from '../../../../stores/texts';
+import { useTraceabilityStore } from '../../../../stores/traceability';
 import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
 import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
@@ -242,12 +243,11 @@ export default {
         const futureDriversStore = useFutureDriversStore();
         const schwartzStore = useSchwartzStore();
         const textsStore = useTextsStore();
+        const traceabilityStore = useTraceabilityStore();
         const sessionStore = useSessionStore();
 
-        // Constante para el límite de caracteres
         const MAX_CHARACTERS = 255;
 
-        // Inicializar 'cerrado' leyendo de localStorage directamente
         let initialCerrado = false;
         if (typeof window !== 'undefined') {
             const user = JSON.parse(localStorage.getItem('user')) || {};
@@ -257,21 +257,21 @@ export default {
         const cerrado = ref(initialCerrado);
         const mostrarModal = ref(false);
         const mostrarModalRegresar = ref(false);
-        const state = ref(null); // Se inicializa como null hasta cargar desde traceability
+        const state = ref(null); 
 
         onMounted(async () => {
-            // Solo cambiar el título si no está en modo readonly (modal)
+            
             if (!props.readonly) {
                 sectionStore.setTitleSection(textsStore.getText('schwartz.title'));
             }
             if (futureDriversStore.drivers.length === 0) {
                 await futureDriversStore.fetchDrivers();
             }
-            // Cargar escenarios guardados
+            
             await schwartzStore.fetchScenarios();
-            // Cargar el valor de tried desde traceability
+            
             await loadStateValue();
-            // Actualizar estado de cerrado al entrar (por si cambia en otra pestaña)
+            
             if (typeof window !== 'undefined') {
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = 'schwartz_cerrado_' + (user.id || 'anon');
@@ -280,11 +280,10 @@ export default {
         });
 
         onBeforeUnmount(() => {
-            // Limpiar botones dinámicos al desmontar el componente
+            
             sectionStore.clearDynamicButtons();
         });
 
-        // Computed para obtener los textos de hipótesis
         const h1H0 = computed(() => {
             if (props.externalHypotheses && props.externalHypotheses.length > 0) {
                 return props.externalHypotheses[0]?.descriptionH0 || '';
@@ -310,7 +309,6 @@ export default {
             return futureDriversStore.drivers[1]?.descriptionH1 || '';
         });
 
-        // Computed para escenarios
         const escenarios = computed(() => {
             if (props.externalScenarios && Array.isArray(props.externalScenarios) && props.externalScenarios.length > 0) {
                 return props.externalScenarios;
@@ -319,7 +317,6 @@ export default {
         });
         const setEscenario = (index, texto) => schwartzStore.setEscenario(index, texto);
 
-        // Función para manejar input de texto
         const handleTextInput = (index, event) => {
             const text = event.target.value;
             if (text.length > MAX_CHARACTERS) {
@@ -334,7 +331,6 @@ export default {
             }
         };
 
-        // Función para manejar pegado de texto
         const handleTextPaste = (index, event) => {
             const pastedText = (event.clipboardData || window.clipboardData).getData('text');
             const currentText = schwartzStore.escenarios[index].texto;
@@ -359,7 +355,6 @@ export default {
             }
         };
 
-        // Función para manejar keyup (prevenir escritura adicional)
         const handleTextKeyup = (index, event) => {
             const text = event.target.value;
             if (text.length >= MAX_CHARACTERS) {
@@ -373,7 +368,6 @@ export default {
             }
         };
 
-        // Nueva función para manejar edición/guardado
         const handleEditSave = async (index, numScenario) => {
             const escenario = schwartzStore.escenarios[index];
             if (schwartzStore.isEditLocked(index)) return;
@@ -396,14 +390,13 @@ export default {
         const editingScenario = ref([false, false, false, false]);
         const editMessage = ref(['', '', '', '']);
 
-        // --- FUNCIONES DE CERRAR Y REGRESAR ---
         const confirmarCerrar = () => {
             mostrarModal.value = true;
         };
         const cerrarModulo = async () => {
             mostrarModal.value = false;
             try {
-                // Para cada escenario, forzar edits=3 (bloqueado)
+                
                 for (let i = 0; i < 4; i++) {
                     const escenario = schwartzStore.escenarios[i];
                     if (escenario && escenario.id) {
@@ -413,7 +406,9 @@ export default {
                     }
                 }
                 await schwartzStore.fetchScenarios();
-                // Guardar acción pendiente en localStorage
+
+                await traceabilityStore.markSectionCompleted('schwartz');
+
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'schwartz' }));
                 if (typeof window !== 'undefined' && window.$buefy) {
                     window.$buefy.toast.open({
@@ -422,7 +417,7 @@ export default {
                     });
                 }
                 sessionStore.setActiveContent('main');
-                // Guardar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = 'schwartz_cerrado_' + (user.id || 'anon');
                 localStorage.setItem(cerradoKey, 'true');
@@ -442,11 +437,11 @@ export default {
         const regresarModulo = async () => {
             mostrarModalRegresar.value = false;
             try {
-                // Incrementar tried a 2
+                
                 await incrementState();
-                // Volver a cargar el valor actualizado de tried
+                
                 await loadStateValue();
-                // Para cada escenario, poner edits=0 (desbloquear)
+                
                 for (let i = 0; i < 4; i++) {
                     const escenario = schwartzStore.escenarios[i];
                     if (escenario && escenario.id) {
@@ -456,11 +451,11 @@ export default {
                     }
                 }
                 await schwartzStore.fetchScenarios();
-                // Guardar acción pendiente en localStorage
+                
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'schwartz' }));
-                // Regresa a la vista principal
+                
                 sessionStore.setActiveContent('main');
-                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = 'schwartz_cerrado_' + (user.id || 'anon');
                 localStorage.removeItem(cerradoKey);
@@ -474,9 +469,7 @@ export default {
                 }
             }
         };
-        // --- FIN FUNCIONES DE CERRAR Y REGRESAR ---
 
-        // Función para actualizar escenario en el servidor
         const updateScenarioInServer = async (index, numScenario) => {
             try {
                 const result = await schwartzStore.saveScenario(index, numScenario);
@@ -488,7 +481,6 @@ export default {
             }
         };
 
-        // Función para cargar el valor de state desde traceability
         const loadStateValue = async () => {
             try {
                 const response = await axios.get('/traceability/current-route-state');
@@ -500,7 +492,6 @@ export default {
             }
         };
 
-        // Función para actualizar state
         const incrementState = async () => {
             try {
                 await axios.put('/traceability/current-route-state', { state: '1' });
@@ -515,6 +506,7 @@ export default {
             futureDriversStore,
             schwartzStore,
             textsStore,
+            traceabilityStore,
             sessionStore,
             h1H0,
             h1H1,
@@ -542,8 +534,6 @@ export default {
     }
 };
 </script>
-
-
 
 <style scoped>
 .schwartz-matrix-container {
@@ -717,7 +707,7 @@ export default {
     left: 50%;
     top: 50%;
     width: 4px;
-    height: 65%; /* antes 61% */
+    height: 65%; 
     background: red;
     transform: translate(-50%, -50%);
 }

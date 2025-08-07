@@ -9,15 +9,12 @@ use Illuminate\Support\Facades\Auth;
 
 class ConclusionController extends Controller
 {
-    /**
-     * Encontrar el siguiente ID disponible
-     */
+    
     private function findNextAvailableId(): int
     {
         $maxId = Conclusion::max('id') ?? 0;
         $usedIds = Conclusion::pluck('id')->toArray();
-        
-        // Buscar el primer ID disponible desde 1
+
         for ($id = 1; $id <= $maxId + 1; $id++) {
             if (!in_array($id, $usedIds)) {
                 return $id;
@@ -27,15 +24,11 @@ class ConclusionController extends Controller
         return $maxId + 1;
     }
 
-    /**
-     * Crear registro con ID específico sin afectar autoincremento
-     */
     private function createWithSpecificId(array $data, int $id): Conclusion
     {
-        // Obtener o crear el registro de traceability para el usuario
-        $traceability = \App\Models\Traceability::getOrCreateForUser($data['user_id']);
         
-        // Usar consulta SQL directa para insertar con ID específico
+        $traceability = \App\Models\Traceability::getOrCreateForUser($data['user_id']);
+
         \DB::statement("INSERT INTO conclusions (id, user_id, component_practice, actuality, aplication, state, tried_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())", [
             $id,
             $data['user_id'],
@@ -46,12 +39,9 @@ class ConclusionController extends Controller
             $traceability->id
         ]);
 
-        // Retornar el modelo creado
         return Conclusion::find($id);
     }
-    /**
-     * Obtener las conclusiones del usuario autenticado
-     */
+    
     public function index(): JsonResponse
     {
         try {
@@ -59,10 +49,9 @@ class ConclusionController extends Controller
             $conclusion = Conclusion::getByUser($userId);
 
             if (!$conclusion) {
-                // Encontrar el siguiente ID disponible
-                $nextId = $this->findNextAvailableId();
                 
-                // Crear conclusiones vacías para el usuario con el ID específico
+                $nextId = $this->findNextAvailableId();
+
                 $conclusion = $this->createWithSpecificId([
                     'user_id' => $userId,
                     'component_practice' => '',
@@ -84,9 +73,6 @@ class ConclusionController extends Controller
         }
     }
 
-    /**
-     * Crear o actualizar las conclusiones del usuario
-     */
     public function store(Request $request): JsonResponse
     {
         try {
@@ -99,16 +85,15 @@ class ConclusionController extends Controller
                 'state' => 'nullable|string|in:0,1'
             ]);
 
-            // Buscar conclusiones existentes del usuario
             $conclusion = Conclusion::where('user_id', $userId)->first();
 
             if (!$conclusion) {
-                // Si no existe, crear con el siguiente ID disponible
+                
                 $nextId = $this->findNextAvailableId();
                 $validatedData['user_id'] = $userId;
                 $conclusion = $this->createWithSpecificId($validatedData, $nextId);
             } else {
-                // Si existe, actualizar
+                
                 $conclusion->update($validatedData);
             }
 
@@ -125,9 +110,6 @@ class ConclusionController extends Controller
         }
     }
 
-    /**
-     * Actualizar las conclusiones del usuario
-     */
     public function update(Request $request, $id): JsonResponse
     {
         try {
@@ -166,9 +148,6 @@ class ConclusionController extends Controller
         }
     }
 
-    /**
-     * Bloquear las conclusiones del usuario
-     */
     public function block($id): JsonResponse
     {
         try {
@@ -199,9 +178,6 @@ class ConclusionController extends Controller
         }
     }
 
-    /**
-     * Desbloquear las conclusiones del usuario
-     */
     public function unblock($id): JsonResponse
     {
         try {
@@ -232,9 +208,6 @@ class ConclusionController extends Controller
         }
     }
 
-    /**
-     * Eliminar conclusiones y reiniciar auto-increment
-     */
     public function destroy($id): JsonResponse
     {
         try {
@@ -252,7 +225,6 @@ class ConclusionController extends Controller
 
             $conclusion->delete();
 
-            // Reiniciar auto-increment si no hay registros
             if (Conclusion::count() === 0) {
                 \DB::statement('ALTER TABLE conclusions AUTO_INCREMENT = 1');
             }
@@ -269,9 +241,6 @@ class ConclusionController extends Controller
         }
     }
 
-    /**
-     * Reiniciar auto-increment de la tabla
-     */
     public function resetAutoIncrement(): JsonResponse
     {
         try {
@@ -289,9 +258,6 @@ class ConclusionController extends Controller
         }
     }
 
-    /**
-     * Actualizar el estado de las conclusiones
-     */
     public function updateState(Request $request, $id): JsonResponse
     {
         try {
@@ -327,9 +293,6 @@ class ConclusionController extends Controller
         }
     }
 
-    /**
-     * Actualizar un campo específico de las conclusiones y su contador
-     */
     public function updateField(Request $request, $id): JsonResponse
     {
         try {
@@ -350,7 +313,6 @@ class ConclusionController extends Controller
                 ], 404);
             }
 
-            // Si ya está bloqueado el campo, no permitir editar
             $editField = $validatedData['field'] . '_edits';
             if ($conclusion->$editField >= 3) {
                 return response()->json([
@@ -359,11 +321,9 @@ class ConclusionController extends Controller
                 ], 403);
             }
 
-            // Actualizar el campo y el contador
             $conclusion->{$validatedData['field']} = $validatedData['value'];
             $conclusion->$editField += 1;
 
-            // Si los tres contadores llegan a 3, bloquear todo
             if ($conclusion->areAllFieldsBlocked()) {
                 $conclusion->state = '1';
             }
@@ -383,14 +343,11 @@ class ConclusionController extends Controller
         }
     }
 
-    /**
-     * Cerrar todas las conclusiones del usuario (actualizar todos los campos de edits a 3 y state a 1)
-     */
     public function closeAll(Request $request): JsonResponse
     {
         try {
             $userId = Auth::id();
-            // Buscar todas las conclusiones del usuario
+            
             $conclusions = Conclusion::where('user_id', $userId)->get();
 
             if ($conclusions->isEmpty()) {
@@ -400,7 +357,6 @@ class ConclusionController extends Controller
                 ], 404);
             }
 
-            // Actualizar todas las conclusiones
             foreach ($conclusions as $conclusion) {
                 $conclusion->update([
                     'component_practice_edits' => 3,

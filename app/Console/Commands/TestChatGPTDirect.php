@@ -17,8 +17,7 @@ class TestChatGPTDirect extends Command
 
         try {
             $controller = new ChatGPTProxyController();
-            
-            // Crear una request simulada
+
             $request = new Request();
             $request->merge([
                 'prompt' => 'Hola, ¿cómo estás?',
@@ -42,4 +41,4 @@ class TestChatGPTDirect extends Command
 
         return 0;
     }
-} 
+}

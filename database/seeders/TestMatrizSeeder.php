@@ -9,12 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class TestMatrizSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    
     public function run(): void
     {
-        // Limpiar datos existentes y reiniciar auto-incremento
+        
         DB::statement('DELETE FROM matriz WHERE id > 0');
         DB::statement('ALTER TABLE matriz AUTO_INCREMENT = 1');
 

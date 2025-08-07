@@ -8,31 +8,19 @@ use Illuminate\Support\Facades\Log;
 
 class CheckOllama extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
+    
     protected $signature = 'ollama:check';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Verificar si Ollama está funcionando correctamente';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
         $this->info('Verificando estado de Ollama...');
         
-        $ollamaUrl = 'http://localhost:11434';
+        $ollamaUrl = 'http:
         
         try {
-            // Verificar conectividad básica
+            
             $this->info('1. Verificando conectividad...');
             $response = Http::timeout(5)->get($ollamaUrl . '/api/tags');
             
@@ -46,8 +34,7 @@ class CheckOllama extends Command
                         $this->line("   - {$model['name']} (tamaño: {$model['size']})");
                     }
                 }
-                
-                // Verificar si el modelo gemma3:4b está disponible
+
                 $this->info('3. Verificando modelo gemma3:4b...');
                 $modelExists = false;
                 if (isset($models['models'])) {
@@ -65,8 +52,7 @@ class CheckOllama extends Command
                     $this->warn('⚠️  Modelo gemma3:4b no está disponible');
                     $this->info('Para instalar el modelo, ejecuta: ollama pull gemma3:4b');
                 }
-                
-                // Probar generación
+
                 $this->info('4. Probando generación...');
                 $testResponse = Http::timeout(30)->post($ollamaUrl . '/api/generate', [
                     'model' => 'gemma3:4b',
@@ -100,11 +86,11 @@ class CheckOllama extends Command
             $this->line("   Error: {$e->getMessage()}");
             $this->info('');
             $this->info('Para solucionar esto:');
-            $this->line('1. Instala Ollama desde https://ollama.ai');
+            $this->line('1. Instala Ollama desde https:
             $this->line('2. Ejecuta: ollama serve');
             $this->line('3. En otra terminal, ejecuta: ollama pull gemma3:4b');
         }
         
         return 0;
     }
-} 
+}

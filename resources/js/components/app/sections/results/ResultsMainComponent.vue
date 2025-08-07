@@ -605,9 +605,37 @@
     />
   </div>
 
-  
+  <!-- Botón cerrar/regresar en la esquina inferior derecha -->
+  <div class="cerrar-container">
+    <button
+      class="cerrar-btn"
+      v-if="!cerrado"
+      @click="confirmarCerrar"
+      :disabled="cerrado"
+    >{{ textsStore.getText('results_section.close_button') || 'Cerrar' }}</button>
+    <button
+      class="cerrar-btn"
+      v-else-if="state !== null && state === '0'"
+      @click="confirmarRegresar"
+    >{{ textsStore.getText('results_section.return_button') || 'Regresar' }}</button>
+  </div>
+  <!-- Modal de confirmación -->
+  <div v-if="mostrarModal" class="modal-confirm">
+    <div class="modal-content">
+      <p class="modal-text">{{ textsStore.getText('results_section.close_confirm_message') || '¿Estás seguro de cerrar el módulo? No podrás editar más.' }}</p>
+      <button @click="cerrarModulo">{{ textsStore.getText('results_section.confirm_yes') || 'Sí, cerrar' }}</button>
+      <button @click="mostrarModal = false">{{ textsStore.getText('results_section.confirm_no') || 'Cancelar' }}</button>
+    </div>
+  </div>
+  <!-- Modal de confirmación para regresar -->
+  <div v-if="mostrarModalRegresar" class="modal-confirm">
+    <div class="modal-content">
+      <p class="modal-text">{{ textsStore.getText('results_section.return_confirm_message') || '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.' }}</p>
+      <button @click="regresarModulo">{{ textsStore.getText('results_section.confirm_yes_return') || 'Sí, regresar' }}</button>
+      <button @click="mostrarModalRegresar = false">{{ textsStore.getText('results_section.confirm_no') || 'Cancelar' }}</button>
+    </div>
+  </div>
 
-  
 </template>
 <script>
 import { jsPDF } from 'jspdf';
@@ -643,19 +671,16 @@ export default {
         const resultsStore = useResultsStore();
         const traceabilityStore = useTraceabilityStore();
         const { users, isLoading } = storeToRefs(resultsStore);
-        
-        // Obtener el usuario autenticado desde localStorage o Pinia según tu app
+
         const user = JSON.parse(localStorage.getItem('user')) || {};
         const isAdmin = user.role === 1;
-        
-        // Filtros de búsqueda
+
         const filterId = ref('');
         const filterFirstName = ref('');
         const filterLastName = ref('');
         const filterDocumentId = ref('');
         const filterStatus = ref('');
-        
-        // Computed para filtrar usuarios
+
         const filteredUsers = computed(() => {
             if (!users.value) return [];
             
@@ -672,8 +697,7 @@ export default {
                 return idMatch && firstNameMatch && lastNameMatch && documentIdMatch && statusMatch;
             });
         });
-        
-        // 1. Agrega las refs y métodos para el modal propio
+
         const showVariableModal = ref(false);
         const showScenarioModal = ref(false);
         const showConclusionModal = ref(false);
@@ -696,8 +720,12 @@ export default {
         const selectedMatrizUser = ref('');
         const selectedMatrizCruzada = ref([]);
 
-        // Estado de carga para el botón de PDF
         const loadingPdfId = ref(null);
+
+        const cerrado = ref(false);
+        const state = ref(null);
+        const mostrarModal = ref(false);
+        const mostrarModalRegresar = ref(false);
 
         function showVariableDescription(variable) {
             selectedVariable.value = variable;
@@ -714,8 +742,7 @@ export default {
 
         function getZoneAnalysis(zoneAnalyses, zoneKey) {
             if (!zoneAnalyses || !Array.isArray(zoneAnalyses)) return null;
-            
-            // Buscar directamente por el nombre completo de la zona
+
             return zoneAnalyses.find(analysis => analysis.zone_name === zoneKey) || null;
         }
 
@@ -747,17 +774,14 @@ export default {
             showMatrizModal.value = true;
         }
 
-        // Función para obtener las hipótesis relacionadas con un escenario
         function getScenarioHypotheses(scenario, futureDrivers) {
             if (!scenario.hypotheses || !scenario.hypotheses.length) return 'Sin hipótesis relacionadas';
-            
-            // Formatear las hipótesis del escenario con el formato correcto
+
             return scenario.hypotheses.map(hypothesis => {
                 const hypothesisName = hypothesis.name_hypothesis || '';
                 const secondaryType = hypothesis.secondary_hypotheses || '';
                 const variableName = hypothesis.variable_name || '';
-                
-                // Convertir el formato de hipótesis
+
                 let formattedHypothesis = '';
                 if (hypothesisName === 'H1') {
                     if (secondaryType === 'H1') formattedHypothesis = 'Hipótesis 1+';
@@ -766,21 +790,17 @@ export default {
                     if (secondaryType === 'H1') formattedHypothesis = 'Hipótesis 2+';
                     else if (secondaryType === 'H0') formattedHypothesis = 'Hipótesis 2-';
                 } else {
-                    // Si no coincide con el formato esperado, usar el nombre tal como está
+                    
                     formattedHypothesis = hypothesisName;
                 }
-                
-                // No agregar el nombre de la variable para evitar confusión
-                // Las hipótesis varían por usuario y no deben mostrar nombres fijos
-                
+
                 return formattedHypothesis;
             }).join(', ');
         }
 
-        // Métodos y computadas para la matriz cruzada del modal
         const matrizOrderedVariables = computed(() => {
           if (!selectedMatriz.value) return [];
-          // Ordenar por número de variable (V1, V2, ...)
+          
           return [...selectedMatriz.value].sort((a, b) => {
             const numA = parseInt(a.id_variable.replace('V', ''));
             const numB = parseInt(b.id_variable.replace('V', ''));
@@ -788,7 +808,6 @@ export default {
           });
         });
 
-        // Construir un mapa para acceso rápido: { 'V1-V2': valor }
         const matrizMap = computed(() => {
           if (!selectedMatriz.value || !selectedMatrizCruzada.value) return {};
           const map = {};
@@ -853,11 +872,11 @@ export default {
         const selectedGraphicsData = ref([]);
         const selectedGraphicsUser = ref('');
         function showGraphicsDescription(matriz, firstName, lastName, matrizCruzada = []) {
-          // Permitir mostrar gráfica aunque solo haya una variable
+          
           let graphicsData = [];
           if (matriz && matriz.length > 0) {
             if (matrizCruzada && matrizCruzada.length > 0) {
-              // Lógica original para varias variables
+              
               const variables = [...new Set(matrizCruzada.map(m => m.origen))].sort();
               const matrizMap = {};
               matrizCruzada.forEach(item => {
@@ -883,7 +902,7 @@ export default {
                 };
               });
             } else {
-              // Solo una variable: graficar en (0,0) o con los datos de matriz
+              
               graphicsData = matriz.map(item => ({
                 id_variable: item.id_variable,
                 dependencia: item.dependencia || 0,
@@ -897,13 +916,12 @@ export default {
           showGraphicsModal.value = true;
         }
 
-        // 1. Agregar refs y función para el modal de Schwartz
         const showSchwartzModalRef = ref(false);
         const selectedSchwartzScenarios = ref([]);
         const selectedSchwartzUser = ref('');
         const selectedSchwartzHypotheses = ref([]);
         function showSchwartzModal(scenarios, firstName, lastName, hypotheses = []) {
-          // Normalizar escenarios: siempre 4, con propiedad 'texto'
+          
           let normScenarios = Array.isArray(scenarios) ? scenarios.slice(0, 4) : [];
           normScenarios = [0, 1, 2, 3].map(i => {
             const s = normScenarios[i] || {};
@@ -915,8 +933,6 @@ export default {
           selectedSchwartzScenarios.value = normScenarios;
           selectedSchwartzUser.value = `${firstName} ${lastName}`;
 
-          // Mapear hipótesis a la estructura esperada
-          // Organizar hipótesis por variable
           let hypothesesByVariable = {};
           hypotheses.forEach(h => {
             if (!hypothesesByVariable[h.variable_id]) {
@@ -924,32 +940,30 @@ export default {
             }
             hypothesesByVariable[h.variable_id][h.secondary_hypotheses] = h.description || '';
           });
-          
-          // Obtener las variables ordenadas
+
           let variableIds = Object.keys(hypothesesByVariable).sort();
           let firstVariableId = variableIds[0];
           let secondVariableId = variableIds[1];
           
           const mappedHypotheses = [
             {
-              descriptionH0: hypothesesByVariable[secondVariableId]?.H0 || '', // H1- (H0 de segunda variable)
-              descriptionH1: hypothesesByVariable[secondVariableId]?.H1 || ''  // H1+ (H1 de segunda variable)
+              descriptionH0: hypothesesByVariable[secondVariableId]?.H0 || '', 
+              descriptionH1: hypothesesByVariable[secondVariableId]?.H1 || ''  
             },
             {
-              descriptionH0: hypothesesByVariable[firstVariableId]?.H0 || '', // H2- (H0 de primera variable)
-              descriptionH1: hypothesesByVariable[firstVariableId]?.H1 || ''  // H2+ (H1 de primera variable)
+              descriptionH0: hypothesesByVariable[firstVariableId]?.H0 || '', 
+              descriptionH1: hypothesesByVariable[firstVariableId]?.H1 || ''  
             }
           ];
           selectedSchwartzHypotheses.value = mappedHypotheses;
           showSchwartzModalRef.value = true;
         }
 
-        // Función para convertir datos de matriz a formato de gráfica
         function convertMatrizToGraphicsData(matriz, matrizCruzada) {
-          // Permitir un solo punto si matriz tiene datos pero matriz_cruzada está vacío
+          
           if (matriz && matriz.length > 0) {
             if (matrizCruzada && matrizCruzada.length > 0) {
-              // Lógica original
+              
               const variables = [...new Set(matrizCruzada.map(m => m.origen))].sort();
               const matrizMap = {};
               matrizCruzada.forEach(item => {
@@ -975,7 +989,7 @@ export default {
                 };
               });
             } else {
-              // Solo una variable: graficar en (0,0) o con los datos de matriz
+              
               return matriz.map(item => ({
                 id_variable: item.id_variable,
                 dependencia: item.dependencia || 0,
@@ -987,12 +1001,11 @@ export default {
         }
 
         async function imprimirUsuario(usuario) {
-          // Usar un identificador único que incluya la ruta para evitar conflictos
+          
           const uniqueId = `${usuario.id}-${usuario.route_id || 'default'}`;
           loadingPdfId.value = uniqueId;
-          await nextTick(); // Forzar re-render para mostrar el spinner
+          await nextTick(); 
 
-          // --- NUEVO: Contenedor invisible para gráficas ocultas ---
           let hiddenContainer = document.getElementById('pdf-graphics-container');
           if (!hiddenContainer) {
             hiddenContainer = document.createElement('div');
@@ -1013,7 +1026,6 @@ export default {
             document.body.appendChild(hiddenContainer);
           }
 
-          // Usar IDs únicos que incluyan la ruta
           const graphicsElementIds = [
             `grafica-variables-${uniqueId}`,
             `grafica-matriz-${uniqueId}`,
@@ -1048,9 +1060,7 @@ export default {
               }
             });
           }
-          // --- FIN NUEVO ---
 
-          // Función para restaurar los estilos originales de las gráficas
           const restoreGraphics = () => {
             graphicsElementIds.forEach(id => {
               const element = document.getElementById(id);
@@ -1064,16 +1074,15 @@ export default {
           };
 
           try {
-            // Esperar un frame para asegurar que el DOM esté estable
+            
             await new Promise(resolve => requestAnimationFrame(resolve));
             
             moveGraphicsToHiddenContainer();
-            
-            // Esperar otro frame después de mover los elementos
+
             await new Promise(resolve => requestAnimationFrame(resolve));
             
             const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-            // Configurar márgenes del documento
+            
             const margin = 50;
             const pageWidth = doc.internal.pageSize.getWidth();
             const pageHeight = doc.internal.pageSize.getHeight();
@@ -1082,16 +1091,14 @@ export default {
             
             let y = margin + 40;
 
-            // Función mejorada para verificar si necesitamos nueva página
             const checkPageBreak = (requiredSpace = 50, title = '') => {
               const currentY = y;
               const pageHeight = doc.internal.pageSize.getHeight();
               const bottomMargin = margin;
               const availableSpace = pageHeight - bottomMargin - currentY;
-              
-              // Si el espacio requerido es mayor al disponible, crear nueva página
+
               if (requiredSpace > availableSpace) {
-                // Si hay un título, también moverlo a la nueva página
+                
                 if (title) {
                   doc.addPage();
                   y = margin + 40;
@@ -1103,32 +1110,29 @@ export default {
               }
               return false;
             };
-            
-            // Función para verificar si una tabla va a salir cortada
+
             const checkTablePageBreak = (tableData, title = '') => {
-              const titleHeight = 30; // altura del título
-              const tableHeaderHeight = 20; // altura del encabezado
-              const rowHeight = 15; // altura estimada por fila
-              const tableFooterHeight = 20; // espacio después de la tabla
+              const titleHeight = 30; 
+              const tableHeaderHeight = 20; 
+              const rowHeight = 15; 
+              const tableFooterHeight = 20; 
               
               const estimatedTableHeight = titleHeight + tableHeaderHeight + (tableData.length * rowHeight) + tableFooterHeight;
               
               return checkPageBreak(estimatedTableHeight, title);
             };
-            
-            // Función para verificar si una gráfica va a salir cortada
+
             const checkGraphicPageBreak = (graphicHeight, title = '') => {
-              const titleHeight = 30; // altura del título
-              const graphicSpacing = 40; // espacio antes y después de la gráfica
+              const titleHeight = 30; 
+              const graphicSpacing = 40; 
               
               const totalHeight = titleHeight + graphicHeight + graphicSpacing;
               
               return checkPageBreak(totalHeight, title);
             };
 
-            // Función para preparar las gráficas ocultas
             const prepareGraphics = () => {
-              // Asegurar que las gráficas ocultas estén listas
+              
               const graphicsElements = [
                 `grafica-variables-${uniqueId}`,
                 `grafica-matriz-${uniqueId}`,
@@ -1138,7 +1142,7 @@ export default {
               graphicsElements.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
-                  // Guardar el estado original para restaurarlo después
+                  
                   element._originalStyles = {
                     display: element.style.display,
                     position: element.style.position,
@@ -1152,8 +1156,7 @@ export default {
                     transform: element.style.transform,
                     pointerEvents: element.style.pointerEvents
                   };
-                  
-                  // Configurar para captura sin afectar el layout usando transform
+
                   element.style.display = 'block';
                   element.style.position = 'absolute';
                   element.style.left = '0';
@@ -1162,17 +1165,15 @@ export default {
                   element.style.visibility = 'visible';
                   element.style.background = '#ffffff';
                   element.style.border = '1px solid #ccc';
-                  element.style.zIndex = '-9999'; // Asegurar que esté detrás de todo
-                  element.style.pointerEvents = 'none'; // Deshabilitar interacciones
-                  element.style.transform = 'translate3d(-9999px, -9999px, 0)'; // Usar transform en lugar de left/top
+                  element.style.zIndex = '-9999'; 
+                  element.style.pointerEvents = 'none'; 
+                  element.style.transform = 'translate3d(-9999px, -9999px, 0)'; 
                 }
               });
             };
 
-            // Preparar las gráficas antes de capturarlas
             prepareGraphics();
 
-            // Función para verificar que las gráficas estén listas
             const waitForGraphics = async () => {
               const graphicsElements = [
                 `grafica-variables-${uniqueId}`,
@@ -1183,10 +1184,9 @@ export default {
               for (const id of graphicsElements) {
                 const element = document.getElementById(id);
                 if (element) {
-                  // Esperar a que el contenido se renderice
-                  await new Promise(resolve => setTimeout(resolve, 1000));
                   
-                  // Verificar que el canvas o contenido esté presente
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+
                   const canvas = element.querySelector('canvas');
                   if (canvas) {
                   }
@@ -1194,17 +1194,14 @@ export default {
               }
             };
 
-            // Esperar a que las gráficas estén listas
             await waitForGraphics();
 
-                      // Función auxiliar para capturar gráficas con mejor calidad
           const captureGraphic = async (elementId, title, y, createNewPage = false, options = {}) => {
             const element = document.getElementById(elementId);
             if (!element) {
               return false;
             }
-            
-            // Forzar el renderizado del componente
+
             element.style.display = 'block';
             element.style.position = 'absolute';
             element.style.left = '-9999px';
@@ -1213,8 +1210,7 @@ export default {
             element.style.visibility = 'visible';
             element.style.background = '#ffffff';
             element.style.zIndex = '9999';
-            
-            // Tamaño fijo más grande para Schwartz
+
             let captureWidth = 800;
             let captureHeight = 560;
             let maxWidth = 600;
@@ -1222,15 +1218,14 @@ export default {
             if (elementId.includes('schwartz')) {
               captureWidth = 900;
               captureHeight = 700;
-              maxWidth = 800; // más grande
+              maxWidth = 800; 
               maxHeight = 600;
             }
-            
-            // Esperar a que el componente se renderice completamente
+
             if (elementId.includes('schwartz')) {
-              await new Promise(resolve => setTimeout(resolve, 5000)); // 5 segundos para Schwartz
+              await new Promise(resolve => setTimeout(resolve, 5000)); 
             } else {
-              await new Promise(resolve => setTimeout(resolve, 3000)); // 3 segundos para otras gráficas
+              await new Promise(resolve => setTimeout(resolve, 3000)); 
             }
             
             try {
@@ -1247,7 +1242,7 @@ export default {
                 windowWidth: captureWidth,
                 windowHeight: captureHeight,
                 onclone: (clonedDoc) => {
-                  // Asegurar que el elemento clonado tenga el fondo blanco y sin padding
+                  
                   const clonedElement = clonedDoc.getElementById(elementId);
                   if (clonedElement) {
                     clonedElement.style.background = '#ffffff';
@@ -1263,8 +1258,7 @@ export default {
                     clonedElement.style.transform = 'none';
                     clonedElement.style.padding = '0';
                     clonedElement.style.margin = '0';
-                    
-                    // Eliminar padding y margen del contenedor de gráfica
+
                     const graphicsContainer = clonedElement.querySelector('.graphics-container');
                     if (graphicsContainer) {
                       graphicsContainer.style.padding = '0';
@@ -1272,8 +1266,7 @@ export default {
                       graphicsContainer.style.borderRadius = '0';
                       graphicsContainer.style.background = '#ffffff';
                     }
-                    
-                    // Ajustar el canvas para que ocupe todo el espacio
+
                     const canvasElement = clonedElement.querySelector('canvas');
                     if (canvasElement) {
                       canvasElement.style.width = '100%';
@@ -1283,8 +1276,7 @@ export default {
                       canvasElement.style.borderRadius = '0';
                       canvasElement.style.background = '#ffffff';
                     }
-                    
-                    // Ajustar el contenedor de Schwartz para PDF
+
                     const schwartzContainer = clonedElement.querySelector('.schwartz-container');
                     if (schwartzContainer) {
                       schwartzContainer.style.width = '100%';
@@ -1296,8 +1288,7 @@ export default {
                       schwartzContainer.style.justifyContent = 'center';
                       schwartzContainer.style.alignItems = 'center';
                     }
-                    
-                    // Ajustar la matriz de Schwartz
+
                     const schwartzMatrix = clonedElement.querySelector('.schwartz-matrix');
                     if (schwartzMatrix) {
                       schwartzMatrix.style.width = '100%';
@@ -1311,40 +1302,34 @@ export default {
               });
               
               const imgData = canvas.toDataURL('image/png');
-              
-              // Si se solicita nueva página, crearla
+
               if (createNewPage) {
                 doc.addPage();
-                y = margin + 40; // Resetear posición Y con margen
+                y = margin + 40; 
               }
-              
-              // Título de la gráfica
+
               doc.setFontSize(14);
               doc.setFont(undefined, 'bold');
               doc.text(title, margin, y); y += 25;
-              
-              // Calcular dimensiones fijas y centradas
+
               const pageWidth = doc.internal.pageSize.getWidth();
               const availableWidth = pageWidth - (2 * margin);
-              const maxWidth = Math.min(availableWidth * 0.8, 600); // Máximo 80% del ancho disponible o 600px
-              const maxHeight = 400; // Altura máxima fija
-              
-              // Calcular proporción para mantener aspect ratio
+              const maxWidth = Math.min(availableWidth * 0.8, 600); 
+              const maxHeight = 400; 
+
               const aspectRatio = captureWidth / captureHeight;
               let finalWidth = maxWidth;
               let finalHeight = maxWidth / aspectRatio;
-              
-              // Si la altura es muy grande, ajustar
+
               if (finalHeight > maxHeight) {
                 finalHeight = maxHeight;
                 finalWidth = maxHeight * aspectRatio;
               }
-              
-              // Centrar la imagen en la página
+
               const xOffset = (pageWidth - finalWidth) / 2;
               
               doc.addImage(imgData, 'PNG', xOffset, y, finalWidth, finalHeight);
-              y += finalHeight + 40; // Espacio después de la gráfica
+              y += finalHeight + 40; 
               
               return y;
             } catch (error) {
@@ -1352,11 +1337,10 @@ export default {
             }
           };
 
-                      // 1. Título y portada
           checkPageBreak(40);
           doc.setFontSize(16);
           doc.setFont(undefined, 'bold');
-          // Centrar el título principal
+          
           const titleWidth = doc.getTextWidth('REPORTE COMPLETO DE PROSPECTIVA');
           const titleX = (pageWidth - titleWidth) / 2;
           doc.text('REPORTE COMPLETO DE PROSPECTIVA', titleX, y);
@@ -1367,7 +1351,6 @@ export default {
           doc.text('Análisis Prospectivo de Variables', margin, y);
           y += 25;
 
-          // Agregar información de la ruta si está disponible
           if (usuario.route_name) {
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
@@ -1375,7 +1358,6 @@ export default {
             y += 20;
           }
 
-                      // 2. Información personal
           checkPageBreak(30);
           doc.setFontSize(12);
           doc.setFont(undefined, 'bold');
@@ -1410,7 +1392,6 @@ export default {
             });
             y = doc.lastAutoTable.finalY + 25;
 
-                                  // 3. Variables del Sistema
             checkTablePageBreak(usuario.variables_list || [], 'VARIABLES DEL SISTEMA');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
@@ -1449,27 +1430,23 @@ export default {
               y += 20;
             }
 
-            // 4. Matriz de Análisis Estructural
             checkPageBreak(30);
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text('MATRIZ DE ANÁLISIS ESTRUCTURAL', margin, y); y += 20;
             
             if (usuario.matriz && usuario.matriz.length > 0 && usuario.matriz_cruzada) {
-              // Obtener variables únicas ordenadas desde matriz_cruzada
-              const variables = [...new Set(usuario.matriz_cruzada.map(m => m.origen))].sort();
               
-              // Crear tabla principal de matriz con colores
+              const variables = [...new Set(usuario.matriz_cruzada.map(m => m.origen))].sort();
+
               const matrizHeaders = ['CÓDIGO', 'NOMBRE', ...variables.map(v => v), 'TOTAL INFLUENCIA'];
               const matrizBody = variables.map(varOrigen => {
-                // Buscar la variable en la lista de variables del usuario para obtener el nombre real
-                // Usar variables_list en lugar de matriz para obtener los nombres correctos
+
                 const variableInfo = usuario.variables_list ? usuario.variables_list.find(v => v.id_variable === varOrigen) : null;
                 const nombreVariable = variableInfo ? variableInfo.name_variable : varOrigen;
                 
-                const row = [varOrigen, nombreVariable]; // Código y nombre real
-                
-                // Agregar valores de la matriz
+                const row = [varOrigen, nombreVariable]; 
+
                 variables.forEach(varDestino => {
                   if (varOrigen === varDestino) {
                     row.push('X');
@@ -1478,8 +1455,7 @@ export default {
                     row.push(item ? item.valor : 0);
                   }
                 });
-                
-                // Calcular total influencia (suma de fila)
+
                 const totalInfluencia = variables.reduce((sum, varDestino) => {
                   if (varOrigen !== varDestino) {
                     const item = usuario.matriz_cruzada.find(m => m.origen === varOrigen && m.destino === varDestino);
@@ -1491,8 +1467,7 @@ export default {
                 
                 return row;
               });
-              
-              // Agregar fila de totales de dependencia
+
               const totalDependenciaRow = ['TOTAL DEPENDENCIA', '', ...variables.map(varDestino => {
                 return variables.reduce((sum, varOrigen) => {
                   if (varOrigen !== varDestino) {
@@ -1503,8 +1478,7 @@ export default {
                 }, 0);
               }), ''];
               matrizBody.push(totalDependenciaRow);
-              
-              // Calcular el total general (suma de todos los valores)
+
               const totalGeneral = variables.reduce((sum, varOrigen) => {
                 return sum + variables.reduce((sumDestino, varDestino) => {
                   if (varOrigen !== varDestino) {
@@ -1514,11 +1488,9 @@ export default {
                   return sumDestino;
                 }, 0);
               }, 0);
-              
-              // Actualizar la última celda de la última fila con el total general
+
               matrizBody[matrizBody.length - 1][matrizBody[matrizBody.length - 1].length - 1] = totalGeneral;
-              
-              // Tabla principal con estilos mejorados
+
               autoTable(doc, {
                 startY: y,
                 head: [matrizHeaders],
@@ -1533,73 +1505,67 @@ export default {
                   valign: 'middle'
                 },
                 headStyles: {
-                  fillColor: [238, 242, 255], // #EEF2FF
-                  textColor: [79, 70, 229], // #4F46E5
+                  fillColor: [238, 242, 255], 
+                  textColor: [79, 70, 229], 
                   fontSize: 10,
                   fontStyle: 'bold',
                   halign: 'center',
                   valign: 'middle'
                 },
                 alternateRowStyles: {
-                  fillColor: [249, 250, 251] // #F9FAFB
+                  fillColor: [249, 250, 251] 
                 },
                 margin: { left: margin, right: margin },
                 didParseCell: function(data) {
-                  // Colorear encabezados de fila (código y nombre) - solo las primeras dos columnas
+                  
                   if (data.column.index === 0 || data.column.index === 1) {
-                    data.cell.styles.fillColor = [238, 242, 255]; // #EEF2FF
-                    data.cell.styles.textColor = [79, 70, 229]; // #4F46E5
+                    data.cell.styles.fillColor = [238, 242, 255]; 
+                    data.cell.styles.textColor = [79, 70, 229]; 
                     data.cell.styles.fontStyle = 'bold';
                     data.cell.styles.halign = 'center';
                   }
-                  
-                  // Colorear celdas de datos según el valor - solo las celdas de datos (no encabezados)
+
                   if (data.row.index > 0 && data.column.index > 1 && data.column.index < matrizHeaders.length - 1) {
                     const value = parseInt(data.cell.text[0]);
-                    
-                    // Diagonal (X)
+
                     if (data.cell.text[0] === 'X') {
-                      data.cell.styles.fillColor = [245, 243, 255]; // #F5F3FF
-                      data.cell.styles.textColor = [109, 40, 217]; // #6D28D9
+                      data.cell.styles.fillColor = [245, 243, 255]; 
+                      data.cell.styles.textColor = [109, 40, 217]; 
                       data.cell.styles.fontStyle = 'bold';
                     }
-                    // Valores numéricos con colores suaves
+                    
                     else if (value === 0) {
-                      data.cell.styles.fillColor = [245, 246, 250]; // #F5F6FA
-                      data.cell.styles.textColor = [136, 136, 136]; // #888
+                      data.cell.styles.fillColor = [245, 246, 250]; 
+                      data.cell.styles.textColor = [136, 136, 136]; 
                     } else if (value === 1) {
-                      data.cell.styles.fillColor = [224, 247, 250]; // #E0F7FA
-                      data.cell.styles.textColor = [2, 136, 209]; // #0288D1
+                      data.cell.styles.fillColor = [224, 247, 250]; 
+                      data.cell.styles.textColor = [2, 136, 209]; 
                     } else if (value === 2) {
-                      data.cell.styles.fillColor = [255, 249, 196]; // #FFF9C4
-                      data.cell.styles.textColor = [251, 192, 45]; // #FBC02D
+                      data.cell.styles.fillColor = [255, 249, 196]; 
+                      data.cell.styles.textColor = [251, 192, 45]; 
                     } else if (value === 3) {
-                      data.cell.styles.fillColor = [248, 187, 208]; // #F8BBD0
-                      data.cell.styles.textColor = [194, 24, 91]; // #C2185B
+                      data.cell.styles.fillColor = [248, 187, 208]; 
+                      data.cell.styles.textColor = [194, 24, 91]; 
                     }
                   }
-                  
-                  // Colorear totales (última columna y última fila)
+
                   if (data.column.index === matrizHeaders.length - 1 || data.row.index === matrizBody.length - 1) {
-                    data.cell.styles.fillColor = [230, 249, 240]; // #E6F9F0
-                    data.cell.styles.textColor = [27, 94, 32]; // #1B5E20
+                    data.cell.styles.fillColor = [230, 249, 240]; 
+                    data.cell.styles.textColor = [27, 94, 32]; 
                     data.cell.styles.fontStyle = 'bold';
                   }
-                  
-                  // Configurar colspan para TOTAL DEPENDENCIA (primera celda de la última fila)
+
                   if (data.row.index === matrizBody.length - 1 && data.column.index === 0) {
                     data.cell.colSpan = 2;
                     data.cell.styles.halign = 'center';
                   }
-                  
-                  // Centrar todo el contenido
+
                   data.cell.styles.halign = 'center';
                   data.cell.styles.valign = 'middle';
                 }
               });
               y = doc.lastAutoTable.finalY + 20;
-              
-              // Tabla de resumen con mejor formato
+
               doc.setFontSize(12);
               doc.setFont(undefined, 'bold');
               doc.text('RESUMEN DE DEPENDENCIA E INFLUENCIA', 40, y); y += 20;
@@ -1640,8 +1606,8 @@ export default {
                   valign: 'middle'
                 },
                 headStyles: {
-                  fillColor: [238, 242, 255], // #EEF2FF
-                  textColor: [79, 70, 229], // #4F46E5
+                  fillColor: [238, 242, 255], 
+                  textColor: [79, 70, 229], 
                   fontSize: 10,
                   fontStyle: 'bold',
                   halign: 'center',
@@ -1649,22 +1615,20 @@ export default {
                 },
                 margin: { left: margin, right: margin },
                 didParseCell: function(data) {
-                  // Colorear primera columna (RESUMEN)
+                  
                   if (data.column.index === 0) {
-                    data.cell.styles.fillColor = [238, 242, 255]; // #EEF2FF
-                    data.cell.styles.textColor = [79, 70, 229]; // #4F46E5
+                    data.cell.styles.fillColor = [238, 242, 255]; 
+                    data.cell.styles.textColor = [79, 70, 229]; 
                     data.cell.styles.fontStyle = 'bold';
                     data.cell.styles.halign = 'center';
                   }
-                  
-                  // Colorear celdas de datos
+
                   if (data.column.index > 0) {
-                    data.cell.styles.fillColor = [250, 250, 250]; // #FAFAFA
-                    data.cell.styles.textColor = [31, 41, 55]; // #1F2937
+                    data.cell.styles.fillColor = [250, 250, 250]; 
+                    data.cell.styles.textColor = [31, 41, 55]; 
                     data.cell.styles.fontWeight = '500';
                   }
-                  
-                  // Centrar todo el contenido
+
                   data.cell.styles.halign = 'center';
                   data.cell.styles.valign = 'middle';
                 }
@@ -1676,15 +1640,13 @@ export default {
               y += 25;
             }
 
-            // 4.1 Gráfica de Variables (Mapa de Variables) - Página dedicada
             y = await captureGraphic(`grafica-variables-${uniqueId}`, 'GRÁFICA DE VARIABLES - MAPA DE ANÁLISIS', y, true);
             if (y) {
-              // y ya fue actualizado dentro de captureGraphic
+              
             } else {
-              y += 60; // deja espacio aunque falle
+              y += 60; 
             }
 
-            // 5. Análisis Mapa De Variables (aprovechando espacio después de la gráfica)
             checkTablePageBreak(usuario.zone_analyses || [], 'ANÁLISIS MAPA DE VARIABLES');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
@@ -1695,7 +1657,7 @@ export default {
                 startY: y,
                 head: [['Zona', 'Puntaje', 'Variables en la Zona', 'Descripción']],
                 body: (usuario.zone_analyses || []).map(z => {
-                  // Obtener las variables en esta zona
+                  
                   let variablesEnZona = 'Sin variables';
                   if (z.variables_in_zone && z.variables_in_zone.length > 0) {
                     variablesEnZona = z.variables_in_zone.map(v => {
@@ -1704,10 +1666,10 @@ export default {
                         variableText += ` (${v.name_variable})`;
                       }
                       if (v.frontera) {
-                        variableText += ' ⚡'; // Indicador de frontera
+                        variableText += ' ⚡'; 
                       }
                       return variableText;
-                    }).join('\n'); // Separar por saltos de línea en lugar de comas
+                    }).join('\n'); 
                   }
                   
                   return [
@@ -1735,7 +1697,7 @@ export default {
                 },
                 margin: { left: margin, right: margin },
                 didParseCell: function(data) {
-                  // Solo ajustar el tamaño de fuente para la columna de variables
+                  
                   if (data.column.index === 2 && data.row.index > 0) {
                     data.cell.styles.fontSize = 8;
                   }
@@ -1748,10 +1710,6 @@ export default {
               y += 25;
             }
 
-            // 4.2 Gráfica de Matriz (si existe en el DOM) - Página dedicada
-
-
-            // 6. Direccionadores de Futuro (Hipótesis)
             checkTablePageBreak(usuario.future_drivers || [], 'DIRECCIONADORES DE FUTURO');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
@@ -1792,8 +1750,7 @@ export default {
               y += 25;
             }
 
-            // 6.1 Gráfica de Schwartz - Justo después de Direccionadores de Futuro
-            checkGraphicPageBreak(420, 'EJES DE PETER SCHWARTZ'); // 420 es la altura estimada de la gráfica
+            checkGraphicPageBreak(420, 'EJES DE PETER SCHWARTZ'); 
             const tempDivSchwartz = document.createElement('div');
             tempDivSchwartz.style.position = 'fixed';
             tempDivSchwartz.style.left = '-9999px';
@@ -1822,38 +1779,33 @@ export default {
             const canvasSchwartz = tempDivSchwartz.querySelector('canvas');
             if (canvasSchwartz) {
               const imgData = canvasSchwartz.toDataURL('image/png');
-              
-              // Título alineado a la izquierda
+
               doc.setFontSize(16);
               doc.setFont(undefined, 'bold');
               const titleText = 'EJES DE PETER SCHWARTZ';
               doc.text(titleText, margin, y);
-              y += 40; // Espacio después del título
-              
-              // Calcular dimensiones centradas y 30% más pequeñas
+              y += 40; 
+
               const originalWidth = 560;
               const originalHeight = 420;
-              const scaleFactor = 0.7; // 30% más pequeña (70% del tamaño original)
+              const scaleFactor = 0.7; 
               const finalWidth = originalWidth * scaleFactor;
               const finalHeight = originalHeight * scaleFactor;
-              
-              // Centrar la imagen horizontalmente
+
               const pageWidth = doc.internal.pageSize.getWidth();
               const x = (pageWidth - finalWidth) / 2;
-              
-              // Verificar que la imagen no se superponga con el margen inferior
+
               const pageHeight = doc.internal.pageSize.getHeight();
               const bottomMargin = margin;
               const maxY = pageHeight - finalHeight - bottomMargin;
               const finalY = Math.min(y, maxY);
               
               doc.addImage(imgData, 'PNG', x, finalY, finalWidth, finalHeight);
-              y = finalY + finalHeight + 40; // Posición Y después de la gráfica
+              y = finalY + finalHeight + 40; 
             }
             appSchwartz.unmount();
             document.body.removeChild(tempDivSchwartz);
 
-            // 7. Condiciones Iniciales
             checkTablePageBreak(usuario.initial_conditions || [], 'CONDICIONES INICIALES');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
@@ -1893,7 +1845,6 @@ export default {
               y += 25;
             }
 
-            // 8. Escenarios
             checkTablePageBreak(usuario.scenarios || [], 'ESCENARIOS');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
@@ -1933,16 +1884,13 @@ export default {
               y += 25;
             }
 
-            // Sección de Ejes de Peter Schwartz eliminada según solicitud del usuario
-
-            // 9. Conclusiones de Aprendizaje
             checkTablePageBreak(usuario.conclusions || [], 'CONCLUSIONES DE APRENDIZAJE');
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text('CONCLUSIONES DE APRENDIZAJE', margin, y); y += 20;
             
             if (usuario.conclusions && usuario.conclusions.length > 0) {
-              // Crear tabla con las conclusiones específicas
+              
               const conclusionesData = [];
               usuario.conclusions.forEach((c, index) => {
                 if (c.component_practice) {
@@ -1991,7 +1939,6 @@ export default {
               y += 25;
             }
 
-            // 10. Resumen Ejecutivo
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text('RESUMEN EJECUTIVO', 40, y); y += 20;
@@ -2015,7 +1962,6 @@ export default {
             });
             y = doc.lastAutoTable.finalY + 25;
 
-            // 11. Pie de página
             doc.setFontSize(8);
             doc.text(`Reporte generado el ${new Date().toLocaleString('es-ES')}`, 40, y);
             y += 15;
@@ -2034,14 +1980,14 @@ export default {
 
         function getVariablesByZone(matriz) {
           if (!matriz || matriz.length === 0) return {};
-          // Calcular máximos y centro
+          
           const dependencias = matriz.map(v => v.dependencia);
           const influencias = matriz.map(v => v.influencia);
           const maxX = Math.max(...dependencias, 10);
           const maxY = Math.max(...influencias, 12);
           const centroX = maxX / 2;
           const centroY = maxY / 2;
-          // Agrupar por zona
+          
           const zonas = {
             'ZONA DE PODER': [],
             'ZONA DE CONFLICTO': [],
@@ -2138,6 +2084,36 @@ export default {
             loadingPdfId,
             imprimirUsuario,
             getVariablesByZone,
+            
+            cerrado,
+            state,
+            mostrarModal,
+            mostrarModalRegresar,
+            
+            confirmarCerrar: () => {
+                mostrarModal.value = true;
+            },
+            confirmarRegresar: () => {
+                mostrarModalRegresar.value = true;
+            },
+            cerrarModulo: async () => {
+                try {
+                    await traceabilityStore.markSectionCompleted('results');
+                    cerrado.value = true;
+                    mostrarModal.value = false;
+                } catch (error) {
+                    console.error('Error al cerrar módulo:', error);
+                }
+            },
+            regresarModulo: async () => {
+                try {
+                    await traceabilityStore.reverseSectionCompleted('results');
+                    cerrado.value = false;
+                    mostrarModalRegresar.value = false;
+                } catch (error) {
+                    console.error('Error al regresar módulo:', error);
+                }
+            },
         };
     },
     data() {
@@ -2159,45 +2135,44 @@ export default {
     },
     async mounted() {
         this.sectionStore.setTitleSection(this.textsStore.getText('results_section.title'));
-        
-        // Cargar la ruta actual primero
+
         await this.traceabilityStore.loadCurrentRoute();
-        
-        // Obtener la ruta actual y cargar los datos por ruta
+
         this.loadResultsByCurrentRoute();
-        
-        // Debug: verificar si los textos se cargan correctamente
+
         this.$nextTick(() => {
             console.log('Textos cargados:', {
                 variables_count: this.textsStore.getText('results_section.table.variables_count'),
                 variables_list: this.textsStore.getText('results_section.table.variables_list')
             });
         });
+
+        window.addEventListener('route-created', this.handleRouteCreated);
     },
     methods: {
         async loadResultsByCurrentRoute() {
             try {
-                // Para administradores, siempre cargar todos los datos
+                
                 if (this.isAdmin) {
                     await this.resultsStore.fetchUsers();
                 } else {
-                    // Para usuarios normales, cargar por ruta específica
+                    
                     const currentRoute = this.traceabilityStore.getCurrentRoute;
                     if (currentRoute && currentRoute.id) {
-                        // Cargar datos por ruta específica
+                        
                         await this.resultsStore.fetchUsersByRoute(currentRoute.id);
                     } else {
-                        // Si no hay ruta actual, cargar todos los datos (comportamiento original)
+                        
                         await this.resultsStore.fetchUsers();
                     }
                 }
             } catch (error) {
                 console.error('Error al cargar resultados por ruta:', error);
-                // Fallback: cargar todos los datos
+                
                 await this.resultsStore.fetchUsers();
             }
         },
-        // Solo permitir números en el filtro de ID
+        
         onIdInput(event) {
             const value = event.target.value;
             if (value === '' || /^\d+$/.test(value)) {
@@ -2206,7 +2181,7 @@ export default {
                 event.target.value = this.filterId;
             }
         },
-        // Solo permitir números en el filtro de identificación
+        
         onDocumentIdInput(event) {
             const value = event.target.value;
             if (value === '' || /^\d+$/.test(value)) {
@@ -2215,11 +2190,22 @@ export default {
                 event.target.value = this.filterDocumentId;
             }
         },
+
+        handleRouteCreated() {
+            
+            this.$forceUpdate();
+
+            this.loadResultsByCurrentRoute();
+        },
+    },
+    
+    beforeUnmount() {
+        
+        window.removeEventListener('route-created', this.handleRouteCreated);
     }
 }
 
 </script>
-
 
 <style scoped>
 .main-content {
@@ -2244,7 +2230,6 @@ export default {
   box-sizing: border-box;
 }
 
-/* Contenedor flexible para los filtros */
 .filters-container {
   display: flex;
   flex-wrap: wrap;
@@ -2253,7 +2238,6 @@ export default {
   width: 100%;
 }
 
-/* Cada filtro individual */
 .filter-item {
   display: flex;
   flex-direction: column;
@@ -2262,14 +2246,12 @@ export default {
   max-width: 280px;
 }
 
-/* Filtro de identificación con más espacio */
 .filter-identificacion {
   min-width: 240px;
   flex: 1 1 240px;
   max-width: 320px;
 }
 
-/* Espaciador para mantener el layout */
 .filter-spacer {
   flex: 1 1 200px;
   min-width: 200px;
@@ -2298,7 +2280,6 @@ export default {
   box-shadow: 0 0 0 0.125em rgba(0, 209, 178, 0.25);
 }
 
-/* Responsive para pantallas pequeñas */
 @media (max-width: 768px) {
   .filters-container {
     flex-direction: column;
@@ -2357,7 +2338,7 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
   padding: 4px;
-  padding-right: 16px; /* Espacio para la barra de scroll */
+  padding-right: 16px; 
 }
 
 .variable-item {
@@ -2453,8 +2434,6 @@ export default {
   font-size: 0.8em;
   margin-left: 8px;
 }
-
-
 
 .analysis-description {
   background-color: #f5f5f5;
@@ -2582,8 +2561,6 @@ export default {
   margin-left: 4px;
 }
 
-
-
 .driver-description {
   color: #666;
   font-style: italic;
@@ -2641,8 +2618,6 @@ export default {
   font-size: 0.8em;
   margin-left: 8px;
 }
-
-
 
 .condition-description {
   background-color: #f5f5f5;
@@ -2939,7 +2914,6 @@ export default {
   min-height: 40px;
 }
 
-/* Centrar todos los encabezados de tabla */
 :deep(.b-table thead th) {
   text-align: center !important;
   vertical-align: middle !important;
@@ -2989,7 +2963,6 @@ export default {
   font-style: italic;
 }
 
-/* Contenedor con scroll horizontal y vertical para la tabla de resultados */
 .tabla-scroll-contenedor {
   width: 100%;
   max-width: 1200px;
@@ -3001,7 +2974,6 @@ export default {
   margin-bottom: 32px;
 }
 
-/* Estilos para la columna de matriz */
 .matriz-container {
   max-height: 200px;
   overflow-y: auto;
@@ -3053,7 +3025,6 @@ export default {
   margin-left: 8px;
 }
 
-/* Estilos para el modal de matriz */
 .matriz-modal-card {
   width: 950px;
   min-width: 900px;
@@ -3251,7 +3222,6 @@ canvas {
   max-height: 560px;
 }
 
-/* Eliminar bordes y border-radius para gráficas en PDF */
 .pdf-graphic-container canvas {
   background: #fff !important;
   border-radius: 0 !important;
@@ -3285,13 +3255,12 @@ canvas {
 </style>
 
 <style>
-/* CSS global para centrar todos los encabezados de tabla */
+
 .b-table thead th {
   text-align: center !important;
   vertical-align: middle !important;
 }
 
-/* Contenedor del botón PDF para evitar reflow */
 .pdf-button-container {
   width: 80px !important;
   height: 32px !important;
@@ -3301,7 +3270,6 @@ canvas {
   position: relative !important;
 }
 
-/* Botón PDF con tamaño fijo para evitar reflow */
 .pdf-button {
   width: 80px !important;
   height: 32px !important;
@@ -3334,7 +3302,6 @@ canvas {
   justify-content: center !important;
 }
 
-/* Forzar fondo blanco y texto negro en el contenido de los modales de Buefy */
 .modal-card-body {
   background: #fff !important;
   color: #222 !important;
@@ -3377,7 +3344,6 @@ canvas {
   border-color: #d12c4c !important;
 }
 
-/* Para Vue 3 con scoped, usar :deep(...) */
 :deep(.dialog .dialog-footer .button),
 :deep(.dialog .dialog-footer .button.is-info),
 :deep(.dialog .dialog-footer .button.is-danger),
@@ -3403,7 +3369,6 @@ canvas {
   border-color: #d12c4c !important;
 }
 
-/* CSS global para asegurar el color rojo del botón de cerrar */
 .dialog .dialog-footer .button.is-danger {
   background-color: #f14668 !important;
   border-color: #f14668 !important;
@@ -3415,7 +3380,6 @@ canvas {
   border-color: #d12c4c !important;
 }
 
-/* Estilos para zonas clickeables */
 .clickable-zone {
   cursor: pointer;
   padding: 0.5rem;
@@ -3460,7 +3424,6 @@ canvas {
 }
 </style>
 
-/* Estilos para el modal de conclusiones múltiples */
 .conclusions-modal-content {
   max-height: 70vh;
   overflow-y: auto;
@@ -3521,3 +3484,69 @@ canvas {
   font-style: italic;
 }
 
+.cerrar-container {
+  position: fixed;
+  bottom: 32px;
+  right: 48px;
+  z-index: 100;
+}
+
+.cerrar-btn {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cerrar-btn:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+
+.modal-confirm {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal-content {
+  background: white;
+  padding: 32px 48px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.modal-content button {
+  margin: 0 12px;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.modal-content button:first-child {
+  background: #7c3aed;
+  color: white;
+}
+
+.modal-content button:last-child {
+  background: #6b7280;
+  color: white;
+}
+
+.modal-content button:hover {
+  opacity: 0.9;
+}

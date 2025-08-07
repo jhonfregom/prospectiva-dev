@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ScenariosController extends Controller
 {
-    // Actualiza un escenario existente
+    
     public function update($id, Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -33,8 +33,7 @@ class ScenariosController extends Controller
         $scenario->titulo = $data['titulo'];
         $scenario->edits = $data['edits'];
         $scenario->state = (string) $data['state'];
-        
-        // Actualizar contadores de edición si se envían
+
         if (isset($data['edits_year1'])) {
             $scenario->edits_year1 = $data['edits_year1'];
         }
@@ -90,7 +89,6 @@ class ScenariosController extends Controller
         $data['user_id'] = Auth::id();
         $data['state'] = (string) $data['state'];
 
-        // Buscar si ya existe un registro para este usuario y num_scenario
         $scenario = Scenarios::where('user_id', $data['user_id'])
             ->where('num_scenario', $data['num_scenario'])
             ->first();
@@ -98,10 +96,10 @@ class ScenariosController extends Controller
         \Log::info('ScenariosController@store - Found scenario:', ['scenario' => $scenario]);
 
         if ($scenario) {
-            // Actualizar
+            
                 $scenario->titulo = $data['titulo'] ?? $scenario->titulo;
             $scenario->edits = $data['edits'];
-            // Actualizar campos de año si vienen en el request
+            
             if (array_key_exists('year1', $data)) {
                 $scenario->year1 = $data['year1'];
                 \Log::info('ScenariosController@store - Updating year1:', ['year1' => $data['year1']]);
@@ -114,7 +112,7 @@ class ScenariosController extends Controller
                 $scenario->year3 = $data['year3'];
                 \Log::info('ScenariosController@store - Updating year3:', ['year3' => $data['year3']]);
             }
-            // Actualizar contadores de edición si vienen en el request
+            
             if (array_key_exists('edits_year1', $data)) {
                 $scenario->edits_year1 = $data['edits_year1'];
                 \Log::info('ScenariosController@store - Updating edits_year1:', ['edits_year1' => $data['edits_year1']]);
@@ -127,7 +125,7 @@ class ScenariosController extends Controller
                 $scenario->edits_year3 = $data['edits_year3'];
                 \Log::info('ScenariosController@store - Updating edits_year3:', ['edits_year3' => $data['edits_year3']]);
             }
-            // Lógica de bloqueo: state = 1 solo si todos los contadores están en 3
+            
             if (
                 $scenario->edits >= 3 &&
                 $scenario->edits_year1 >= 3 &&
@@ -143,10 +141,9 @@ class ScenariosController extends Controller
             $status = 200;
             $message = 'Escenario actualizado correctamente.';
         } else {
-                // Obtener o crear el registro de traceability para el usuario
-                $traceability = \App\Models\Traceability::getOrCreateForUser($data['user_id']);
                 
-            // Crear con el primer id libre
+                $traceability = \App\Models\Traceability::getOrCreateForUser($data['user_id']);
+
             $nextId = $this->findNextAvailableId();
             $data['id'] = $nextId;
                 $data['tried_id'] = $traceability->id;
@@ -183,4 +180,4 @@ class ScenariosController extends Controller
             'message' => 'Escenarios obtenidos correctamente.'
         ]);
     }
-} 
+}

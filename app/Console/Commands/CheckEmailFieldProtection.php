@@ -14,8 +14,7 @@ class CheckEmailFieldProtection extends Command
     public function handle()
     {
         $this->info('🔒 Verificando protección del campo email...');
-        
-        // Verificar que el campo email NO existe en la tabla users
+
         $this->info("\n📋 Verificando estructura de tabla users:");
         if (Schema::hasColumn('users', 'email')) {
             $this->error("   ❌ PELIGRO: El campo 'email' existe en la tabla users");
@@ -24,16 +23,14 @@ class CheckEmailFieldProtection extends Command
         } else {
             $this->info("   ✅ El campo 'email' NO existe en la tabla users");
         }
-        
-        // Verificar que el campo user existe y funciona como email
+
         if (Schema::hasColumn('users', 'user')) {
             $this->info("   ✅ El campo 'user' existe y funciona como email/login");
         } else {
             $this->error("   ❌ ERROR: El campo 'user' no existe");
             return 1;
         }
-        
-        // Verificar migraciones que podrían crear el campo email
+
         $this->info("\n🔍 Verificando migraciones:");
         $migrationsPath = database_path('migrations');
         $migrationFiles = glob($migrationsPath . '/*.php');
@@ -55,8 +52,7 @@ class CheckEmailFieldProtection extends Command
         } else {
             $this->info("   ✅ No se encontraron migraciones que puedan crear el campo 'email'");
         }
-        
-        // Verificar que el sistema funciona correctamente
+
         $this->info("\n🧪 Verificando funcionalidad del sistema:");
         try {
             $userCount = DB::table('users')->count();
@@ -65,8 +61,7 @@ class CheckEmailFieldProtection extends Command
             $this->error("   ❌ Error en el sistema: " . $e->getMessage());
             return 1;
         }
-        
-        // Verificar que el campo user tiene datos válidos
+
         $usersWithUserField = DB::table('users')->whereNotNull('user')->count();
         $this->info("   ✅ {$usersWithUserField} usuarios tienen campo 'user' válido");
         
@@ -76,4 +71,4 @@ class CheckEmailFieldProtection extends Command
         
         return 0;
     }
-} 
+}

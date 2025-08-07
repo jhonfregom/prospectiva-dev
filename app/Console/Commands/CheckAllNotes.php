@@ -23,7 +23,6 @@ class CheckAllNotes extends Command
             $this->line("ID: {$note->id} | Título: '{$note->title}' | User ID: {$note->user_id} | Traceability ID: {$traceabilityId} | Creada: {$note->created_at}");
         }
 
-        // Verificar si hay notas sin user_id
         $orphanNotes = Note::whereNull('user_id')->get();
         if ($orphanNotes->count() > 0) {
             $this->error("\n❌ ERROR: Se encontraron {$orphanNotes->count()} notas sin user_id:");
@@ -36,4 +35,4 @@ class CheckAllNotes extends Command
 
         return 0;
     }
-} 
+}

@@ -4,9 +4,9 @@ import axios from 'axios';
 
 export const useAnalysisStore = defineStore('analysis', {
     state: () => ({
-        zones: [], // Se llenará desde textsStore
+        zones: [], 
         rows: [
-            // Filas vacías que se llenarán dinámicamente
+            
             { key: 'poder', variables: [], comment: '', score: 0, state: '0' },
             { key: 'conflicto', variables: [], comment: '', score: 0, state: '0' },
             { key: 'salida', variables: [], comment: '', score: 0, state: '0' },
@@ -83,9 +83,9 @@ export const useAnalysisStore = defineStore('analysis', {
 
         async saveAnalysis(analysisData) {
             try {
-                // Si es un guardado manual, incluir el campo edits
+                
                 if (analysisData.is_manual_save) {
-                    // Buscar el análisis existente para obtener el contador actual
+                    
                     const analyses = await this.fetchAnalyses();
                     if (analyses && analyses.data) {
                         const existingAnalysis = analyses.data.find(analysis => {
@@ -100,14 +100,14 @@ export const useAnalysisStore = defineStore('analysis', {
                         });
                         
                         if (existingAnalysis) {
-                            // Si existe, incrementar el contador
+                            
                             analysisData.edits = (existingAnalysis.edits || 0) + 1;
                         } else {
-                            // Si es nuevo, establecer en 1 (primera edición)
+                            
                             analysisData.edits = 1;
                         }
                     } else {
-                        // Si no hay análisis existentes, establecer en 1 (primera edición)
+                        
                         analysisData.edits = 1;
                     }
                 }
@@ -115,9 +115,9 @@ export const useAnalysisStore = defineStore('analysis', {
                 const response = await axios.post('/analysis', analysisData);
                 
                 if (response.data.status === 201) {
-                    // Actualizar el state en el store si la respuesta incluye el análisis actualizado
+                    
                     if (response.data.data) {
-                        // Mapear el nombre de la zona de vuelta a la clave del frontend
+                        
                         const zoneMapping = {
                             'ZONA DE PODER': 'poder',
                             'ZONA DE CONFLICTO': 'conflicto',
@@ -230,4 +230,4 @@ export const useAnalysisStore = defineStore('analysis', {
             this.error = null;
         }
     }
-}); 
+});

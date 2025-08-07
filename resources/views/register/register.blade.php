@@ -1,5 +1,5 @@
 <?php include( resource_path( 'config/shared-variables/register/register.php' ) ) ?>
-@extends('layouts.main')
+@extends('layouts.auth')
 @section('title', __('register.register') )
 @section('class-footer','static')
 @section('content')
@@ -35,4 +35,4 @@
         </div>
     </section> 
 </div>
-@endsection   
+@endsection

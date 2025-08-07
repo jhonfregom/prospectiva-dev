@@ -16,24 +16,21 @@ class CheckUserRelations extends Command
         $this->info('🔍 Verificando relaciones de User...');
         
         try {
-            // Verificar que el modelo User puede acceder a EconomicSector
+            
             $user = new User();
             $economicSectorRelation = $user->economicSector();
             
             $this->info('✅ Relación economicSector creada correctamente');
             $this->line("   Clase relacionada: " . get_class($economicSectorRelation->getRelated()));
-            
-            // Verificar que hay usuarios con sectores económicos
+
             $usersWithSectors = User::whereNotNull('economic_sector')->count();
             $this->info("📊 Usuarios con sector económico: {$usersWithSectors}");
-            
-            // Verificar que la clave foránea funciona
+
             $sampleUser = User::whereNotNull('economic_sector')->first();
             if ($sampleUser) {
                 $this->info("👤 Usuario de ejemplo: ID {$sampleUser->id}");
                 $this->line("   Sector económico ID: {$sampleUser->economic_sector}");
-                
-                // Intentar cargar la relación
+
                 $sector = $sampleUser->economicSector;
                 if ($sector) {
                     $this->info("✅ Relación cargada correctamente");
@@ -52,4 +49,4 @@ class CheckUserRelations extends Command
         
         return 0;
     }
-} 
+}

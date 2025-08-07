@@ -16,18 +16,14 @@ export const useConclusionsStore = defineStore('conclusions', {
     }),
 
     getters: {
-        /**
-         * Verificar si todas las conclusiones están bloqueadas
-         */
+        
         isAllBlocked: (state) => {
             return state.conclusions.state === '1';
         }
     },
 
     actions: {
-        /**
-         * Cargar las conclusiones del usuario
-         */
+        
         async fetchConclusions() {
             this.isLoading = true;
             this.error = null;
@@ -50,9 +46,6 @@ export const useConclusionsStore = defineStore('conclusions', {
             }
         },
 
-        /**
-         * Crear o actualizar las conclusiones
-         */
         async updateConclusions(data) {
             this.isLoading = true;
             this.error = null;
@@ -73,9 +66,6 @@ export const useConclusionsStore = defineStore('conclusions', {
             }
         },
 
-        /**
-         * Actualizar un campo específico de las conclusiones
-         */
         async updateField(fieldName, value) {
             this.isLoading = true;
             this.error = null;
@@ -101,9 +91,6 @@ export const useConclusionsStore = defineStore('conclusions', {
             }
         },
 
-        /**
-         * Actualizar el estado de las conclusiones
-         */
         async updateState(state) {
             this.isLoading = true;
             this.error = null;
@@ -124,9 +111,6 @@ export const useConclusionsStore = defineStore('conclusions', {
             }
         },
 
-        /**
-         * Bloquear las conclusiones
-         */
         async blockConclusions() {
             this.isLoading = true;
             this.error = null;
@@ -147,9 +131,6 @@ export const useConclusionsStore = defineStore('conclusions', {
             }
         },
 
-        /**
-         * Desbloquear las conclusiones
-         */
         async unblockConclusions() {
             this.isLoading = true;
             this.error = null;
@@ -170,16 +151,13 @@ export const useConclusionsStore = defineStore('conclusions', {
             }
         },
 
-        /**
-         * Cerrar todas las conclusiones del usuario
-         */
         async closeAllConclusions() {
             this.isLoading = true;
             this.error = null;
             try {
                 const response = await axios.post('/conclusions/close-all');
                 if (response.data.status === 200) {
-                    // Actualizar el estado local para reflejar el cierre
+                    
                     this.conclusions.component_practice_edits = 3;
                     this.conclusions.actuality_edits = 3;
                     this.conclusions.aplication_edits = 3;
@@ -194,4 +172,4 @@ export const useConclusionsStore = defineStore('conclusions', {
             }
         }
     }
-}); 
+});

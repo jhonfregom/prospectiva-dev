@@ -28,8 +28,8 @@
                     @lang('footer.copyright')
                 </div>
                 <div class="column columns">
-                    <div class="column"><a href="#">@lang('footer.terms')</a></div>
-                    <div class="column"><a href="#">@lang('footer.policies')</a></div>
+                    <div class="column"><a href="
+                    <div class="column"><a href="
                       </div>
             </div>
         </footer>

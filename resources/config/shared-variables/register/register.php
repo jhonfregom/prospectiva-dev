@@ -28,7 +28,7 @@ $fields = [
     ],
     'document_id' => [
         'label' => __('register.document_id'),
-        'placeholder' => __('register.document_id'),
+        'placeholder' => 'Cédula (10 dígitos)',
         'error' => false,
         'msg' => 'Falta el documento de identidad',
     ],
@@ -53,7 +53,7 @@ $fields = [
     ],
     'nit' => [
         'label' => 'NIT o número de identificación',
-        'placeholder' => 'NIT o número de identificación',
+        'placeholder' => 'NIT (9 dígitos)',
         'error' => false,
         'msg' => '',
     ],

@@ -15,11 +15,11 @@ class TestOllamaProxy extends Command
         $this->info('🧪 Probando proxy de Ollama...');
 
         try {
-            // Simular una petición al proxy
+            
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json'
-            ])->post('http://localhost/ollama/generate', [
+            ])->post('http:
                 'model' => 'gemma3:4b',
                 'prompt' => 'Hola, ¿cómo estás?',
                 'stream' => false,
@@ -50,4 +50,4 @@ class TestOllamaProxy extends Command
 
         return 0;
     }
-} 
+}

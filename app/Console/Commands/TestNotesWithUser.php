@@ -17,8 +17,7 @@ class TestNotesWithUser extends Command
         $userId = $this->argument('user_id');
         
         $this->info("🧪 Probando notas con usuario ID: {$userId}");
-        
-        // Buscar el usuario
+
         $user = User::find($userId);
         if (!$user) {
             $this->error("❌ Usuario con ID {$userId} no encontrado");
@@ -26,23 +25,19 @@ class TestNotesWithUser extends Command
         }
         
         $this->info("👤 Usuario: {$user->user} (ID: {$user->id})");
-        
-        // Simular login del usuario
+
         Auth::login($user);
-        
-        // Verificar que el usuario está autenticado
+
         $currentUser = Auth::user();
         $this->info("🔐 Usuario autenticado: {$currentUser->user} (ID: {$currentUser->id})");
-        
-        // Obtener notas directamente del modelo
+
         $userNotes = Note::where('user_id', $user->id)->get();
         $this->info("📝 Notas del usuario en BD: {$userNotes->count()}");
         
         foreach ($userNotes as $note) {
             $this->line("   - ID: {$note->id} | Título: '{$note->title}' | User ID: {$note->user_id}");
         }
-        
-        // Probar el método del controlador
+
         $controller = new \App\Http\Controllers\NoteController();
         $request = new \Illuminate\Http\Request();
         
@@ -63,8 +58,7 @@ class TestNotesWithUser extends Command
         } catch (\Exception $e) {
             $this->error("❌ Excepción: " . $e->getMessage());
         }
-        
-        // Verificar todas las notas en la BD
+
         $allNotes = Note::all();
         $this->info("\n📊 Todas las notas en la BD: {$allNotes->count()}");
         
@@ -76,4 +70,4 @@ class TestNotesWithUser extends Command
         
         return 0;
     }
-} 
+}

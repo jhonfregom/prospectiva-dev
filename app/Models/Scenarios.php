@@ -24,4 +24,4 @@ class Scenarios extends Model
         'edits_year3',
         'tried_id',
     ];
-} 
+}

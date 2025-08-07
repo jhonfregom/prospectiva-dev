@@ -43,6 +43,7 @@ export default {
     .info-description {
         margin-bottom: 8px;
         line-height: 1.5;
+        text-align: justify;
     }
     
     .edits-info {
@@ -57,4 +58,4 @@ export default {
         line-height: 1.4;
     }
 }
-</style> 
+</style>

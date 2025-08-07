@@ -27,4 +27,4 @@ class CheckZones extends Command
         
         $this->info("\n✅ Verificación completada");
     }
-} 
+}

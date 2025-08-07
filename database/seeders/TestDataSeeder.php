@@ -20,12 +20,10 @@ use Illuminate\Support\Facades\DB;
 
 class TestDataSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    
     public function run(): void
     {
-        // Limpiar datos existentes y reiniciar auto-incremento
+        
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         DB::statement('DELETE FROM notes WHERE id > 0');
         DB::statement('DELETE FROM traceability WHERE id > 0');
@@ -47,7 +45,6 @@ class TestDataSeeder extends Seeder
         DB::statement('ALTER TABLE users AUTO_INCREMENT = 1');
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        // Crear sectores económicos
         $sectors = [
             'Tecnología', 'Salud', 'Educación', 'Finanzas', 'Manufactura',
             'Retail', 'Energía', 'Transporte', 'Agricultura', 'Servicios'
@@ -57,7 +54,6 @@ class TestDataSeeder extends Seeder
             EconomicSector::firstOrCreate(['name' => $sector]);
         }
 
-        // Crear zonas
         $zoneNames = ['Zona Norte', 'Zona Sur', 'Zona Este', 'Zona Oeste', 'Zona Central'];
         foreach ($zoneNames as $zoneName) {
             Zones::create([
@@ -67,7 +63,6 @@ class TestDataSeeder extends Seeder
             ]);
         }
 
-        // Usuario de prueba original (admin)
         $testUser = User::create([
                 'id' => 1,
                 'first_name' => 'Test User',
@@ -76,12 +71,11 @@ class TestDataSeeder extends Seeder
                 'user' => 'test@example.com',
                 'password' => Hash::make('abcd1234'),
                 'status_users_id' => StateUser::STATUS_ACTIVE,
-            'role' => 1, // Administrador
-            'economic_sector' => 1, // Tecnología
+            'role' => 1, 
+            'economic_sector' => 1, 
             'registration_type' => 'natural'
             ]);
 
-        // Usuarios naturales (personas físicas)
         $naturalUsers = [
             [
                 'id' => 2,
@@ -92,7 +86,7 @@ class TestDataSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'status_users_id' => StateUser::STATUS_ACTIVE,
                 'role' => 0,
-                'economic_sector' => 2, // Servicios Financieros
+                'economic_sector' => 2, 
                 'registration_type' => 'natural'
             ],
             [
@@ -104,7 +98,7 @@ class TestDataSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'status_users_id' => StateUser::STATUS_ACTIVE,
                 'role' => 0,
-                'economic_sector' => 3, // Manufactura
+                'economic_sector' => 3, 
                 'registration_type' => 'natural'
             ],
             [
@@ -116,7 +110,7 @@ class TestDataSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'status_users_id' => StateUser::STATUS_ACTIVE,
                 'role' => 0,
-                'economic_sector' => 4, // Salud
+                'economic_sector' => 4, 
                 'registration_type' => 'natural'
             ],
             [
@@ -128,12 +122,11 @@ class TestDataSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'status_users_id' => StateUser::STATUS_ACTIVE,
                 'role' => 0,
-                'economic_sector' => 5, // Educación
+                'economic_sector' => 5, 
                 'registration_type' => 'natural'
             ]
         ];
 
-        // Usuarios empresa
         $companyUsers = [
             [
                 'id' => 6,
@@ -144,7 +137,7 @@ class TestDataSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'status_users_id' => StateUser::STATUS_ACTIVE,
                 'role' => 0,
-                'economic_sector' => 6, // Comercio
+                'economic_sector' => 6, 
                 'registration_type' => 'company'
             ],
             [
@@ -156,7 +149,7 @@ class TestDataSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'status_users_id' => StateUser::STATUS_ACTIVE,
                 'role' => 0,
-                'economic_sector' => 7, // Construcción
+                'economic_sector' => 7, 
                 'registration_type' => 'company'
             ],
             [
@@ -168,7 +161,7 @@ class TestDataSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'status_users_id' => StateUser::STATUS_ACTIVE,
                 'role' => 0,
-                'economic_sector' => 8, // Agricultura
+                'economic_sector' => 8, 
                 'registration_type' => 'company'
             ],
             [
@@ -180,7 +173,7 @@ class TestDataSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'status_users_id' => StateUser::STATUS_ACTIVE,
                 'role' => 0,
-                'economic_sector' => 9, // Transporte
+                'economic_sector' => 9, 
                 'registration_type' => 'company'
             ],
             [
@@ -192,17 +185,15 @@ class TestDataSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'status_users_id' => StateUser::STATUS_ACTIVE,
                 'role' => 0,
-                'economic_sector' => 10, // Energía
+                'economic_sector' => 10, 
                 'registration_type' => 'company'
             ]
         ];
 
-        // Crear todos los usuarios
         foreach (array_merge($naturalUsers, $companyUsers) as $userData) {
                 User::create($userData);
         }
 
-        // Crear datos de trazabilidad para cada usuario
         $allUsers = User::all();
         foreach ($allUsers as $user) {
             Traceability::create([
@@ -223,7 +214,6 @@ class TestDataSeeder extends Seeder
             ]);
         }
 
-        // Crear notas de ejemplo para algunos usuarios
         $noteTemplates = [
             'Observaciones sobre el entorno político actual y su impacto en el sector empresarial.',
             'Análisis de tendencias tecnológicas emergentes que podrían afectar la industria.',
@@ -237,7 +227,7 @@ class TestDataSeeder extends Seeder
 
         $allUsers = User::all();
         foreach ($allUsers as $index => $user) {
-            $numNotes = rand(1, 3); // 1-3 notas por usuario
+            $numNotes = rand(1, 3); 
             for ($i = 0; $i < $numNotes; $i++) {
                 $templateIndex = ($index + $i) % count($noteTemplates);
                 Note::create([
@@ -255,16 +245,14 @@ class TestDataSeeder extends Seeder
         $this->command->info('   - ' . count($allUsers) . ' usuarios creados');
         $this->command->info('   - ' . Traceability::count() . ' registros de trazabilidad');
         $this->command->info('   - ' . Note::count() . ' notas creadas');
-        
-        // Crear datos para todas las tablas principales
+
         $this->command->info('   - Creando datos para variables, matriz, hipótesis, escenarios y conclusiones...');
         
         foreach ($allUsers as $user) {
-            // Obtener el tried_id del usuario
+            
             $traceability = Traceability::where('user_id', $user->id)->first();
             $triedId = $traceability ? $traceability->id : 1;
-            
-            // Crear variables para cada usuario
+
             $variableNames = ['Variable Política', 'Variable Económica', 'Variable Social', 'Variable Tecnológica', 'Variable Ambiental'];
             foreach ($variableNames as $index => $name) {
                 Variable::create([
@@ -280,8 +268,7 @@ class TestDataSeeder extends Seeder
                     'updated_at' => now()
                 ]);
             }
-            
-            // Crear matrices para cada usuario
+
             $variables = Variable::where('user_id', $user->id)->get();
             foreach ($variables as $variable) {
                 Matriz::create([
@@ -295,14 +282,13 @@ class TestDataSeeder extends Seeder
                     'updated_at' => now()
                 ]);
             }
-            
-            // Crear hipótesis para cada usuario
+
             $hypothesisNames = ['Hipótesis Principal', 'Hipótesis Secundaria'];
             $zones = Zones::all();
             foreach ($hypothesisNames as $index => $name) {
                 Hypothesis::create([
                     'id_variable' => $variables->first()->id,
-                    'zone_id' => $zones[$index % $zones->count()]->id, // Usar zonas existentes de forma cíclica
+                    'zone_id' => $zones[$index % $zones->count()]->id, 
                     'name_hypothesis' => $name . ' - ' . $user->first_name,
                     'description' => 'Descripción de ' . $name . ' para el usuario ' . $user->first_name,
                     'user_id' => $user->id,
@@ -312,8 +298,7 @@ class TestDataSeeder extends Seeder
                     'updated_at' => now()
                 ]);
             }
-            
-            // Crear escenarios para cada usuario
+
             $scenarioTitles = ['Escenario Optimista', 'Escenario Pesimista', 'Escenario Realista'];
             foreach ($scenarioTitles as $index => $title) {
                 Scenarios::create([
@@ -327,8 +312,7 @@ class TestDataSeeder extends Seeder
                     'updated_at' => now()
                 ]);
             }
-            
-            // Crear conclusiones para cada usuario
+
             Conclusion::create([
                 'component_practice' => 'Componente de práctica para ' . $user->first_name,
                 'component_practice_edits' => 0,

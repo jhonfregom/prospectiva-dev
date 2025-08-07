@@ -26,11 +26,11 @@
     </section>
 </template>
 <script>
-    //Import general functions
+    
     import {
         capitalizeWords,
     } from '../../../../functions';
-    //Import session from store
+    
     import { useSessionStore } from '../../../../stores/session';
 
     export default {
@@ -55,13 +55,12 @@
             },
         },
         created(){
-            //Get company and participant from Pinia Store as not reactive (New copy to local use)
-            //With lodash and cloneDeep set all properties as not reactive
-            this.company = _.cloneDeep( this.storeSession.company );//Data from global
-            this.participant = _.cloneDeep( this.storeSession.participant );//Data from global
+
+            this.company = _.cloneDeep( this.storeSession.company );
+            this.participant = _.cloneDeep( this.storeSession.participant );
         },
         methods: {
-            capitalizeWords, //This function is imported from functions.js
+            capitalizeWords, 
         }
     }
 </script>

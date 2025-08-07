@@ -16,20 +16,16 @@ class TestNotesAPIDirectly extends Command
     {
         $this->info('🧪 Probando API de notas directamente...');
 
-        // Obtener usuarios de prueba
         $users = User::whereIn('id', [1, 2, 3, 4])->get();
         
         foreach ($users as $user) {
             $this->line("\n👤 Probando con usuario: {$user->user} (ID: {$user->id})");
-            
-            // Simular login del usuario
+
             Auth::login($user);
-            
-            // Verificar que el usuario está autenticado
+
             $currentUser = Auth::user();
             $this->info("   🔐 Usuario autenticado: {$currentUser->user} (ID: {$currentUser->id})");
-            
-            // Probar el método del controlador directamente
+
             $controller = new \App\Http\Controllers\NoteController();
             $request = new \Illuminate\Http\Request();
             
@@ -43,8 +39,7 @@ class TestNotesAPIDirectly extends Command
                     
                     foreach ($notes as $note) {
                         $this->line("      - ID: {$note['id']} | Título: {$note['title']} | User ID: {$note['user_id']}");
-                        
-                        // Verificar que la nota pertenece al usuario actual
+
                         if ($note['user_id'] != $user->id) {
                             $this->error("      ❌ ERROR: La nota no pertenece al usuario actual!");
                         } else {
@@ -57,8 +52,7 @@ class TestNotesAPIDirectly extends Command
             } catch (\Exception $e) {
                 $this->error("   ❌ Excepción: " . $e->getMessage());
             }
-            
-            // Verificar directamente en la base de datos
+
             $dbNotes = Note::where('user_id', $user->id)->get();
             $this->info("   🗄️ Notas en BD para este usuario: " . $dbNotes->count());
             
@@ -72,4 +66,4 @@ class TestNotesAPIDirectly extends Command
         $this->info("\n✅ Prueba completada");
         return 0;
     }
-} 
+}

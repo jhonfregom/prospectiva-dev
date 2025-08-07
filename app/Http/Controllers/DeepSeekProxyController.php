@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class DeepSeekProxyController extends Controller
 {
-    protected $baseUrl = 'https://api.deepseek.com/v1/chat/completions';
+    protected $baseUrl = 'https:
     protected $apiKey;
 
     public function __construct()
@@ -31,7 +31,6 @@ class DeepSeekProxyController extends Controller
             $maxTokens = $request->input('max_tokens', 1000);
             $temperature = $request->input('temperature', 0.7);
 
-            // Si no hay API key configurada, usar fallback
             if (empty($this->apiKey)) {
                 return $this->useFallback($prompt, $maxTokens, $temperature);
             }
@@ -44,7 +43,7 @@ class DeepSeekProxyController extends Controller
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'Eres un asistente IA amigable y útil. Responde en español de manera natural y concisa.'
+                                                 'content' => 'Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Responde en español de manera natural y concisa.'
                     ],
                     [
                         'role' => 'user',
@@ -69,8 +68,7 @@ class DeepSeekProxyController extends Controller
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-                
-                // Verificar si es error de saldo insuficiente
+
                 $errorData = $response->json();
                 if ($response->status() === 429 || $response->status() === 402) {
                     $errorMessage = isset($errorData['error']['message']) && $errorData['error']['message'] === 'Insufficient Balance' 
@@ -84,15 +82,13 @@ class DeepSeekProxyController extends Controller
                         'provider' => 'deepseek-quota-exceeded'
                     ]);
                 }
-                
-                // Fallback para otros errores
+
                 return $this->useFallback($prompt, $maxTokens, $temperature);
             }
 
         } catch (\Exception $e) {
             Log::error('DeepSeek Proxy error', ['error' => $e->getMessage()]);
-            
-            // Fallback
+
             return $this->useFallback($request->input('prompt'), 1000, 0.7);
         }
     }
@@ -115,4 +111,4 @@ class DeepSeekProxyController extends Controller
             'available' => !empty($this->apiKey)
         ]);
     }
-} 
+}

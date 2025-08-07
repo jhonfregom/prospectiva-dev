@@ -8,9 +8,7 @@ use Illuminate\Database\Query\Expression;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
          Schema::create('hypothesis', function (Blueprint $table) {
@@ -53,11 +51,6 @@ return new class extends Migration
         DB::statement("ALTER TABLE hypothesis MODIFY id INT AUTO_INCREMENT");
     }
 
-    
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('hypothesis');

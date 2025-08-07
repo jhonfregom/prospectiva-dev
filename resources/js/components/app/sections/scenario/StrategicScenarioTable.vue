@@ -504,17 +504,17 @@
   <!-- Modal de confirmación -->
   <div v-if="mostrarModal" class="modal-confirm">
     <div class="modal-content">
-      <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
-      <button @click="cerrarModulo">Sí, cerrar</button>
-      <button @click="mostrarModal = false">Cancelar</button>
+      <p>{{ textsStore.getText('scenarios_section.close_confirm_message') }}</p>
+      <button @click="cerrarModulo">{{ textsStore.getText('scenarios_section.confirm_yes') }}</button>
+      <button @click="mostrarModal = false">{{ textsStore.getText('scenarios_section.confirm_no') }}</button>
     </div>
   </div>
       <!-- Modal de confirmación para regresar -->
     <div v-if="mostrarModalRegresar" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
-        <button @click="regresarModulo">Sí, regresar</button>
-        <button @click="mostrarModalRegresar = false">Cancelar</button>
+        <p>{{ textsStore.getText('scenarios_section.return_confirm_message') }}</p>
+        <button @click="regresarModulo">{{ textsStore.getText('scenarios_section.confirm_yes_return') }}</button>
+        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('scenarios_section.confirm_no') }}</button>
       </div>
     </div>
 </template>
@@ -535,36 +535,32 @@ export default {
         const sectionStore = useSectionStore();
         const sessionStore = useSessionStore();
 
-        // Variables para el botón cerrar
         const cerrado = ref(false);
         const mostrarModal = ref(false);
-        const state = ref(null); // Se inicializa como null hasta cargar desde traceability
+        const state = ref(null); 
 
-        // Constante para el límite de caracteres
         const MAX_CHARACTERS = 255;
 
-        // Función para manejar input de texto con límite de caracteres
         const handleTextInput = (localValue, event = null) => {
             const text = event ? event.target.value : localValue.value;
             if (text.length > MAX_CHARACTERS) {
-                // Truncar el texto al límite
+                
                 localValue.value = text.substring(0, MAX_CHARACTERS);
             }
         };
 
-        // Función para manejar pegado de texto
         const handleTextPaste = (localValue, event) => {
             const pastedText = (event.clipboardData || window.clipboardData).getData('text');
             const currentText = localValue.value;
             const combinedText = currentText + pastedText;
             
             if (combinedText.length <= MAX_CHARACTERS) {
-                // Permitir el pegado normal
+                
                 return;
             } else {
-                // Prevenir el pegado por defecto y manejar manualmente
+                
                 event.preventDefault();
-                // Calcular cuántos caracteres se pueden agregar
+                
                 const availableSpace = MAX_CHARACTERS - currentText.length;
                 if (availableSpace > 0) {
                     const truncatedPastedText = pastedText.substring(0, availableSpace);
@@ -574,18 +570,16 @@ export default {
             }
         };
 
-        // Función para manejar keyup
         const handleTextKeyup = (localValue, event) => {
             const text = event.target.value;
             if (text.length >= MAX_CHARACTERS) {
-                // Prevenir escritura adicional
+                
                 if (event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
                     event.preventDefault();
                 }
             }
         };
 
-        // Escenario 1
         const scenario1 = computed(() => store.scenario1);
         const localYear1_1 = ref('');
         const localYear1_2 = ref('');
@@ -597,7 +591,6 @@ export default {
         const hypothesis1_1 = ref('');
         const hypothesis1_2 = ref('');
 
-        // Escenario 2
         const scenario2 = computed(() => store.scenario2);
         const localYear2_1 = ref('');
         const localYear2_2 = ref('');
@@ -609,7 +602,6 @@ export default {
         const hypothesis2_1 = ref('');
         const hypothesis2_2 = ref('');
 
-        // Agregar variables y lógica para escenario 3 y 4
         const scenario3 = computed(() => store.scenario3);
         const localYear3_1 = ref('');
         const localYear3_2 = ref('');
@@ -635,9 +627,9 @@ export default {
         onMounted(async () => {
             sectionStore.setTitleSection('Escenarios');
             await store.fetchScenarios();
-            // Cargar el valor de state desde traceability
+            
             await loadStateValue();
-            // Actualizar estado de cerrado al entrar (por si cambia en otra pestaña)
+            
             if (typeof window !== 'undefined') {
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = 'scenarios_cerrado_' + (user.id || 'anon');
@@ -663,21 +655,21 @@ export default {
                 localYear4_2.value = scenario4.value.year2 || '';
                 localYear4_3.value = scenario4.value.year3 || '';
             }
-            // Traer hipótesis
+            
             try {
                 const res = await axios.get('/hypothesis');
                 const data = res.data.data;
                 if (Array.isArray(data) && data.length > 0) {
-                    // Escenario 1 (antes: H0, H0) → ahora: H1, H1
+                    
                     hypothesis1_1.value = data[0]?.descriptionH1 || '';
                     hypothesis1_2.value = data[1]?.descriptionH1 || '';
-                    // Escenario 2 (antes: H0, H1) → ahora: H1, H0
+                    
                     hypothesis2_1.value = data[1]?.descriptionH1 || '';
                     hypothesis2_2.value = data[0]?.descriptionH0 || '';
-                    // Escenario 3 (antes: H1, H1) → ahora: H0, H0
+                    
                     hypothesis3_1.value = data[0]?.descriptionH0 || '';
                     hypothesis3_2.value = data[1]?.descriptionH0 || '';
-                    // Escenario 4 (antes: H1, H0) → ahora: H0, H1
+                    
                     hypothesis4_1.value = data[1]?.descriptionH0 || '';
                     hypothesis4_2.value = data[0]?.descriptionH1 || '';
                 }
@@ -694,11 +686,10 @@ export default {
         });
 
         onBeforeUnmount(() => {
-            // Limpiar botones dinámicos al desmontar el componente
+            
             sectionStore.clearDynamicButtons();
         });
 
-        // Función para cargar el valor de state desde traceability
         const loadStateValue = async () => {
             try {
                 const response = await axios.get('/traceability/current-route-state');
@@ -710,7 +701,6 @@ export default {
             }
         };
 
-        // Función para actualizar state
         const incrementState = async () => {
             try {
                 await axios.put('/traceability/current-route-state', { state: '1' });
@@ -721,7 +711,7 @@ export default {
         };
 
         const handleEditSave = async (numScenario, yearField) => {
-            // numScenario: 1 o 2
+            
             let scenario, localValue, editingRef, editsField, editMessage;
             if (numScenario === 1) {
                 scenario = scenario1.value;
@@ -794,7 +784,7 @@ export default {
             }
 
             if (editingRef.value) {
-                // Guardar
+                
                 const result = await store.saveScenario(numScenario, yearField, localValue.value);
                 if (result.success) {
                     editingRef.value = false;
@@ -803,17 +793,16 @@ export default {
                     editMessage.value[yearField] = textsStore.getText('strategic.messages.save_error');
                 }
             } else {
-                // Entrar en modo edición
+                
                 editingRef.value = true;
             }
         };
 
-        // Función para actualizar escenario en el servidor
         const updateScenarioInServer = async (scenarioId) => {
             try {
                 const result = await store.updateScenario(scenarioId);
                 if (result.success) {
-                    // Escenario actualizado correctamente
+                    
                 }
             } catch (error) {
                 console.error('Error al actualizar escenario:', error);
@@ -884,12 +873,12 @@ export default {
 
         async cerrarModulo() {
             this.mostrarModal = false;
-            // Bloquear todos los escenarios en el backend y store
+            
             const result = await this.store.closeAllScenarios();
             if (result.success) {
-                // Guardar acción pendiente en localStorage
+                
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'scenarios' }));
-                // Guardar estado de cerrado en localStorage
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = 'scenarios_cerrado_' + (user.id || 'anon');
                 localStorage.setItem(cerradoKey, 'true');
@@ -898,13 +887,13 @@ export default {
                     type: 'is-success'
                 });
                 this.sessionStore.setActiveContent('main');
-                // Habilitar el siguiente módulo en la trazabilidad después de 1 segundo
+                
                 setTimeout(async () => {
                     const { useTraceabilityStore } = await import('../../../../stores/traceability');
                     const traceabilityStore = useTraceabilityStore();
                     await traceabilityStore.markSectionCompleted('scenarios');
                 }, 1000);
-                // Cambiar el estado local después de volver al main
+                
                 this.cerrado = true;
             } else {
                 this.$buefy.toast.open({
@@ -917,24 +906,24 @@ export default {
         async regresarModulo() {
             this.mostrarModalRegresar = false;
             try {
-                // Incrementar state a 2
+                
                 await this.incrementState();
-                // Volver a cargar el valor actualizado de state
+                
                 await this.loadStateValue();
-                // Guardar acción pendiente en localStorage
+                
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'scenarios' }));
-                // Desbloquear módulos posteriores (eliminar su flag de cerrado en localStorage)
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const posteriores = [
-                  'conclusions', 'results' // Agrega aquí los módulos posteriores a escenarios
+                  'conclusions', 'results' 
                 ];
                 posteriores.forEach(mod => {
                   const cerradoKey = mod + '_cerrado_' + (user.id || 'anon');
                   localStorage.removeItem(cerradoKey);
                 });
-                // Regresa a la vista principal
+                
                 this.sessionStore.setActiveContent('main');
-                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                
                 const cerradoKey = 'scenarios_cerrado_' + (user.id || 'anon');
                 localStorage.removeItem(cerradoKey);
                 this.cerrado = false;
@@ -1042,7 +1031,7 @@ export default {
   box-sizing: border-box !important;
   text-align: center;
   display: block !important;
-  min-height: 62px !important; /* 20% más que 52px */
+  min-height: 62px !important; 
 }
 .edit-btn {
   min-width: 80px;
@@ -1079,13 +1068,11 @@ export default {
     gap: 0.5rem;
 }
 
-/* Centrado vertical SOLO en filas de datos (tbody td) de la tabla de variables y escenarios */
 :deep(.b-table .table tbody td) {
     vertical-align: middle !important;
     height: 80px !important;
 }
 
-/* Opcional: puedes agregar .description-column si tienes columnas de texto largo */
 .scenario-table-container {
   background: #f5f5fa;
   border-radius: 12px;
@@ -1164,4 +1151,4 @@ export default {
 .is-centered {
   text-align: center !important;
 }
-</style> 
+</style>

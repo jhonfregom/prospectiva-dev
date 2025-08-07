@@ -19,8 +19,8 @@ export const useTextsStore = defineStore('texts', {
         },
         analysis: {
             title: 'Análisis Mapa de Variables',
-            subtitle: 'Analiza y describe cada zona del mapa de variables',
-            description: 'De 5 Variables propuestas que se encuentran enunciadas en la tabla Matriz Variables, se hizo un proceso de calificación del nivel de influencia que tenían entre ellas. Dicha calificación arrojó un gráfico que permite visualizar su ubicación en diferentes zonas de la Matriz de Análisis Estructural.',
+            subtitle: 'Analiza y describe cada zona del mapa de variables para comprender la influencia y dependencia de las variables estratégicas',
+            description: 'En esta sección se analiza la ubicación de las variables en el mapa de influencia y dependencia. Las variables se posicionan en diferentes zonas según su nivel de influencia sobre otras variables y su dependencia de ellas. Este análisis permite identificar variables clave, conflictivas, indiferentes o de salida, facilitando la toma de decisiones estratégicas y la comprensión de las dinámicas del sistema.',
             description_placeholder: 'Describe el análisis de esta zona...',
             score: 'Puntaje',
             score_help: 'Ingresa un puntaje entre 0 y 100',
@@ -36,25 +36,25 @@ export const useTextsStore = defineStore('texts', {
             zones_detail: {
                 poder: {
                     title: 'Zona de Poder',
-                    description: 'Variables con alta influencia y baja dependencia'
+                    description: 'Variables con alta influencia y baja dependencia. Estas variables son clave para el sistema ya que pueden influir significativamente en otras variables sin ser afectadas por ellas. Son fundamentales para la toma de decisiones estratégicas.'
                 },
                 conflicto: {
                     title: 'Zona de Conflicto',
-                    description: 'Variables con alta influencia y alta dependencia'
+                    description: 'Variables con alta influencia y alta dependencia. Estas variables son inestables y requieren atención especial. Pueden generar conflictos en el sistema debido a su alta sensibilidad a cambios y su capacidad de influir en otras variables.'
                 },
                 indiferencia: {
                     title: 'Zona de Indiferencia',
-                    description: 'Variables con baja influencia y baja dependencia'
+                    description: 'Variables con baja influencia y baja dependencia. Estas variables son relativamente independientes del sistema y tienen poco impacto en otras variables. Pueden ser consideradas como elementos estables pero de baja prioridad estratégica.'
                 },
                 salida: {
                     title: 'Zona de Salida',
-                    description: 'Variables con baja influencia y alta dependencia'
+                    description: 'Variables con baja influencia y alta dependencia. Estas variables son altamente dependientes de otras variables pero tienen poca capacidad de influencia. Son sensibles a cambios externos y pueden ser indicadores del estado del sistema.'
                 }
             },
             diagnosis: [
                 { min: 0, max: 40, text: 'DEBES MEJORAR', color: 'red' },
-                { min: 41, max: 80, text: 'FALTA ALGO MAS', color: 'orange' },
-                { min: 81, max: 120, text: 'UN ESFUERZO MAS', color: 'blue' },
+                { min: 41, max: 80, text: 'FALTA ALGO MÁS', color: 'orange' },
+                { min: 81, max: 120, text: 'UN ESFUERZO MÁS', color: 'blue' },
                 { min: 121, max: 9999, text: 'LO LOGRASTE', color: 'green' }
             ]
         },
@@ -164,7 +164,7 @@ export const useTextsStore = defineStore('texts', {
             table: {
                 variable: 'VARIABLES',
                 name: 'NOMBRES',
-                nowCondition: 'CONDICION ACTUAL DE LA VARIABLE',
+                nowCondition: 'CONDICIÓN ACTUAL DE LA VARIABLE',
                 actions: 'ACCIONES',
                 edit: 'Editar',
                 save: 'Guardar',
@@ -187,9 +187,9 @@ export const useTextsStore = defineStore('texts', {
         },
         conclusions_section: {
             title: 'Conclusiones de aprendizaje',
-            component_practice_subtitle: 'DESDE EL COMPONENTE PRACTICO(Analisis del proceso, practicidad, comprensible, se adapta al proceso de aprendizaje y al objetivo del curso)',
-            actuality_subtitle: 'Actualidad(Consideraciones del proceso para que sea implementado en las organizaciones, ¿deben las empresas hacer ejercicios de este tipo?)',
-            aplication_subtitle: 'APLICACIÓN(Que tanto se adapta a la organizacion para la que trabajas, o para tu emprendimiento, o para tu vida personal y profesional)',
+            component_practice_subtitle: 'DESDE EL COMPONENTE PRÁCTICO (Análisis del proceso, practicidad, comprensible, se adapta al proceso de aprendizaje y al objetivo del curso)',
+            actuality_subtitle: 'Actualidad (Consideraciones del proceso para que sea implementado en las organizaciones, ¿deben las empresas hacer ejercicios de este tipo?)',
+            aplication_subtitle: 'APLICACIÓN (Qué tanto se adapta a la organización para la que trabajas, o para tu emprendimiento, o para tu vida personal y profesional)',
             table: {
                 edit: 'Editar',
                 save: 'Guardar',
@@ -234,10 +234,98 @@ export const useTextsStore = defineStore('texts', {
             cancel: 'Cancelar'
         },
         
+        // Matriz Section - Textos para botones y confirmaciones
+        matriz_section: {
+            close_button: 'Cerrar',
+            return_button: 'Regresar',
+            close_confirm_message: '¿Está seguro de que desea cerrar el módulo de matriz?',
+            return_confirm_message: '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.',
+            confirm_yes: 'Sí, cerrar',
+            confirm_yes_return: 'Sí, regresar',
+            confirm_no: 'Cancelar'
+        },
+        
+        // Analysis Section - Textos para botones y confirmaciones
+        analysis_section: {
+            close_button: 'Cerrar',
+            return_button: 'Regresar',
+            close_confirm_message: '¿Estás seguro de cerrar el módulo? No podrás editar más.',
+            return_confirm_message: '¿Estás seguro de regresar el módulo? Podrás editar y guardar nuevamente.',
+            confirm_yes: 'Sí, cerrar',
+            confirm_yes_return: 'Sí, regresar',
+            confirm_no: 'Cancelar'
+        },
+        
+        // Hypothesis Section - Textos para botones y confirmaciones
+        hypothesis_section: {
+            close_button: 'Cerrar',
+            return_button: 'Regresar',
+            close_confirm_message: '¿Estás seguro de cerrar el módulo? No podrás editar más.',
+            return_confirm_message: '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.',
+            confirm_yes: 'Sí, cerrar',
+            confirm_yes_return: 'Sí, regresar',
+            confirm_no: 'Cancelar'
+        },
+        
+        // Schwartz Section - Textos para botones y confirmaciones
+        schwartz_section: {
+            close_button: 'Cerrar',
+            return_button: 'Regresar',
+            close_confirm_message: '¿Estás seguro de cerrar el módulo? No podrás editar más.',
+            return_confirm_message: '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.',
+            confirm_yes: 'Sí, cerrar',
+            confirm_yes_return: 'Sí, regresar',
+            confirm_no: 'Cancelar'
+        },
+        
+        // Initial Conditions Section - Textos para botones y confirmaciones
+        initial_conditions_section: {
+            close_button: 'Cerrar',
+            return_button: 'Regresar',
+            close_confirm_message: '¿Estás seguro de cerrar el módulo? No podrás editar más.',
+            return_confirm_message: '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.',
+            confirm_yes: 'Sí, cerrar',
+            confirm_yes_return: 'Sí, regresar',
+            confirm_no: 'Cancelar'
+        },
+        
+        // Scenarios Section - Textos para botones y confirmaciones
+        scenarios_section: {
+            close_button: 'Cerrar',
+            return_button: 'Regresar',
+            close_confirm_message: '¿Estás seguro de cerrar el módulo? No podrás editar más.',
+            return_confirm_message: '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.',
+            confirm_yes: 'Sí, cerrar',
+            confirm_yes_return: 'Sí, regresar',
+            confirm_no: 'Cancelar'
+        },
+        
+        // Conclusions Section - Textos para botones y confirmaciones
+        conclusions_section: {
+            close_button: 'Cerrar',
+            return_button: 'Regresar',
+            close_confirm_message: '¿Estás seguro de cerrar el módulo? No podrás editar más.',
+            return_confirm_message: '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.',
+            confirm_yes: 'Sí, cerrar',
+            confirm_yes_return: 'Sí, regresar',
+            confirm_no: 'Cancelar'
+        },
+
+        // Results Section - Textos para botones y confirmaciones
+        results_section: {
+            close_button: 'Cerrar',
+            return_button: 'Regresar',
+            close_confirm_message: '¿Estás seguro de cerrar el módulo? No podrás editar más.',
+            return_confirm_message: '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.',
+            confirm_yes: 'Sí, cerrar',
+            confirm_yes_return: 'Sí, regresar',
+            confirm_no: 'Cancelar'
+        },
+        
         // Floating Bubble - Textos del menú flotante
         floating_bubble: {
             notes: 'Notas',
-            ai_assistant: 'Asistente IA',
+            ai_assistant: 'ProspecIA',
             information: 'Información',
             new_note: 'Nueva',
             save: 'Guardar',
@@ -245,9 +333,9 @@ export const useTextsStore = defineStore('texts', {
             no_content: 'Sin contenido',
             note_placeholder: 'Escribe tu nota aquí...',
             ai_placeholder: 'Escribe tu texto para que lo analice o corrija... (Shift+Enter para nueva línea, Enter para enviar)',
-            tools_title: 'Herramientas de prospectiva: Notas, IA e Información',
+            tools_title: 'Herramientas de prospectiva: Notas, ProspecIA e Información',
             notes_tooltip: 'Registrar observaciones y reflexiones sobre el entorno que influye en la organización',
-            ai_tooltip: 'Asistente IA para análisis, corrección y mejora de textos',
+            ai_tooltip: 'ProspecIA para análisis, corrección y mejora de textos',
             info_tooltip: 'Ver texto orientador',
             delete_note_tooltip: 'Eliminar nota'
         },

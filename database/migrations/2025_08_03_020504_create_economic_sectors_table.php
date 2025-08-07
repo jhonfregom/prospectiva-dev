@@ -7,9 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Schema::create('economic_sectors', function (Blueprint $table) {
@@ -21,7 +19,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Insertar los sectores económicos
         $sectors = [
             ['name' => 'Agricultura, ganadería, caza, silvicultura y pesca', 'sort_order' => 1],
             ['name' => 'Explotación de minas y canteras', 'sort_order' => 2],
@@ -56,9 +53,6 @@ return new class extends Migration
         }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('economic_sectors');

@@ -22,7 +22,7 @@ class UpdateTriedIds extends Command
         if ($userId) {
             $this->updateUserTriedIds($userId);
         } else {
-            // Actualizar para todos los usuarios
+            
             $users = \App\Models\User::all();
             foreach ($users as $user) {
                 $this->updateUserTriedIds($user->id);
@@ -35,41 +35,35 @@ class UpdateTriedIds extends Command
     private function updateUserTriedIds($userId)
     {
         $this->info("Actualizando tried_id para usuario ID: {$userId}");
-        
-        // Obtener o crear el registro de traceability para el usuario
+
         $traceability = Traceability::getOrCreateForUser($userId);
         $traceabilityId = $traceability->id;
         
         $this->info("Traceability ID: {$traceabilityId}");
-        
-        // Actualizar variables
+
         $variablesCount = Variable::where('user_id', $userId)
             ->whereNull('tried_id')
             ->update(['tried_id' => $traceabilityId]);
         $this->info("Variables actualizadas: {$variablesCount}");
-        
-        // Actualizar hypothesis
+
         $hypothesisCount = Hypothesis::where('user_id', $userId)
             ->whereNull('tried_id')
             ->update(['tried_id' => $traceabilityId]);
         $this->info("Hypothesis actualizadas: {$hypothesisCount}");
-        
-        // Actualizar conclusions
+
         $conclusionsCount = Conclusion::where('user_id', $userId)
             ->whereNull('tried_id')
             ->update(['tried_id' => $traceabilityId]);
         $this->info("Conclusions actualizadas: {$conclusionsCount}");
-        
-        // Actualizar scenarios
+
         $scenariosCount = Scenarios::where('user_id', $userId)
             ->whereNull('tried_id')
             ->update(['tried_id' => $traceabilityId]);
         $this->info("Scenarios actualizados: {$scenariosCount}");
-        
-        // Actualizar variables_map_analiyis
+
         $analysisCount = VariableMapAnalisys::where('user_id', $userId)
             ->whereNull('tried_id')
             ->update(['tried_id' => $traceabilityId]);
         $this->info("Analysis actualizados: {$analysisCount}");
     }
-} 
+}

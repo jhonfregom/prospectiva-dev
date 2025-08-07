@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Schema::create('scenarios', function (Blueprint $table) {
@@ -17,16 +15,13 @@ return new class extends Migration
             $table->string('titulo')->nullable();
             $table->integer('edits')->default(0);
             $table->enum('state', ['0', '1'])->default('0');
-            $table->integer('num_scenario')->default(1); // Nuevo campo para identificar el escenario
+            $table->integer('num_scenario')->default(1); 
            $table->integer('tried_id')->nullable();
             
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('scenarios');

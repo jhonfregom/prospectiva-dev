@@ -14,9 +14,8 @@ class TestOllamaSpeed extends Command
     {
         $this->info('🚀 Probando velocidad de Ollama...');
         
-        $ollamaUrl = 'http://localhost:11434/api/generate';
-        
-        // Configuración optimizada para velocidad
+        $ollamaUrl = 'http:
+
         $fastConfig = [
             'model' => 'gemma3:4b',
             'prompt' => 'Hola',
@@ -39,7 +38,7 @@ class TestOllamaSpeed extends Command
             $response = Http::timeout(10)->post($ollamaUrl, $fastConfig);
             
             $endTime = microtime(true);
-            $duration = round(($endTime - $startTime) * 1000, 2); // en milisegundos
+            $duration = round(($endTime - $startTime) * 1000, 2); 
             
             if ($response->successful()) {
                 $data = $response->json();
@@ -66,4 +65,4 @@ class TestOllamaSpeed extends Command
         
         return 0;
     }
-} 
+}

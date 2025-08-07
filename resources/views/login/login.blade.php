@@ -1,5 +1,5 @@
 <?php include( resource_path( 'config/shared-variables/login/login.php' ) ) ?>
-@extends('layouts.main')
+@extends('layouts.auth')
 @section('title', __('login.login') )
 @section('class-footer','static')
 @section('content')
@@ -30,7 +30,6 @@
                             <a class="column" href="{{ route('register') }}">{{ ucfirst( __('login.sign_up') ) }}</a>
                             <a class="column" href="{{ route('login_restore_password') }}">
                                 {{ ucfirst( __('login.forgot_password') ) }}</a>
-                            <a class="column" href="../">{{ ucfirst( __('login.need_help') ) }}</a>
                         </div>
                     </div>
                 </div>

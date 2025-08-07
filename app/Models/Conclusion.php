@@ -31,25 +31,16 @@ class Conclusion extends Model
         'aplication_edits' => 'integer'
     ];
 
-    /**
-     * Relación con el usuario
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Obtener conclusiones por usuario
-     */
     public static function getByUser($userId)
     {
         return self::where('user_id', $userId)->first();
     }
 
-    /**
-     * Crear o actualizar conclusiones para un usuario
-     */
     public static function createOrUpdate($data, $userId)
     {
         return self::updateOrCreate(
@@ -58,39 +49,27 @@ class Conclusion extends Model
         );
     }
 
-    /**
-     * Verificar si todas las conclusiones están bloqueadas
-     */
     public function isAllBlocked()
     {
         return $this->state === '1';
     }
 
-    /**
-     * Bloquear las conclusiones
-     */
     public function block()
     {
         $this->state = '1';
         return $this->save();
     }
 
-    /**
-     * Desbloquear las conclusiones
-     */
     public function unblock()
     {
         $this->state = '0';
         return $this->save();
     }
 
-    /**
-     * Verificar si los tres contadores de edición están en 3
-     */
     public function areAllFieldsBlocked()
     {
         return $this->component_practice_edits >= 3 &&
                $this->actuality_edits >= 3 &&
                $this->aplication_edits >= 3;
     }
-} 
+}

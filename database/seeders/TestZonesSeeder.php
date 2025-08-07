@@ -9,12 +9,10 @@ use App\Models\Zones;
 
 class TestZonesSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    
     public function run(): void
     {
-        // Limpiar datos existentes y reiniciar auto-incremento
+        
         DB::statement('DELETE FROM zones WHERE id > 0');
         DB::statement('ALTER TABLE zones AUTO_INCREMENT = 1');
 

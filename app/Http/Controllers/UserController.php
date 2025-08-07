@@ -25,19 +25,11 @@ class UserController extends Controller
         'status_users_id'   =>  'nullable|exists:status_users,id'
     ];
 
-    /**
-     * Show the form for restore password.
-     * @return \Illuminate\Http\Response
-     */
     public function showPasswordReset(): View
     {
         return view('login.restore-password');
     }
 
-    /**
-     * Password reset from link
-     * @param  \Illuminate\Http\Request  $request
-     */
     public function passwordReset( Request $request )
     {
         $data = null;
@@ -47,9 +39,9 @@ class UserController extends Controller
         {
             try
             {
-                //Decrypt params
-                $params = Crypt::decrypt( $request->data ); // id => value
-                //Get password change requests
+                
+                $params = Crypt::decrypt( $request->data ); 
+                
                 $pcr = PasswordChangeRequest::find( $params['id'] );
                 if( isset( $pcr ) )
                 {
@@ -73,13 +65,10 @@ class UserController extends Controller
             ];
             $code = 400;
         }
-        // dd($data);
+        
         return response()->view( 'users.password-reset', $data, $code );
     }
 
-    /**
-     * API: Listado de usuarios para la sección de resultados
-     */
     public function apiList(Request $request)
     {
         $user = Auth::user();
@@ -88,69 +77,64 @@ class UserController extends Controller
         \Log::info('UserController::apiList - Usuario: ' . json_encode(['id' => $user->id, 'role' => $user->role, 'email' => $user->user]));
         
         if ($user->role == 1) {
-            // Admin: ve todos los usuarios con todas sus rutas
+            
             $users = \App\Models\User::select('id', 'first_name', 'last_name', 'document_id', 'user')->get();
             \Log::info('UserController::apiList - Usuarios encontrados: ' . $users->count());
-            
-            // Para cada usuario, crear una fila por cada ruta
+
             foreach ($users as $userData) {
-                // Obtener todas las rutas del usuario
+                
                 $userRoutes = \App\Models\Traceability::where('user_id', $userData->id)->get();
                 \Log::info('UserController::apiList - Usuario ' . $userData->id . ' tiene ' . $userRoutes->count() . ' rutas');
                 
                 if ($userRoutes->count() > 0) {
-                    // Si el usuario tiene rutas, crear una fila por cada ruta
+                    
                     foreach ($userRoutes as $route) {
                         $userRow = clone $userData;
                         $userRow->route_id = $route->id;
                         $userRow->route_name = 'Ruta ' . $route->tried;
-                        
-                        // Agregar datos específicos de esta ruta
+
                         $this->addUserDataByRoute($userRow, $route->id);
                         
                         $result[] = $userRow;
                     }
                 } else {
-                    // Si el usuario no tiene rutas, crear una fila vacía
+                    
                     $userRow = clone $userData;
                     $userRow->route_id = null;
                     $userRow->route_name = 'Sin ruta';
-                    
-                    // Agregar datos vacíos
+
                     $this->addEmptyUserData($userRow);
                     
                     $result[] = $userRow;
                 }
             }
         } else {
-            // Usuario: solo ve el suyo con todas sus rutas
+            
             $userData = \App\Models\User::select('id', 'first_name', 'last_name', 'document_id', 'user')
                 ->where('id', $user->id)
                 ->first();
             
             if ($userData) {
-                // Obtener todas las rutas del usuario
+                
                 $userRoutes = \App\Models\Traceability::where('user_id', $userData->id)->get();
                 
                 if ($userRoutes->count() > 0) {
-                    // Si el usuario tiene rutas, crear una fila por cada ruta
+                    
                     foreach ($userRoutes as $route) {
                         $userRow = clone $userData;
                         $userRow->route_id = $route->id;
                         $userRow->route_name = 'Ruta ' . $route->tried;
-                        
-                        // Agregar datos específicos de esta ruta
+
                         $this->addUserDataByRoute($userRow, $route->id);
                         
                         $result[] = $userRow;
                     }
                 } else {
-                    // Si el usuario no tiene rutas, crear una fila vacía
+                    
                     $userRow = clone $userData;
                     $userRow->route_id = null;
                     $userRow->route_name = 'Sin ruta';
-                    
-                    // Agregar datos vacíos
+
                     $this->addEmptyUserData($userRow);
                     
                     $result[] = $userRow;
@@ -166,9 +150,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Agrega datos vacíos para usuarios sin rutas
-     */
     private function addEmptyUserData($userData)
     {
         $userData->variables_count = 0;
@@ -183,9 +164,6 @@ class UserController extends Controller
         $userData->status = 'Sin terminar';
     }
 
-    /**
-     * Obtiene los resultados por ruta específica
-     */
     public function apiListByRoute(Request $request)
     {
         $user = Auth::user();
@@ -198,27 +176,24 @@ class UserController extends Controller
             ]);
         }
 
-        // Obtener todas las rutas del usuario
         $userRoutes = \App\Models\Traceability::where('user_id', $user->id)->get();
         
         if ($user->role == 1) {
-            // Admin: ve todos los usuarios con todas sus rutas
+            
             $users = \App\Models\User::select('id', 'first_name', 'last_name', 'document_id', 'user')->get();
         } else {
-            // Usuario: solo ve el suyo con todas sus rutas
+            
             $users = \App\Models\User::select('id', 'first_name', 'last_name', 'document_id', 'user')
                 ->where('id', $user->id)
                 ->get();
         }
 
         $result = [];
-        
-        // Para cada usuario, crear una fila por cada ruta
+
         foreach ($users as $userData) {
             foreach ($userRoutes as $route) {
                 $userRow = clone $userData;
-                
-                // Agregar datos específicos de esta ruta
+
                 $this->addUserDataByRoute($userRow, $route->id);
                 
                 $result[] = $userRow;
@@ -231,23 +206,17 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Agrega datos de usuario filtrados por ruta
-     */
     private function addUserDataByRoute($userData, $routeId)
     {
-        // Obtener la información de la ruta para mostrar el número tried
+        
         $route = \App\Models\Traceability::find($routeId);
         $routeNumber = $route ? $route->tried : $routeId;
-        
-        // Agregar información de la ruta
+
         $userData->route_id = $routeId;
         $userData->route_name = 'Ruta ' . $routeNumber;
-        
-        // Agregar estado de completitud
+
         $userData->status = $route->results === '1' ? 'Completado' : 'Sin terminar';
-        
-        // Obtener variables de la ruta específica
+
         $variables = \App\Models\Variable::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
             ->get();
@@ -262,12 +231,10 @@ class UserController extends Controller
             ];
         });
 
-        // Agregar información de matriz de la ruta específica
         $matriz = \App\Models\Matriz::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
             ->get();
-        
-        // Calcular dependencia e influencia para cada variable
+
         $matrizData = [];
         foreach ($variables as $variable) {
             $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
@@ -282,7 +249,6 @@ class UserController extends Controller
         }
         $userData->matriz = $matrizData;
 
-        // Matriz cruzada de la ruta específica
         $matrizCruzada = [];
         foreach ($variables as $origen) {
             foreach ($variables as $destino) {
@@ -297,7 +263,6 @@ class UserController extends Controller
         }
         $userData->matriz_cruzada = $matrizCruzada;
 
-        // Análisis de variables por zona de la ruta específica
         $analyses = \App\Models\VariableMapAnalisys::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
             ->get();
@@ -305,8 +270,7 @@ class UserController extends Controller
         $userData->zone_analyses = $analyses->map(function($analysis) use ($userData, $matriz, $variables) {
             $zone = \App\Models\Zones::find($analysis->zone_id);
             $zoneName = $zone ? $zone->name_zones : 'Zona Desconocida';
-            
-            // Calcular coordenadas de cada variable
+
             $variablesWithCoords = [];
             foreach ($variables as $variable) {
                 $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
@@ -318,14 +282,12 @@ class UserController extends Controller
                     'influencia' => $influencia
                 ];
             }
-            
-            // Calcular máximos y centro
+
             $maxX = max(array_column($variablesWithCoords, 'dependencia')) ?: 10;
             $maxY = max(array_column($variablesWithCoords, 'influencia')) ?: 12;
             $centroX = $maxX / 2;
             $centroY = $maxY / 2;
-            
-            // Determinar variables en esta zona
+
             $variablesInThisZone = [];
             foreach ($variablesWithCoords as $varData) {
                 $zona = '';
@@ -378,7 +340,6 @@ class UserController extends Controller
             ];
         });
 
-        // Hipótesis de la ruta específica
         $hypotheses = \App\Models\Hypothesis::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
             ->get();
@@ -398,7 +359,6 @@ class UserController extends Controller
             ];
         });
 
-        // Condiciones iniciales de la ruta específica
         $userData->initial_conditions = $variables->map(function($variable) {
             return [
                 'id' => $variable->id,
@@ -409,7 +369,6 @@ class UserController extends Controller
             ];
         });
 
-        // Escenarios de la ruta específica
         $scenarios = \App\Models\Scenarios::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
             ->orderBy('num_scenario', 'asc')
@@ -428,11 +387,10 @@ class UserController extends Controller
                 'edits_year2' => $scenario->edits_year2,
                 'edits_year3' => $scenario->edits_year3,
                 'state' => $scenario->state,
-                'hypotheses' => [] // Simplificado para este ejemplo
+                'hypotheses' => [] 
             ];
         });
 
-        // Conclusiones de la ruta específica
         $conclusions = \App\Models\Conclusion::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
             ->orderBy('id', 'asc')
@@ -464,15 +422,11 @@ class UserController extends Controller
         }
         
         $userData->conclusions = $conclusionsArray;
-        
-        // Agregar información de la ruta para mostrar en la columna
-        $userData->route_id = $routeId; // Mantener el ID para operaciones internas
-        $userData->route_name = "Ruta " . $routeNumber; // Usar el número tried para mostrar
+
+        $userData->route_id = $routeId; 
+        $userData->route_name = "Ruta " . $routeNumber; 
     }
 
-    /**
-     * Agrega datos de usuario (método original sin filtro por ruta)
-     */
     private function addUserData($userData)
     {
         $variables = \App\Models\Variable::where('user_id', $userData->id)->get();
@@ -486,10 +440,8 @@ class UserController extends Controller
             ];
         });
 
-        // Agregar información de matriz
         $matriz = \App\Models\Matriz::where('user_id', $userData->id)->get();
-        
-        // Calcular dependencia e influencia para cada variable
+
         $matrizData = [];
         foreach ($variables as $variable) {
             $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
@@ -504,7 +456,6 @@ class UserController extends Controller
         }
         $userData->matriz = $matrizData;
 
-        // Matriz cruzada
         $matrizCruzada = [];
         foreach ($variables as $origen) {
             foreach ($variables as $destino) {
@@ -519,13 +470,11 @@ class UserController extends Controller
         }
         $userData->matriz_cruzada = $matrizCruzada;
 
-        // Análisis de variables por zona
         $analyses = \App\Models\VariableMapAnalisys::where('user_id', $userData->id)->get();
         $userData->zone_analyses = $analyses->map(function($analysis) use ($userData, $matriz, $variables) {
             $zone = \App\Models\Zones::find($analysis->zone_id);
             $zoneName = $zone ? $zone->name_zones : 'Zona Desconocida';
-            
-            // Calcular coordenadas de cada variable
+
             $variablesWithCoords = [];
             foreach ($variables as $variable) {
                 $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
@@ -537,14 +486,12 @@ class UserController extends Controller
                     'influencia' => $influencia
                 ];
             }
-            
-            // Calcular máximos y centro
+
             $maxX = max(array_column($variablesWithCoords, 'dependencia')) ?: 10;
             $maxY = max(array_column($variablesWithCoords, 'influencia')) ?: 12;
             $centroX = $maxX / 2;
             $centroY = $maxY / 2;
-            
-            // Determinar variables en esta zona
+
             $variablesInThisZone = [];
             foreach ($variablesWithCoords as $varData) {
                 $zona = '';
@@ -597,7 +544,6 @@ class UserController extends Controller
             ];
         });
 
-        // Hipótesis
         $hypotheses = \App\Models\Hypothesis::where('user_id', $userData->id)->get();
         $userData->future_drivers = $hypotheses->map(function($hypothesis) {
             $variable = \App\Models\Variable::find($hypothesis->id_variable);
@@ -614,7 +560,6 @@ class UserController extends Controller
             ];
         });
 
-        // Condiciones iniciales
         $userData->initial_conditions = $variables->map(function($variable) {
             return [
                 'id' => $variable->id,
@@ -625,7 +570,6 @@ class UserController extends Controller
             ];
         });
 
-        // Escenarios
         $scenarios = \App\Models\Scenarios::where('user_id', $userData->id)
             ->orderBy('num_scenario', 'asc')
             ->get();
@@ -647,7 +591,6 @@ class UserController extends Controller
             ];
         });
 
-        // Conclusiones
         $conclusions = \App\Models\Conclusion::where('user_id', $userData->id)
             ->orderBy('id', 'asc')
             ->get();
@@ -680,32 +623,26 @@ class UserController extends Controller
         $userData->conclusions = $conclusionsArray;
     }
 
-    /**
-     * Determina la zona de una variable basada en sus coordenadas de dependencia e influencia
-     */
     private function determineZone($dependencia, $influencia, $variables)
     {
         if ($variables->isEmpty()) {
-            return 1; // Zona de Poder por defecto
+            return 1; 
         }
 
-        // Calcular máximos para normalizar
         $maxDependencia = $variables->max('dependencia') ?: 10;
         $maxInfluencia = $variables->max('influencia') ?: 12;
-        
-        // Normalizar coordenadas
+
         $normalizedDependencia = $dependencia / $maxDependencia;
         $normalizedInfluencia = $influencia / $maxInfluencia;
-        
-        // Determinar zona basada en las coordenadas normalizadas
+
         if ($normalizedInfluencia > 0.5 && $normalizedDependencia < 0.5) {
-            return 1; // Zona de Poder
+            return 1; 
         } elseif ($normalizedInfluencia > 0.5 && $normalizedDependencia > 0.5) {
-            return 2; // Zona de Problemas
+            return 2; 
         } elseif ($normalizedInfluencia < 0.5 && $normalizedDependencia < 0.5) {
-            return 3; // Zona de Resultados
+            return 3; 
         } else {
-            return 4; // Zona de Contexto
+            return 4; 
         }
     }
 }

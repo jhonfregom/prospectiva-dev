@@ -153,18 +153,18 @@
         v-if="!cerrado"
         @click="confirmarCerrar"
         :disabled="cerrado"
-      >Cerrar</button>
+      >{{ textsStore.getText('matriz_section.close_button') }}</button>
       <button
         class="cerrar-btn"
         v-else-if="state !== null && state === '0'"
         @click="confirmarRegresar"
-      >Regresar</button>
+      >{{ textsStore.getText('matriz_section.return_button') }}</button>
     </div>
     <div v-if="mostrarModal" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Está seguro de que desea cerrar el módulo de matriz?</p>
-        <button @click="cerrarModulo">Sí, cerrar</button>
-        <button @click="mostrarModal = false">Cancelar</button>
+        <p>{{ textsStore.getText('matriz_section.close_confirm_message') }}</p>
+        <button @click="cerrarModulo">{{ textsStore.getText('matriz_section.confirm_yes') }}</button>
+        <button @click="mostrarModal = false">{{ textsStore.getText('matriz_section.confirm_no') }}</button>
       </div>
     </div>
     <div v-if="mostrarModalRegresar" class="modal-confirm">
@@ -198,12 +198,12 @@ export default {
         const sessionStore = useSessionStore();
         const traceabilityStore = useTraceabilityStore();
         const { variables, isLoading, isLocked } = storeToRefs(matrizStore);
-        // --- NUEVO: Validación extra de secciones válidas ---
+        
         const seccionesValidas = computed(() => {
             const secciones = traceabilityStore.availableSections;
             return secciones && secciones.matrix === true;
         });
-        // --- FIN NUEVO ---
+        
         return {
             matrizStore,
             sectionStore,
@@ -239,12 +239,12 @@ export default {
             mostrarModal: false,
             mostrarModalRegresar: false,
             cerrado: false,
-            state: null, // Se inicializa como null hasta cargar desde traceability
+            state: null, 
         };
     },
 
     created() {
-        // Leer estado de cerrado desde localStorage
+        
         const user = JSON.parse(localStorage.getItem('user')) || {};
         const cerradoKey = 'matriz_cerrado_' + (user.id || 'anon');
         const cerradoValue = localStorage.getItem(cerradoKey);
@@ -295,12 +295,12 @@ export default {
         this.sectionStore.setTitleSection(this.textsStore.getText('matriz.section_title'));
         this.loadMatrizData();
         document.addEventListener('click', this.closePopover);
-        // Cargar el valor de tried desde traceability
+        
         this.loadTriedValue();
     },
 
     beforeUnmount() {
-        // Limpiar botones dinámicos al desmontar el componente
+        
         this.sectionStore.clearDynamicButtons();
         document.removeEventListener('click', this.closePopover);
     },
@@ -329,7 +329,7 @@ export default {
             if (origenId === destinoId) return;
             this.origenIdPopover = origenId;
             this.destinoIdPopover = destinoId;
-            // Calcular posición absoluta del menú flotante
+            
             const rect = event.target.getBoundingClientRect();
             this.popoverStyle = {
                 position: 'fixed',
@@ -369,7 +369,7 @@ export default {
         },
 
         handleClickOutside(event) {
-            // Si el clic fue en un input, no hacer nada
+            
             if (event.target.tagName.toLowerCase() === 'input') {
                 return;
             }
@@ -390,16 +390,18 @@ export default {
         async cerrarModulo() {
           this.mostrarModal = false;
           try {
-            // Guardar la matriz antes de cerrar
+            
             await this.guardarMatriz();
-            // Guardar acción pendiente en localStorage
+
+            await this.traceabilityStore.markSectionCompleted('matrix');
+
             localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'matrix' }));
             this.$buefy.toast.open({
               message: 'Módulo de matriz cerrado correctamente',
               type: 'is-success'
             });
             this.sessionStore.setActiveContent('main');
-            // Guardar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+            
             const user = JSON.parse(localStorage.getItem('user')) || {};
             const cerradoKey = 'matriz_cerrado_' + (user.id || 'anon');
             localStorage.setItem(cerradoKey, 'true');
@@ -434,18 +436,18 @@ export default {
         async regresarModulo() {
           this.mostrarModalRegresar = false;
           try {
-            // Actualizar state a '1' para deshabilitar futuros botones de regresar
+            
             await this.incrementTried();
-            // Volver a cargar el valor actualizado de state
+            
             await this.loadTriedValue();
-            // Guardar acción pendiente en localStorage
+            
             localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'matrix' }));
             this.$buefy.toast.open({
               message: 'Módulo de matriz reabierto correctamente',
               type: 'is-success'
             });
             this.sessionStore.setActiveContent('main');
-            // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+            
             const user = JSON.parse(localStorage.getItem('user')) || {};
             const cerradoKey = 'matriz_cerrado_' + (user.id || 'anon');
             localStorage.removeItem(cerradoKey);
@@ -805,7 +807,6 @@ export default {
   cursor: pointer;
 }
 
-// Ocultar flechas del input number
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -815,4 +816,4 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
     -moz-appearance: textfield;
 }
-</style> 
+</style>

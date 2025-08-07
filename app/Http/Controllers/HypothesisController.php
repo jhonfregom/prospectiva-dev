@@ -15,16 +15,13 @@ use Illuminate\Support\Facades\DB;
 
 class HypothesisController extends Controller
 {
-    /**
-     * Devuelve las 2 variables seleccionadas y sus hipótesis para el usuario autenticado.
-     */
+    
     public function index(): JsonResponse
     {
         try {
             $userId = Auth::id();
             Log::info('HypothesisController::index - User ID: ' . $userId);
-            
-            // Obtener la ruta actual del usuario
+
             $currentRoute = \App\Models\Traceability::getCurrentRouteForUser($userId);
             
             if (!$currentRoute) {
@@ -45,7 +42,6 @@ class HypothesisController extends Controller
             Log::info('HypothesisController::index - Variables count: ' . $variables->count());
             Log::info('HypothesisController::index - Matriz count: ' . $matriz->count());
 
-            // Si no hay variables, retornar array vacío
             if ($variables->isEmpty()) {
                 Log::info('HypothesisController::index - No variables found for user');
                 return response()->json([
@@ -55,12 +51,11 @@ class HypothesisController extends Controller
                 ]);
             }
 
-            // Calcular dependencia e influencia para cada variable (misma lógica que la gráfica)
             $varCoords = [];
             foreach ($variables as $variable) {
-                // Dependencia = suma de la fila (donde esta variable es el origen)
+                
                 $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
-                // Influencia = suma de la columna (donde esta variable es el destino)
+                
                 $influencia = $matriz->where('id_resp_depen', $variable->id)->sum('id_resp_influ');
                 
                 $varCoords[] = [
@@ -73,29 +68,26 @@ class HypothesisController extends Controller
 
             Log::info('HypothesisController::index - Variables with coordinates: ' . json_encode($varCoords));
 
-            // Calcular máximos y mínimos para la zona de poder
             $maxInfluencia = max(array_column($varCoords, 'influencia'));
             $minDependencia = min(array_column($varCoords, 'dependencia'));
 
-            // 1. Variables por encima de la diagonal (influencia > dependencia)
             $porEncimaDiagonal = array_filter($varCoords, function($var) {
                 return $var['influencia'] > $var['dependencia'];
             });
 
-            // Función para calcular distancia a la zona de poder
             $distanciaZonaPoder = function($var) use ($minDependencia, $maxInfluencia) {
                 return sqrt(pow($var['dependencia'] - $minDependencia, 2) + pow($var['influencia'] - $maxInfluencia, 2));
             };
 
             if (count($porEncimaDiagonal) >= 2) {
-                // Tomar las 2 más cercanas a la zona de poder
+                
                 usort($porEncimaDiagonal, function($a, $b) use ($distanciaZonaPoder) {
                     return $distanciaZonaPoder($a) <=> $distanciaZonaPoder($b);
                 });
                 $seleccionados = array_slice($porEncimaDiagonal, 0, 2);
                 Log::info('HypothesisController::index - 2+ arriba diagonal (más cerca zona poder): ' . json_encode($seleccionados));
             } elseif (count($porEncimaDiagonal) === 1) {
-                // Tomar esa y la más cercana a la zona de poder de las demás
+                
                 $primera = array_values($porEncimaDiagonal)[0];
                 $resto = array_filter($varCoords, function($var) use ($primera) {
                     return $var['id'] !== $primera['id'];
@@ -106,7 +98,7 @@ class HypothesisController extends Controller
                 $seleccionados = [$primera, $resto[0]];
                 Log::info('HypothesisController::index - 1 arriba diagonal + 1 más cerca zona poder: ' . json_encode($seleccionados));
             } else {
-                // Ninguna arriba de la diagonal: tomar las 2 más cercanas a zona de poder
+                
                 $varCoordsCopia = $varCoords;
                 usort($varCoordsCopia, function($a, $b) use ($distanciaZonaPoder) {
                     return $distanciaZonaPoder($a) <=> $distanciaZonaPoder($b);
@@ -115,22 +107,20 @@ class HypothesisController extends Controller
                 Log::info('HypothesisController::index - 0 arriba diagonal, 2 más cerca zona poder: ' . json_encode($seleccionados));
             }
 
-            // Calcular la zona de cada variable seleccionada
             $dependencias = array_column($varCoords, 'dependencia');
             $influencias = array_column($varCoords, 'influencia');
             $maxX = max($dependencias);
             $maxY = max($influencias);
-            $maxX = max($maxX, 10); // Mínimo 10
-            $maxY = max($maxY, 12); // Mínimo 12
+            $maxX = max($maxX, 10); 
+            $maxY = max($maxY, 12); 
             $centroX = $maxX / 2;
             $centroY = $maxY / 2;
 
             foreach ($seleccionados as &$variable) {
                 $zona = '';
-                
-                // Detectar frontera
+
                 if ($variable['dependencia'] == $centroX || $variable['influencia'] == $centroY) {
-                    // Prioridad: Conflicto > Poder > Salida > Indiferencia
+                    
                     if ($variable['dependencia'] > $centroX && $variable['influencia'] >= $centroY) {
                         $zona = 'conflicto';
                     } elseif ($variable['dependencia'] <= $centroX && $variable['influencia'] > $centroY) {
@@ -152,7 +142,6 @@ class HypothesisController extends Controller
                     }
                 }
 
-                // Mapear la zona a su ID en la base de datos
                 $zoneMapping = [
                     'poder' => 'ZONA DE PODER',
                     'conflicto' => 'ZONA DE CONFLICTO',
@@ -162,10 +151,9 @@ class HypothesisController extends Controller
 
                 $zoneName = $zoneMapping[$zona] ?? 'ZONA DE PODER';
                 $zone = Zones::where('name_zones', $zoneName)->first();
-                $variable['zone_id'] = $zone ? $zone->id : 1; // Por defecto zona 1 si no se encuentra
+                $variable['zone_id'] = $zone ? $zone->id : 1; 
             }
 
-            // Obtener hipótesis existentes para el usuario y las variables seleccionadas
             $selectedIds = array_map(fn($v) => $v['id'], $seleccionados);
             $selectedVars = $variables->whereIn('id', $selectedIds);
             $hypotheses = Hypothesis::where('user_id', $userId)
@@ -175,9 +163,8 @@ class HypothesisController extends Controller
 
             Log::info('HypothesisController::index - Existing hypotheses count: ' . $hypotheses->count());
 
-            // Preparar respuesta - mapear H0 y H1 según la nueva estructura
             $result = collect($seleccionados)->map(function ($v) use ($hypotheses) {
-                // Buscar hipótesis H0 y H1 para esta variable
+                
                 $h0 = $hypotheses->firstWhere(function($h) use ($v) {
                     return $h->id_variable == $v['id'] && $h->secondary_hypotheses == 'H0';
                 });
@@ -200,7 +187,6 @@ class HypothesisController extends Controller
 
             Log::info('HypothesisController::index - Final result: ' . json_encode($result));
 
-            // Log de distancias a la zona de poder
             foreach ($varCoords as $v) {
                 $dist = sqrt(pow($v['dependencia'] - $minDependencia, 2) + pow($v['influencia'] - $maxInfluencia, 2));
                 Log::info('Var ' . $v['id'] . ' (' . $v['name'] . ') - Dependencia: ' . $v['dependencia'] . ', Influencia: ' . $v['influencia'] . ', Distancia zona poder: ' . $dist);
@@ -221,15 +207,11 @@ class HypothesisController extends Controller
         }
     }
 
-    /**
-     * Guarda o actualiza una hipótesis para el usuario autenticado.
-     */
     public function store(Request $request): JsonResponse
     {
         try {
             $userId = Auth::id();
-            
-            // Limpiar datos antes de validar
+
             $input = $request->all();
             $input = array_filter($input, function($value) {
                 return $value !== null && $value !== 'undefined' && $value !== '';
@@ -237,14 +219,13 @@ class HypothesisController extends Controller
             
             $data = $request->validate([
                 'variable_id' => 'required|integer',
-                'name_hypothesis' => 'required|string',         // 'H1' o 'H2'
-                'secondary_hypothesis' => 'required|string',    // 'H0' o 'H1'
+                'name_hypothesis' => 'required|string',         
+                'secondary_hypothesis' => 'required|string',    
                 'description' => 'nullable|string',
                 'zone_id' => 'nullable|integer',
                 'state' => 'nullable',
             ]);
 
-            // Asegurar que description no sea null si no se proporciona
             if (!isset($data['description']) || $data['description'] === null) {
                 $data['description'] = '';
             }
@@ -260,7 +241,6 @@ class HypothesisController extends Controller
                 'secondary_hypotheses' => $data['secondary_hypothesis'],
             ]);
 
-            // Buscar hipótesis existente
             $hypothesis = Hypothesis::where('user_id', $userId)
                 ->where('id_variable', $data['variable_id'])
                 ->where('name_hypothesis', $data['name_hypothesis'])
@@ -274,7 +254,7 @@ class HypothesisController extends Controller
             ]);
 
             if ($hypothesis) {
-                // Si ya está bloqueada, no permitir editar
+                
                 if ($hypothesis->state === '1') {
                     return response()->json([
                         'data' => $hypothesis,
@@ -283,10 +263,8 @@ class HypothesisController extends Controller
                     ]);
                 }
 
-                // Incrementar el contador de ediciones en la base de datos
                 $hypothesis->edits = ($hypothesis->edits ?? 0) + 1;
-                
-                // Si es la tercera edición o más, bloquear
+
                 if ($hypothesis->edits >= 3) {
                     $hypothesis->state = '1';
                 }
@@ -298,7 +276,7 @@ class HypothesisController extends Controller
 
                 Log::info('Actualizado registro existente', ['id' => $hypothesis->id, 'final_state' => $hypothesis->state, 'edits' => $hypothesis->edits]);
             } else {
-                // Obtener o crear el registro de traceability para el usuario
+                
                 $traceability = \App\Models\Traceability::getOrCreateForUser($userId);
                 
                 $nextId = $this->findNextAvailableId();
@@ -311,7 +289,7 @@ class HypothesisController extends Controller
                     'zone_id' => $data['zone_id'] ?? 1,
                     'user_id' => $userId,
                     'state' => isset($data['state']) ? (string)$data['state'] : '0',
-                    'edits' => 1, // Primera edición
+                    'edits' => 1, 
                     'tried_id' => $traceability->id,
                 ]);
                 Log::info('Creado nuevo registro', ['id' => $hypothesis->id, 'secondary_hypotheses' => $data['secondary_hypothesis'], 'edits' => 1]);
@@ -333,9 +311,6 @@ class HypothesisController extends Controller
         }
     }
 
-    /**
-     * Actualiza una hipótesis específica por ID.
-     */
     public function update(Request $request, $id): JsonResponse
     {
         try {
@@ -350,7 +325,6 @@ class HypothesisController extends Controller
                 'state' => 'nullable',
             ]);
 
-            // Buscar la hipótesis por ID y usuario
             $hypothesis = Hypothesis::where('id', $id)
                 ->where('user_id', $userId)
                 ->first();
@@ -363,7 +337,6 @@ class HypothesisController extends Controller
                 ], 404);
             }
 
-            // Si ya está bloqueada, no permitir editar
             if ($hypothesis->state === '1') {
                 return response()->json([
                     'data' => $hypothesis,
@@ -372,15 +345,12 @@ class HypothesisController extends Controller
                 ]);
             }
 
-            // Incrementar el contador de ediciones en la base de datos
             $hypothesis->edits = ($hypothesis->edits ?? 0) + 1;
-            
-            // Si es la tercera edición o más, bloquear
+
             if ($hypothesis->edits >= 3) {
                 $hypothesis->state = '1';
             }
 
-            // Actualizar los campos
             $hypothesis->update([
                 'description' => $data['description'] ?? $hypothesis->description,
                 'zone_id' => $data['zone_id'] ?? $hypothesis->zone_id,
@@ -403,38 +373,34 @@ class HypothesisController extends Controller
         }
     }
 
-    // Función para encontrar el primer ID disponible
     private function findNextAvailableId(): int
     {
-        // Obtener todos los IDs existentes ordenados
+        
         $existingIds = Hypothesis::orderBy('id')->pluck('id')->toArray();
         
         if (empty($existingIds)) {
-            return 1; // Si no hay registros, empezar con 1
+            return 1; 
         }
-        
-        // Buscar el primer hueco en la secuencia
+
         $expectedId = 1;
         foreach ($existingIds as $existingId) {
             if ($existingId > $expectedId) {
-                // Encontramos un hueco, usar este ID
+                
                 return $expectedId;
             }
             $expectedId = $existingId + 1;
         }
-        
-        // Si no hay huecos, usar el siguiente ID después del último
+
         return $expectedId;
     }
 
-    // Función para reiniciar el AUTO_INCREMENT
     public function resetAutoIncrement(): JsonResponse
     {
         try {
-            // Verificar si no hay registros
+            
             $count = Hypothesis::count();
             if ($count === 0) {
-                // Reiniciar el AUTO_INCREMENT
+                
                 \DB::statement("ALTER TABLE hypothesis AUTO_INCREMENT = 1");
                 return response()->json([
                     'data' => null,
@@ -458,11 +424,10 @@ class HypothesisController extends Controller
         }
     }
 
-    // Función para borrar todos los registros y reiniciar AUTO_INCREMENT
     public function deleteAllAndReset(): JsonResponse
     {
         try {
-            // Usar TRUNCATE para borrar todos los registros y reiniciar AUTO_INCREMENT
+            
             \DB::table('hypothesis')->truncate();
             
             return response()->json([
@@ -480,14 +445,11 @@ class HypothesisController extends Controller
         }
     }
 
-    /**
-     * Cerrar todas las hipótesis de un usuario (establecer edits a 3 y bloquear)
-     */
     public function closeAllHypotheses(): JsonResponse
     {
         try {
             $userId = Auth::id();
-            // Obtener la ruta actual del usuario
+            
             $currentRoute = \App\Models\Traceability::getCurrentRouteForUser($userId);
             if (!$currentRoute) {
                 return response()->json([
@@ -496,11 +458,11 @@ class HypothesisController extends Controller
                     'message' => 'No se encontró ruta para el usuario.'
                 ], 400);
             }
-            // Obtener variables de la ruta actual
+            
             $variables = \App\Models\Variable::where('user_id', $userId)
                 ->where('tried_id', $currentRoute->id)
                 ->get();
-            // Para cada variable, asegurar que existan H0 y H1
+            
             foreach ($variables as $variable) {
                 foreach (['H0', 'H1'] as $secondary) {
                     $exists = Hypothesis::where('user_id', $userId)
@@ -511,7 +473,7 @@ class HypothesisController extends Controller
                     if (!$exists) {
                         Hypothesis::create([
                             'id_variable' => $variable->id,
-                            'name_hypothesis' => 'H1', // o lo que corresponda
+                            'name_hypothesis' => 'H1', 
                             'secondary_hypotheses' => $secondary,
                             'description' => '',
                             'zone_id' => 1,
@@ -523,7 +485,7 @@ class HypothesisController extends Controller
                     }
                 }
             }
-            // Ahora cerrar todas las hipótesis
+            
             $hypotheses = Hypothesis::where('user_id', $userId)
                 ->where('tried_id', $currentRoute->id)
                 ->get();
@@ -548,19 +510,15 @@ class HypothesisController extends Controller
         }
     }
 
-    /**
-     * Reabrir todas las hipótesis de un usuario (establecer edits a 0 y desbloquear)
-     */
     public function reopenAllHypotheses(): JsonResponse
     {
         try {
             $userId = Auth::id();
-            
-            // Obtener todas las hipótesis del usuario
+
             $hypotheses = Hypothesis::where('user_id', $userId)->get();
             
             foreach ($hypotheses as $hypothesis) {
-                // Establecer edits a 0 y desbloquear
+                
                 $hypothesis->update([
                     'state' => '0',
                     'edits' => 0
@@ -581,4 +539,4 @@ class HypothesisController extends Controller
             ], 500);
         }
     }
-} 
+}

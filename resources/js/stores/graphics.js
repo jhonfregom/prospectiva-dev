@@ -22,4 +22,4 @@ export const useGraphicsStore = defineStore('graphics', {
             }
         }
     }
-}); 
+});

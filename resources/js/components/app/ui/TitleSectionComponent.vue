@@ -47,15 +47,15 @@
     </section>
 </template>
 <script>
-    //Import general functions
+    
     import {
         capitalizeWords,
     } from '../../../functions';
-    //Import section from store
+    
     import { useSectionStore } from '../../../stores/section';
-    //Import texts from store
+    
     import { useTextsStore } from '../../../stores/texts';
-    //Import session from store
+    
     import { useSessionStore } from '../../../stores/session';
 
     export default {

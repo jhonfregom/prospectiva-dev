@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Traceability extends Model
 {
     protected $table = 'traceability';
-    
-    // Deshabilitar el auto-increment para permitir asignación manual de IDs
+
     public $incrementing = false;
     
     protected $fillable = [
@@ -45,12 +44,9 @@ class Traceability extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Obtiene o crea un registro de traceability para un usuario
-     */
     public static function getOrCreateForUser($userId)
     {
-        // Obtener la ruta actual (la que tiene el tried más alto)
+        
         $traceability = static::where('user_id', $userId)
             ->orderBy('tried', 'desc')
             ->first();
@@ -58,8 +54,7 @@ class Traceability extends Model
         if ($traceability) {
             return $traceability;
         }
-        
-        // Si no existe, crear uno nuevo con el siguiente ID disponible
+
         $nextId = static::findNextAvailableId();
         
         return static::create([
@@ -79,9 +74,6 @@ class Traceability extends Model
         ]);
     }
 
-    /**
-     * Obtiene la ruta actual del usuario (la que tiene el tried más alto)
-     */
     public static function getCurrentRouteForUser($userId)
     {
         return static::where('user_id', $userId)
@@ -89,9 +81,6 @@ class Traceability extends Model
             ->first();
     }
 
-    /**
-     * Obtiene todas las rutas del usuario
-     */
     public static function getAllRoutesForUser($userId)
     {
         return static::where('user_id', $userId)
@@ -99,9 +88,6 @@ class Traceability extends Model
             ->get();
     }
 
-    /**
-     * Obtiene una ruta específica por tried
-     */
     public static function getRouteByTried($userId, $tried)
     {
         return static::where('user_id', $userId)
@@ -109,15 +95,12 @@ class Traceability extends Model
             ->first();
     }
 
-    /**
-     * Verifica si un usuario puede acceder a una sección específica
-     */
     public function canAccessSection($section)
     {
         $sectionMap = [
             'variables' => 'variables',
             'matrix' => 'matriz',
-            'graphics' => 'matriz', // La gráfica depende de la matriz
+            'graphics' => 'matriz', 
             'analysis' => 'maps',
             'hypothesis' => 'hypothesis',
             'schwartz' => 'shwartz',
@@ -146,9 +129,6 @@ class Traceability extends Model
         return $canAccess;
     }
 
-    /**
-     * Marca una sección como completada y habilita la siguiente
-     */
     public function markSectionCompleted($section)
     {
         \Log::info('=== MODELO: MARCANDO SECCIÓN COMO COMPLETADA ===');
@@ -171,11 +151,9 @@ class Traceability extends Model
         if (isset($sectionMap[$section])) {
             $field = $sectionMap[$section];
             \Log::info('Campo a actualizar: ' . $field);
-            
-            // Marcar la sección actual como completada
+
             $this->$field = '1';
-            
-            // Habilitar la siguiente sección secuencialmente
+
             $this->enableNextSection($section);
             
             $this->save();
@@ -186,37 +164,16 @@ class Traceability extends Model
         }
     }
 
-    /**
-     * Encuentra el primer ID disponible en la tabla
-     */
     public static function findNextAvailableId(): int
     {
-        // Obtener todos los IDs existentes ordenados
-        $existingIds = static::orderBy('id')->pluck('id')->toArray();
         
-        if (empty($existingIds)) {
-            return 1; // Si no hay registros, empezar con 1
-        }
-        
-        // Buscar el primer hueco en la secuencia
-        $expectedId = 1;
-        foreach ($existingIds as $existingId) {
-            if ($existingId > $expectedId) {
-                // Encontramos un hueco, usar este ID
-                return $expectedId;
-            }
-            $expectedId = $existingId + 1;
-        }
-        
-        // Si no hay huecos, usar el siguiente ID después del último
-        return $expectedId;
+        $maxId = static::max('id');
+        return $maxId ? $maxId + 1 : 1;
     }
 
-    /**
-     * Habilita la siguiente sección en la secuencia
-     */
     private function enableNextSection($completedSection)
     {
+        
         $sectionOrder = [
             'variables',
             'matrix',
@@ -245,19 +202,18 @@ class Traceability extends Model
         $completedIndex = array_search($completedSection, $sectionOrder);
         
         if ($completedIndex !== false && $completedIndex < count($sectionOrder) - 1) {
+            
             $nextSection = $sectionOrder[$completedIndex + 1];
             $nextField = $sectionMap[$nextSection] ?? null;
             
             if ($nextField && isset($this->$nextField)) {
-                $this->$nextField = '1'; // Ahora bloquea la siguiente sección
-                \Log::info('Siguiente sección bloqueada: ' . $nextSection . ' (' . $nextField . ')');
+                
+                $this->$nextField = '1';
+                \Log::info('Siguiente sección habilitada: ' . $nextSection . ' (' . $nextField . ') en ruta tried=' . $this->tried);
             }
         }
     }
 
-    /**
-     * Marca una sección como NO completada y bloquea la siguiente
-     */
     public function reverseSectionCompleted($section)
     {
         \Log::info('=== MODELO: REVERSANDO SECCIÓN Y TODAS LAS POSTERIORES ===');
@@ -289,12 +245,17 @@ class Traceability extends Model
         if ($startIndex !== false) {
             for ($i = $startIndex + 1; $i < count($sectionOrder); $i++) {
                 $key = $sectionOrder[$i];
-                // Solo saltar variables, bloquear todos los demás (incluyendo matrix)
+
+                if ($this->tried == '2' && $key === 'results') {
+                    \Log::info('Segunda ruta: No se bloquea results');
+                    continue;
+                }
+
                 if ($key !== 'variables') {
                     $field = $sectionMap[$key] ?? null;
                     if ($field && isset($this->$field)) {
                         $this->$field = '0';
-                        \Log::info('Sección bloqueada: ' . $key . ' (' . $field . ')');
+                        \Log::info('Sección bloqueada: ' . $key . ' (' . $field . ') en ruta tried=' . $this->tried);
                     }
                 }
             }
@@ -304,9 +265,6 @@ class Traceability extends Model
         }
     }
 
-    /**
-     * Bloquea la siguiente sección en la secuencia
-     */
     private function blockNextSection($completedSection)
     {
         $sectionOrder = [
@@ -346,4 +304,4 @@ class Traceability extends Model
             }
         }
     }
-} 
+}

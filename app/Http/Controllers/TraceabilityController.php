@@ -8,9 +8,7 @@ use Illuminate\Http\JsonResponse;
 
 class TraceabilityController extends Controller
 {
-    /**
-     * Obtiene el estado de traceability del usuario
-     */
+    
     public function getUserTraceability(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -19,14 +17,13 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Si es administrador, obtener todas las rutas de todos los usuarios
         if ($user->role === 1) {
             $traceability = Traceability::with('user')
                 ->orderBy('user_id', 'asc')
                 ->orderBy('tried', 'asc')
                 ->get();
         } else {
-            // Si es usuario normal, obtener solo su ruta actual
+            
             $traceability = Traceability::getCurrentRouteForUser($user->id);
             
             if (!$traceability) {
@@ -40,9 +37,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Verifica si un usuario puede acceder a una sección específica
-     */
     public function canAccessSection(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -52,7 +46,6 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Los administradores (rol 1) pueden acceder a todas las secciones
         if ($user->role === 1) {
             return response()->json([
                 'success' => true,
@@ -70,8 +63,7 @@ class TraceabilityController extends Controller
                 'reason' => 'no_route_found'
             ]);
         }
-        
-        // Los usuarios normales solo pueden acceder a variables inicialmente
+
         if ($section === 'variables') {
             return response()->json([
                 'success' => true,
@@ -80,7 +72,6 @@ class TraceabilityController extends Controller
             ]);
         }
 
-        // Para otras secciones, verificar si la sección anterior está completada
         $canAccess = $traceability->canAccessSection($section);
         
         return response()->json([
@@ -90,9 +81,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Marca una sección como completada
-     */
     public function markSectionCompleted(Request $request): JsonResponse
     {
         \Log::info('=== MARCANDO SECCIÓN COMO COMPLETADA ===');
@@ -128,9 +116,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Marca una sección como NO completada y bloquea la siguiente
-     */
     public function reverseSectionCompleted(Request $request): JsonResponse
     {
         \Log::info('=== REVERSANDO SECCIÓN COMO COMPLETADA DESDE EL CONTROLADOR ===');
@@ -157,9 +142,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Obtiene las secciones disponibles para un usuario
-     */
     public function getAvailableSections(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -172,8 +154,7 @@ class TraceabilityController extends Controller
         
         \Log::info('Traceability - Usuario: ' . json_encode(['id' => $user->id, 'role' => $user->role, 'email' => $user->user]));
         \Log::info('Traceability - Estado actual: ' . json_encode($traceability ? $traceability->toArray() : 'null'));
-        
-        // Los administradores tienen acceso a todas las secciones
+
         if ($user->role === 1) {
             \Log::info('Traceability - Usuario es admin, acceso completo');
             return response()->json([
@@ -193,9 +174,8 @@ class TraceabilityController extends Controller
             ]);
         }
 
-        // Para usuarios normales, verificar cada sección
         $sections = [
-            'variables' => true, // Siempre accesible
+            'variables' => $traceability ? $traceability->canAccessSection('variables') : false,
             'matrix' => $traceability ? $traceability->canAccessSection('matrix') : false,
             'graphics' => $traceability ? $traceability->canAccessSection('graphics') : false,
             'analysis' => $traceability ? $traceability->canAccessSection('analysis') : false,
@@ -215,9 +195,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Resetea los campos de edición (bloqueo) de la sección dada y todas las posteriores para el usuario actual
-     */
     public function resetEditLocksFromSection(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -227,7 +204,6 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Orden de los módulos
         $sectionOrder = [
             'variables',
             'matrix',
@@ -245,7 +221,6 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Sección no válida'], 400);
         }
 
-        // Lógica para cada módulo (ejemplo: variables y matriz)
         for ($i = $startIndex; $i < count($sectionOrder); $i++) {
             $mod = $sectionOrder[$i];
             switch ($mod) {
@@ -291,16 +266,13 @@ class TraceabilityController extends Controller
                         ]);
                     }
                     break;
-                // Puedes agregar más módulos aquí si es necesario
+                
             }
         }
 
         return response()->json(['success' => true, 'message' => 'Campos de edición reseteados']);
     }
 
-    /**
-     * Actualiza el campo tried de traceability para el usuario autenticado
-     */
     public function updateTried(Request $request): \Illuminate\Http\JsonResponse
     {
         $user = auth()->user();
@@ -318,9 +290,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Obtiene el valor actual del campo tried para el usuario autenticado
-     */
     public function getTried(Request $request): \Illuminate\Http\JsonResponse
     {
         $user = auth()->user();
@@ -336,9 +305,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Crea una nueva ruta para el usuario
-     */
     public function createNewRoute(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -348,7 +314,7 @@ class TraceabilityController extends Controller
         }
 
         try {
-            // Verificar si el usuario ya tiene una ruta completada (results = '1')
+            
             $currentTraceability = Traceability::where('user_id', $user->id)
                 ->where('results', '1')
                 ->first();
@@ -360,7 +326,6 @@ class TraceabilityController extends Controller
                 ]);
             }
 
-            // Verificar si ya existe una ruta con tried = 2
             $existingRoute2 = Traceability::where('user_id', $user->id)
                 ->where('tried', '2')
                 ->first();
@@ -372,14 +337,13 @@ class TraceabilityController extends Controller
                 ]);
             }
 
-            // Crear nueva ruta con tried = 2
             $nextId = Traceability::findNextAvailableId();
             
             $newTraceability = Traceability::create([
                 'id' => $nextId,
                 'user_id' => $user->id,
                 'tried' => '2',
-                'variables' => '1', // Habilitar variables para la nueva ruta
+                'variables' => '1', 
                 'matriz' => '0',
                 'maps' => '0',
                 'hypothesis' => '0',
@@ -387,7 +351,7 @@ class TraceabilityController extends Controller
                 'conditions' => '0',
                 'scenarios' => '0',
                 'conclusions' => '0',
-                'results' => '0',
+                'results' => '1', 
                 'state' => '0'
             ]);
 
@@ -406,9 +370,6 @@ class TraceabilityController extends Controller
         }
     }
 
-    /**
-     * Obtiene la ruta actual del usuario
-     */
     public function getCurrentRoute(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -417,14 +378,13 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Si es administrador, obtener todas las rutas de todos los usuarios
         if ($user->role === 1) {
             $currentRoute = Traceability::with('user')
                 ->orderBy('user_id', 'asc')
                 ->orderBy('tried', 'desc')
                 ->get();
         } else {
-            // Si es usuario normal, obtener solo su ruta activa
+            
             $currentRoute = Traceability::where('user_id', $user->id)
                 ->orderBy('tried', 'desc')
                 ->first();
@@ -443,9 +403,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Obtiene todas las rutas del usuario
-     */
     public function getUserRoutes(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -454,14 +411,13 @@ class TraceabilityController extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Si es administrador, obtener todas las rutas de todos los usuarios
         if ($user->role === 1) {
             $routes = Traceability::with('user')
                 ->orderBy('user_id', 'asc')
                 ->orderBy('tried', 'asc')
                 ->get();
         } else {
-            // Si es usuario normal, solo obtener sus propias rutas
+            
             $routes = Traceability::where('user_id', $user->id)
                 ->orderBy('tried', 'asc')
                 ->get();
@@ -473,9 +429,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Obtiene el estado de la ruta actual
-     */
     public function getCurrentRouteState(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -499,9 +452,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Actualiza el estado de la ruta actual
-     */
     public function updateCurrentRouteState(Request $request): JsonResponse
     {
         $user = auth()->user();
@@ -529,9 +479,6 @@ class TraceabilityController extends Controller
         ]);
     }
 
-    /**
-     * Verifica si una sección está cerrada en la ruta actual
-     */
     public function isSectionClosed(Request $request, $section): JsonResponse
     {
         $user = auth()->user();
@@ -550,7 +497,6 @@ class TraceabilityController extends Controller
             ]);
         }
 
-        // Verificar si la sección está cerrada basándose en el campo correspondiente
         $sectionMap = [
             'variables' => 'variables',
             'matrix' => 'matriz',
@@ -580,4 +526,4 @@ class TraceabilityController extends Controller
             'closed' => $isClosed
         ]);
     }
-} 
+}

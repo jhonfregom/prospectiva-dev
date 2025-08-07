@@ -27,11 +27,11 @@
     </nav>
 </template>
 <script>
-    //Import url from store
+    
     import { useUrlsStore } from '../../../../stores/urls';
-    //Import NavbarRightItemComponent
+    
     import navbarCompany from './NavbarCompanyComponent.vue';
-    //Import NavbarNotificationComponent
+    
     import navbarNotification from './NavbarNotificationComponent.vue';
 
     export default {
@@ -67,7 +67,6 @@
         }
     }
 </script>
-
 
 <style lang="scss" scoped>
     .notify-content{

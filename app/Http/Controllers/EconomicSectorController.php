@@ -8,9 +8,7 @@ use Illuminate\Http\JsonResponse;
 
 class EconomicSectorController extends Controller
 {
-    /**
-     * Obtener todos los sectores económicos activos
-     */
+    
     public function index(): JsonResponse
     {
         try {
@@ -29,9 +27,6 @@ class EconomicSectorController extends Controller
         }
     }
 
-    /**
-     * Obtener un sector económico específico
-     */
     public function show($id): JsonResponse
     {
         try {

@@ -16,17 +16,14 @@ class TestNotesAPICSRF extends Command
     {
         $this->info('🧪 Probando API de notas con CSRF token...');
 
-        // Probar con usuario 1
         $user = User::find(1);
         Auth::login($user);
         
         $this->info("👤 Usuario: {$user->user} (ID: {$user->id})");
-        
-        // Obtener el token CSRF
+
         $csrfToken = csrf_token();
         $this->info("🔑 CSRF Token: " . substr($csrfToken, 0, 20) . "...");
-        
-        // Simular petición POST para crear nota con CSRF
+
         $this->info("\n📝 Probando POST /notes con CSRF");
         try {
             $noteData = [
@@ -39,7 +36,7 @@ class TestNotesAPICSRF extends Command
                 'X-CSRF-TOKEN' => $csrfToken,
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json'
-            ])->post('http://127.0.0.1:8000/notes', $noteData);
+            ])->post('http:
             
             $this->info("Status: " . $response->status());
             $this->info("Response: " . $response->body());
@@ -48,13 +45,11 @@ class TestNotesAPICSRF extends Command
                 $data = $response->json();
                 if ($data['success']) {
                     $this->info("✅ Nota creada con ID: " . $data['data']['id']);
-                    
-                    // Verificar que la nota se creó en la BD
+
                     $note = \App\Models\Note::find($data['data']['id']);
                     if ($note) {
                         $this->info("✅ Nota encontrada en BD: {$note->title}");
-                        
-                        // Eliminar la nota de prueba
+
                         $note->delete();
                         $this->info("🗑️ Nota de prueba eliminada");
                     } else {
@@ -69,4 +64,4 @@ class TestNotesAPICSRF extends Command
         Auth::logout();
         return 0;
     }
-} 
+}

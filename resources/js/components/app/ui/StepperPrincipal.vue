@@ -81,22 +81,18 @@ export default {
   setup() {
     const storeSession = useSessionStore();
     const traceabilityStore = useTraceabilityStore();
-    
-    // Estado reactivo para controlar si el store está inicializado
+
     const isStoreInitialized = ref(false);
-    
-    // --- NUEVO: Validación extra de secciones válidas ---
+
     const seccionesValidas = computed(() => {
       const secciones = traceabilityStore.availableSections;
       if (!secciones) return false;
       const values = Object.values(secciones);
       const allTrue = values.every(v => v === true);
-      // Mostrar si la primera está en true y (hay al menos una en false o todas son true)
+      
       return values[0] === true && (values.some(v => v === false) || allTrue);
     });
-    // --- FIN NUEVO ---
-    
-    // Inicializar el store de traceability al montar el componente
+
     onMounted(async () => {
       try {
         await traceabilityStore.initialize();
@@ -106,8 +102,7 @@ export default {
         isStoreInitialized.value = true;
       }
     });
-    
-    // Define los pasos/secciones principales
+
     const steps = [
       { key: 'variables', label: 'Variables', icon: 'fas fa-list' },
       { key: 'matrix', label: 'Matriz', icon: 'fas fa-th' },
@@ -120,26 +115,23 @@ export default {
       { key: 'conclusions', label: 'Conclusiones', icon: 'fas fa-lightbulb' },
       { key: 'results', label: 'Resultados', icon: 'fas fa-trophy' },
     ];
-    
-    // Divide los pasos en 3 filas equilibradas y ajusta la última fila para centrar las burbujas
+
     const maxPerRow = 4;
     const gridRows = computed(() => {
-      // Primeras dos filas normales
+      
       const row1 = steps.slice(0, 4).map((s, i) => ({ ...s, globalIdx: i }));
       const row2 = steps.slice(4, 8).map((s, i) => ({ ...s, globalIdx: i + 4 }));
-      // Última fila: se maneja manualmente para posicionamiento exacto
+      
       return [row1, row2];
     });
-    
-    // Encuentra el índice del paso actual
+
     const currentStepIndex = computed(() => {
       const active = Object.keys(storeSession.contentActive).find(
         (k) => storeSession.contentActive[k]
       );
       return steps.findIndex((s) => s.key === active);
     });
-    
-    // Calcula el paso activo basado en las secciones disponibles para usuarios rol 0
+
     const currentActiveStep = computed(() => {
       if (!isStoreInitialized.value) {
         return currentStepIndex.value;
@@ -147,13 +139,11 @@ export default {
       
       const userRole = traceabilityStore.getUserRole;
       const isAdmin = traceabilityStore.isAdmin;
-      
-      // Para administradores, usar el índice actual normal
+
       if (isAdmin) {
         return currentStepIndex.value;
       }
-      
-      // Para usuarios rol 0, calcular basado en secciones disponibles
+
       const sectionKeys = [
         'variables',
         'matrix', 
@@ -166,83 +156,73 @@ export default {
         'conclusions',
         'results'
       ];
-      
-      // Encontrar la última sección disponible
+
       let lastAvailableIndex = -1;
       for (let i = 0; i < sectionKeys.length; i++) {
         const sectionKey = sectionKeys[i];
         if (traceabilityStore.isSectionAvailable(sectionKey)) {
           lastAvailableIndex = i;
         } else {
-          break; // Detener en la primera no disponible
+          break; 
         }
       }
       
       return Math.max(0, lastAvailableIndex);
     });
-    
-    // Verifica si un paso está habilitado basado en permisos
+
     function isStepEnabled(idx) {
       const step = steps[idx];
       if (!step) return false;
-      
-      // Si el store no está inicializado, permitir acceso temporal
+
       if (!isStoreInitialized.value) {
         return true;
       }
-      
-      // Debug: mostrar información del usuario y permisos
+
       const userRole = traceabilityStore.getUserRole;
       const isAdmin = traceabilityStore.isAdmin;
       const availableSections = traceabilityStore.availableSections;
       const isAvailable = traceabilityStore.isSectionAvailable(step.key);
-      
-      // Los administradores pueden acceder a todas las secciones
+
       if (isAdmin) {
         return true;
       }
-      
-      // Para usuarios normales, verificar si la sección está disponible
+
       return isAvailable;
     }
-    
-    // Función para navegar a un paso
+
     async function goToStep(idx) {
       const step = steps[idx];
       if (!step) return;
-      
-      // Si el store no está inicializado, permitir navegación temporal
+
       if (!isStoreInitialized.value) {
         storeSession.setActiveContent(step.key);
         return;
       }
-      
-      // Los administradores pueden navegar libremente
+
       if (traceabilityStore.isAdmin) {
         storeSession.setActiveContent(step.key);
         return;
       }
-      
-      // Para usuarios normales, verificar permisos
+
       if (isStepEnabled(idx)) {
         storeSession.setActiveContent(step.key);
       } else {
-        // Mostrar mensaje de que la sección no está disponible
+        
         alert(`La sección ${step.label} no está disponible aún. Debes completar las secciones anteriores primero.`);
-        // Aquí podrías mostrar un toast o alert
+        
       }
     }
-    // Calcula el estilo de la línea para que solo conecte las burbujas reales
+    
     function rowLineStyle(row, rowIdx) {
       const first = row.findIndex(cell => cell);
       const last = row.length - 1 - [...row].reverse().findIndex(cell => cell);
       const total = row.length;
-      // Si es la última fila (Conclusiones y Resultados centrados)
+      
       if (rowIdx === 2 && first === 1 && last === 2 && total === 4) {
-        // Línea desde el extremo izquierdo hasta el borde izquierdo de la burbuja de Resultados
+        
         return {
           left: '0',
-          right: `calc(30% + 60px)`, // 25% es la celda vacía + 60px es la mitad de la burbuja (120px/2)
+          right: `calc(30% + 60px)`, 
         };
       }
       const left = (first / total) * 100;
@@ -274,7 +254,7 @@ export default {
   justify-content: center;
   margin-bottom: 32px;
   position: relative;
-  min-height: 120px; /* igual al alto de la burbuja */
+  min-height: 120px; 
 }
 .stepper-track-row:last-child {
   margin-bottom: 0;
@@ -397,7 +377,7 @@ export default {
   background: #b5b5b5;
   z-index: 1;
   margin-left: 0;
-  margin-right: 300px; /* 120px (burbuja) + 8px (espacio) */
+  margin-right: 300px; 
   min-width: 20px;
 }
-</style> 
+</style>

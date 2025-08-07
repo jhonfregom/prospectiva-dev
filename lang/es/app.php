@@ -11,6 +11,7 @@ return [
 
     'restore_password' => [
         'title'                     =>  'Recuperar contraseña',
+        'subtitle'                  =>  'Enviaremos un enlace de recuperación',
         'title_main'                =>  'Recuperar ingreso</br>Cloud Back',
         'will_send_link'            =>  'Enviaremos un enlace de recuperación',
         'send_link'                 =>  'enviar enlace',
@@ -18,7 +19,8 @@ return [
         'error_email_paragraph1'    =>  'no existe correo asociado a esta cuenta, inténtelo de nuevo.',
         'error_email_paragraph2'    =>  'tiene un limite de tres opciones, de lo contrario debe intentarlo en 15 minutos.',
         'retry'                     =>  'intentar',
-        'success_message'           =>  'se envió al correo :email, enlace para actualizar la contraseña.'
+        'success_message'           =>  'se envió al correo :email, enlace para actualizar la contraseña.',
+        'back_to_login'             =>  'Volver al login'
     ],
 
       'main' => [

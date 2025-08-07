@@ -6,12 +6,9 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\DB;
 
-
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Schema::create('traceability', function (Blueprint $table) {
@@ -46,9 +43,6 @@ return new class extends Migration
         DB::statement("ALTER TABLE traceability MODIFY id INT AUTO_INCREMENT");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('traceability');

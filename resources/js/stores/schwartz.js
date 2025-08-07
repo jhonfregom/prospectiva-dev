@@ -46,10 +46,10 @@ export const useSchwartzStore = defineStore('schwartz', {
                 edits: escenario.edits,
                 state: escenario.state,
                 num_scenario: numScenario,
-                ...extra // Permite forzar edits=3 o texto vacío
+                ...extra 
             };
             try {
-                // Usar solo POST, el backend decide si crea o actualiza
+                
                 const res = await axios.post('/scenarios', payload);
                 if (res.data && res.data.data) {
                     this.escenarios[index].id = res.data.data.id;
@@ -64,14 +64,14 @@ export const useSchwartzStore = defineStore('schwartz', {
             try {
                 const res = await axios.get('/scenarios');
                 if (res.data && res.data.data && Array.isArray(res.data.data)) {
-                    // Limpiar los escenarios actuales
+                    
                     this.escenarios.forEach(e => {
                         e.id = null;
                         e.texto = '';
                         e.edits = 0;
                         e.state = 0;
                     });
-                    // Poblar por num_scenario
+                    
                     res.data.data.forEach(item => {
                         const idx = (item.num_scenario || 1) - 1;
                         if (this.escenarios[idx]) {
@@ -88,4 +88,4 @@ export const useSchwartzStore = defineStore('schwartz', {
             }
         }
     }
-}); 
+});

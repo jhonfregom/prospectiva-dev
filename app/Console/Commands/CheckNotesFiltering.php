@@ -15,13 +15,11 @@ class CheckNotesFiltering extends Command
     {
         $this->info('🔍 Verificando filtrado de notas por usuario...');
 
-        // Obtener todos los usuarios
         $users = User::all();
         
         foreach ($users as $user) {
             $this->line("\n👤 Usuario: {$user->user} (ID: {$user->id})");
-            
-            // Obtener notas del usuario
+
             $userNotes = Note::where('user_id', $user->id)->get();
             
             if ($userNotes->count() > 0) {
@@ -34,7 +32,6 @@ class CheckNotesFiltering extends Command
             }
         }
 
-        // Verificar que no hay notas sin user_id
         $orphanNotes = Note::whereNull('user_id')->get();
         if ($orphanNotes->count() > 0) {
             $this->error("\n❌ ERROR: Se encontraron {$orphanNotes->count()} notas sin user_id:");
@@ -45,7 +42,6 @@ class CheckNotesFiltering extends Command
             $this->info("\n✅ Todas las notas tienen user_id asignado");
         }
 
-        // Verificar total de notas
         $totalNotes = Note::count();
         $this->info("\n📊 Resumen:");
         $this->info("   Total de notas en la BD: {$totalNotes}");
@@ -53,4 +49,4 @@ class CheckNotesFiltering extends Command
 
         return 0;
     }
-} 
+}

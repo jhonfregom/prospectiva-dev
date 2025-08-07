@@ -24,12 +24,12 @@ class TestChatGPTWithSSL extends Command
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(30)->withoutVerifying()->post('https://api.openai.com/v1/chat/completions', [
+            ])->timeout(30)->withoutVerifying()->post('https:
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'Eres un asistente IA amigable y útil. Responde en español de manera natural y concisa.'
+                                                 'content' => 'Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Responde en español de manera natural y concisa.'
                     ],
                     [
                         'role' => 'user',
@@ -59,4 +59,4 @@ class TestChatGPTWithSSL extends Command
         
         return 0;
     }
-} 
+}

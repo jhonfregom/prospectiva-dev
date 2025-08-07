@@ -84,19 +84,19 @@
         v-if="!cerrado"
         @click="confirmarCerrar"
         :disabled="cerrado"
-      >Cerrar</button>
+      >{{ textsStore.getText('hypothesis_section.close_button') }}</button>
       <button
         class="cerrar-btn"
         v-else-if="state !== null && state === '0'"
         @click="confirmarRegresar"
-      >Regresar</button>
+      >{{ textsStore.getText('hypothesis_section.return_button') }}</button>
     </div>
     <!-- Modal de confirmación -->
     <div v-if="mostrarModal" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
-        <button @click="cerrarModulo">Sí, cerrar</button>
-        <button @click="mostrarModal = false">Cancelar</button>
+        <p>{{ textsStore.getText('hypothesis_section.close_confirm_message') }}</p>
+        <button @click="cerrarModulo">{{ textsStore.getText('hypothesis_section.confirm_yes') }}</button>
+        <button @click="mostrarModal = false">{{ textsStore.getText('hypothesis_section.confirm_no') }}</button>
       </div>
     </div>
     <!-- Modal de confirmación para regresar -->
@@ -113,6 +113,7 @@
 import { useSectionStore } from '../../../../stores/section';
 import { useFutureDriversStore } from '../../../../stores/futureDrivers';
 import { useTextsStore } from '../../../../stores/texts';
+import { useTraceabilityStore } from '../../../../stores/traceability';
 import { ref, onMounted, onBeforeUnmount, watch, computed, getCurrentInstance, inject } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../../../../stores/session';
@@ -129,6 +130,7 @@ export default {
         const sectionStore = useSectionStore();
         const futureDriversStore = useFutureDriversStore();
         const textsStore = useTextsStore();
+        const traceabilityStore = useTraceabilityStore();
         const { drivers } = storeToRefs(futureDriversStore);
         const localDescriptionsH0 = ref([]);
         const localDescriptionsH1 = ref([]);
@@ -137,15 +139,13 @@ export default {
         const cerrado = ref(false);
         const mostrarModal = ref(false);
         const mostrarModalRegresar = ref(false);
-        const state = ref(null); // Se inicializa como null hasta cargar desde traceability
+        const state = ref(null); 
 
-        // Función para contar palabras
         const countWords = (text) => {
             if (!text) return 0;
             return text.trim().split(/\s+/).filter(word => word.length > 0).length;
         };
 
-        // Función para limitar palabras a 40
         const limitWords = (text, maxWords = 40) => {
             if (!text) return text;
             const words = text.trim().split(/\s+/).filter(word => word.length > 0);
@@ -153,14 +153,12 @@ export default {
             return words.slice(0, maxWords).join(' ');
         };
 
-        // Computed para obtener el color del contador de palabras
         const getWordCountClass = (wordCount) => {
             if (wordCount > 40) return 'has-text-danger';
             if (wordCount > 35) return 'has-text-warning';
             return 'has-text-grey';
         };
 
-        // Sincronizar los valores locales con los del store
         watch(
             () => futureDriversStore.drivers,
             (newVal) => {
@@ -174,7 +172,6 @@ export default {
             { immediate: true, deep: true }
         );
 
-        // Watcher adicional para detectar cambios en los drivers y sincronizar los arrays locales usando variable_id como clave
         watch(drivers, (newDrivers) => {
             if (newDrivers && newDrivers.length > 0) {
                 newDrivers.forEach((driver) => {
@@ -184,9 +181,8 @@ export default {
             }
         }, { immediate: true, deep: true });
 
-        // Saber si está bloqueado - verificar tanto stateH0 como stateH1
         const isLocked = (row) => {
-            // Si cualquiera de las dos hipótesis está bloqueada, toda la fila se bloquea
+            
             const locked = (row.stateH0 === '1' || row.stateH1 === '1');
             return locked;
         };
@@ -198,24 +194,22 @@ export default {
             }
 
             if (editingRow.value === row.variable_id) {
-                // Guardar ambas hipótesis (H0 y H1) para esta variable
+                
                 const h0Text = localDescriptionsH0.value[row.variable_id] || '';
                 const h1Text = localDescriptionsH1.value[row.variable_id] || '';
-                
-                // Usar saveBothHypotheses que guarda H0 y H1 automáticamente
-                // No enviar state para que el backend maneje el conteo de ediciones
+
                 const result = await futureDriversStore.saveBothHypotheses(
-                    row.variable_id,  // variableId
-                    'H' + (index + 1), // nameHypothesis (H1 o H2)
-                    h0Text,           // h0Text
-                    h1Text,           // h1Text
-                    row.zone_id || 1, // zoneId
-                    undefined         // state - no enviar para ediciones manuales
+                    row.variable_id,  
+                    'H' + (index + 1), 
+                    h0Text,           
+                    h1Text,           
+                    row.zone_id || 1, 
+                    undefined         
                 );
                 
                 if (result && result.success) {
                     editingRow.value = null;
-                    // Recargar los datos para obtener el estado actualizado
+                    
                     await futureDriversStore.fetchDrivers();
                 }
             } else {
@@ -223,12 +217,10 @@ export default {
             }
         };
 
-        // Manejar input con límite de palabras usando variable_id
         const handleInput = (event, row, type) => {
             const text = event.target.value;
             const wordCount = countWords(text);
-            
-            // Si ya hay más de 40 palabras, recortar
+
             if (wordCount > 40) {
                 const limitedText = limitWords(text, 40);
                 if (type === 'H0') {
@@ -238,8 +230,7 @@ export default {
                 }
                 return;
             }
-            
-            // Si está dentro del límite, permitir escribir
+
             if (type === 'H0') {
                 localDescriptionsH0.value[row.variable_id] = text;
             } else {
@@ -247,19 +238,16 @@ export default {
             }
         };
 
-        // Función para manejar keydown - BLOQUEAR solo cuando se va a crear la palabra 41
         const handleKeyDown = (event, row, type) => {
             const text = event.target.value;
             const wordCount = countWords(text);
-            
-            // Solo bloquear si ya hay más de 40 palabras
+
             if (wordCount > 40 && 
                 !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter'].includes(event.key)) {
                 event.preventDefault();
             }
         };
 
-        // Función específica para manejar pegado
         const handlePaste = (event, row, type) => {
             event.preventDefault();
             const pastedText = event.clipboardData.getData('text');
@@ -274,7 +262,6 @@ export default {
             }
         };
 
-        // Método para cargar el valor de state desde traceability
         const loadTriedValue = async () => {
             try {
                 const response = await axios.get('/traceability/current-route-state');
@@ -286,7 +273,6 @@ export default {
             }
         };
 
-        // Método para incrementar el valor de state
         const incrementTried = async () => {
             try {
                 await axios.put('/traceability/current-route-state', { state: '1' });
@@ -299,21 +285,20 @@ export default {
         onMounted(async () => {
             
             sectionStore.setTitleSection('Direccionadores de futuro');
-            
-            // Leer estado de cerrado desde localStorage al crear el componente
+
             const user = JSON.parse(localStorage.getItem('user')) || {};
             const cerradoKey = 'hypothesis_cerrado_' + (user.id || 'anon');
             const cerradoValue = localStorage.getItem(cerradoKey);
             cerrado.value = cerradoValue === 'true';
-            // Cargar datos siempre al montar el componente
+            
             await futureDriversStore.fetchDrivers();
-            // Cargar el valor de tried desde traceability
+            
             await loadTriedValue();
             
         });
 
         onBeforeUnmount(() => {
-            // Limpiar botones dinámicos al desmontar el componente
+            
             sectionStore.clearDynamicButtons();
         });
 
@@ -321,6 +306,7 @@ export default {
             sectionStore,
             futureDriversStore,
             textsStore,
+            traceabilityStore,
             drivers,
             localDescriptionsH0,
             localDescriptionsH1,
@@ -357,18 +343,18 @@ export default {
             async regresarModulo() {
                 mostrarModalRegresar.value = false;
                 try {
-                    // Reabrir todas las hipótesis en el backend y store
+                    
                     const result = await futureDriversStore.reopenAllHypotheses();
                     if (result.success) {
-                    // Incrementar tried a 2
+                    
                         await incrementTried();
-                    // Volver a cargar el valor actualizado de tried
+                    
                         await loadTriedValue();
-                    // Guardar acción pendiente en localStorage
+                    
                     localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'hypothesis' }));
-                    // Regresa a la vista principal
+                    
                     sessionStore.setActiveContent('main');
-                    // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                    
                     const user = JSON.parse(localStorage.getItem('user')) || {};
                     const cerradoKey = 'hypothesis_cerrado_' + (user.id || 'anon');
                     localStorage.removeItem(cerradoKey);
@@ -397,17 +383,19 @@ export default {
         async cerrarModulo() {
             this.mostrarModal = false;
             try {
-                // Cerrar todas las hipótesis en el backend y store
+                
                 const result = await this.futureDriversStore.closeAllHypotheses();
                 if (result.success) {
-                // Guardar acción pendiente en localStorage
-                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'hypothesis' }));
+                    
+                    await this.traceabilityStore.markSectionCompleted('hypothesis');
+
+                    localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'hypothesis' }));
                 this.$buefy.toast.open({
                     message: 'Módulo de direccionadores de futuro cerrado correctamente',
                     type: 'is-success'
                 });
                 this.sessionStore.setActiveContent('main');
-                // Guardar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = 'hypothesis_cerrado_' + (user.id || 'anon');
                 localStorage.setItem(cerradoKey, 'true');
@@ -453,8 +441,6 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
 .variables-container {
     padding: 20px;
@@ -465,7 +451,7 @@ export default {
     box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     font-size: 14px;
 }
-/* Compactar solo la fila de encabezados (thead th) */
+
 :deep(.b-table .table thead th) {
     height: 40px !important;
     min-height: 0 !important;
@@ -474,7 +460,7 @@ export default {
     padding-left: 8px !important;
     padding-right: 8px !important;
 }
-/* Centrado vertical SOLO en celdas de la tabla Buefy */
+
 :deep(.b-table .table th),
 :deep(.b-table .table td) {
     vertical-align: middle !important;
@@ -504,7 +490,7 @@ export default {
 .b-table tr:nth-child(odd) td {
     background-color: #FFFFFF;
 }
-/* Centrar contenido de celdas de texto y acciones */
+
 .edit-area,
 .textarea-container,
 .actions-column {

@@ -16,8 +16,7 @@ class CheckTraceability extends Command
         $userId = $this->argument('user_id');
         
         $this->info("Verificando traceability para usuario ID: {$userId}");
-        
-        // Verificar si el usuario existe
+
         $user = User::find($userId);
         if (!$user) {
             $this->error("Usuario con ID {$userId} no encontrado");
@@ -25,8 +24,7 @@ class CheckTraceability extends Command
         }
         
         $this->info("Usuario: {$user->user} (Rol: {$user->role})");
-        
-        // Verificar traceability
+
         $traceability = Traceability::where('user_id', $userId)->first();
         
         if (!$traceability) {
@@ -51,8 +49,7 @@ class CheckTraceability extends Command
                 ['state', $traceability->state],
             ]
         );
-        
-        // Probar marcar variables como completada
+
         $this->info("Probando marcar variables como completada...");
         $traceability->markSectionCompleted('variables');
         
@@ -65,4 +62,4 @@ class CheckTraceability extends Command
             ]
         );
     }
-} 
+}

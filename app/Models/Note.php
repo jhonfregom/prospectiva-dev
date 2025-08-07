@@ -15,19 +15,11 @@ class Note extends Model
         'title'
     ];
 
-    /**
-     * Relación con el usuario
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-
-
-    /**
-     * Obtener notas por usuario
-     */
     public static function getByUser($userId)
     {
         return static::where('user_id', $userId)
@@ -35,13 +27,10 @@ class Note extends Model
             ->get();
     }
 
-    /**
-     * Obtener la nota más reciente del usuario
-     */
     public static function getLatestByUser($userId)
     {
         return static::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->first();
     }
-} 
+}

@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\Log;
 
 class OllamaProxyController extends Controller
 {
-    private $ollamaUrl = 'http://localhost:11434';
+    private $ollamaUrl = 'http:
 
     public function generate(Request $request): JsonResponse
     {
         try {
-            // Validar la petición
+            
             $request->validate([
                 'model' => 'required|string',
                 'prompt' => 'required|string',
@@ -22,7 +22,6 @@ class OllamaProxyController extends Controller
                 'options' => 'array'
             ]);
 
-            // Verificar si Ollama está disponible
             try {
                 $healthCheck = Http::timeout(3)->get($this->ollamaUrl . '/api/tags');
                 if (!$healthCheck->successful()) {
@@ -47,14 +46,12 @@ class OllamaProxyController extends Controller
                 ], 503);
             }
 
-            // Preparar los datos para Ollama
             $ollamaData = [
                 'model' => $request->input('model'),
                 'prompt' => $request->input('prompt'),
                 'stream' => $request->input('stream', false),
             ];
 
-            // Agregar opciones si están presentes
             if ($request->has('options')) {
                 $ollamaData['options'] = $request->input('options');
             }
@@ -64,7 +61,6 @@ class OllamaProxyController extends Controller
                 'prompt_length' => strlen($ollamaData['prompt'])
             ]);
 
-            // Hacer la petición a Ollama con timeout optimizado para textos largos
             $response = Http::timeout(45)->post($this->ollamaUrl . '/api/generate', $ollamaData);
 
             if ($response->successful()) {
@@ -124,4 +120,4 @@ class OllamaProxyController extends Controller
             ], 500);
         }
     }
-} 
+}

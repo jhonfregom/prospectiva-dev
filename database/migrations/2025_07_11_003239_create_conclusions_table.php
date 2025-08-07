@@ -8,9 +8,7 @@ use Illuminate\Database\Query\Expression;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Schema::create('conclusions', function (Blueprint $table) {
@@ -35,7 +33,6 @@ return new class extends Migration
                 'user_id_indexes'
             );
 
-
                 $table->foreign('user_id')->references('id')->on('users')
                 ->onUpdate('NO ACTION')
                 ->onDelete('NO ACTION');
@@ -48,9 +45,6 @@ return new class extends Migration
         DB::statement("ALTER TABLE conclusions MODIFY id INT AUTO_INCREMENT");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('conclusions');

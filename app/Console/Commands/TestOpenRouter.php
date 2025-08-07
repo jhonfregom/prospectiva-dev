@@ -25,10 +25,10 @@ class TestOpenRouter extends Command
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(30)->post('https://openrouter.ai/api/v1/chat/completions', [
+            ])->timeout(30)->post('https:
                 'model' => 'meta-llama/llama-3-8b-instruct',
                 'messages' => [
-                    ['role' => 'system', 'content' => 'Eres un asistente IA profesional, responde en español de manera natural y concisa.'],
+                                         ['role' => 'system', 'content' => 'Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Responde en español de manera natural y concisa.'],
                     ['role' => 'user', 'content' => 'Hola, ¿cómo estás?']
                 ],
                 'temperature' => 0.7,
@@ -52,4 +52,4 @@ class TestOpenRouter extends Command
 
         return 0;
     }
-} 
+}

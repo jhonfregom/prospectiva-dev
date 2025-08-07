@@ -21,7 +21,6 @@ class CheckNotesTraceability extends Command
             $this->line("ID: {$note->id} | Título: {$note->title} | User ID: {$note->user_id} | Traceability ID: {$traceabilityId}");
         }
 
-        // Verificar cuántas notas tienen traceability_id NULL
         $nullTraceabilityNotes = Note::whereNull('traceability_id')->count();
         $this->info("\n📊 Resumen:");
         $this->info("   Total de notas: {$notes->count()}");
@@ -30,4 +29,4 @@ class CheckNotesTraceability extends Command
 
         return 0;
     }
-} 
+}

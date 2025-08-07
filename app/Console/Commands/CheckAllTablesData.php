@@ -24,8 +24,7 @@ class CheckAllTablesData extends Command
         
         foreach ($users as $user) {
             $this->info("\n👤 Usuario: {$user->first_name} {$user->last_name} (ID: {$user->id})");
-            
-            // Verificar variables
+
             $variables = Variable::where('user_id', $user->id)->count();
             $this->line("   📊 Variables: {$variables}");
             if ($variables > 0) {
@@ -34,8 +33,7 @@ class CheckAllTablesData extends Command
                     $this->line("      - ID: {$var->id}, Nombre: {$var->name_variable}, Estado: {$var->state}");
                 }
             }
-            
-            // Verificar matriz
+
             $matriz = Matriz::where('user_id', $user->id)->count();
             $this->line("   📋 Matriz: {$matriz}");
             if ($matriz > 0) {
@@ -44,21 +42,17 @@ class CheckAllTablesData extends Command
                     $this->line("      - ID: {$mat->id}, ID Matriz: {$mat->id_matriz}, ID Variable: {$mat->id_variable}, Estado: {$mat->state}");
                 }
             }
-            
-            // Verificar hipótesis
+
             $hypothesis = Hypothesis::where('user_id', $user->id)->count();
             $this->line("   🔬 Hipótesis: {$hypothesis}");
-            
-            // Verificar escenarios
+
             $scenarios = Scenarios::where('user_id', $user->id)->count();
             $this->line("   🎯 Escenarios: {$scenarios}");
-            
-            // Verificar conclusiones
+
             $conclusions = Conclusion::where('user_id', $user->id)->count();
             $this->line("   📝 Conclusiones: {$conclusions}");
         }
-        
-        // Verificar totales
+
         $this->info("\n📈 Totales por tabla:");
         $this->line("   Variables: " . Variable::count());
         $this->line("   Matriz: " . Matriz::count());
@@ -68,4 +62,4 @@ class CheckAllTablesData extends Command
         
         $this->info("\n✅ Verificación completada");
     }
-} 
+}

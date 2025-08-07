@@ -14,13 +14,11 @@ class CheckChatbotComponents extends Command
     {
         $this->info('🔍 Verificando componentes de chatbot...');
 
-        // Verificar FloatingChatbotComponent
         $this->info("\n📋 FloatingChatbotComponent:");
         $chatbotPath = resource_path('js/components/app/ui/FloatingChatbotComponent.vue');
         if (File::exists($chatbotPath)) {
             $content = File::get($chatbotPath);
-            
-            // Verificar URL de Ollama
+
             if (strpos($content, 'localhost:11434') !== false) {
                 $this->error("   ❌ Aún usa localhost:11434");
             } else {
@@ -32,8 +30,7 @@ class CheckChatbotComponents extends Command
             } else {
                 $this->error("   ❌ URL incorrecta");
             }
-            
-            // Verificar método handleKeydown
+
             if (strpos($content, 'handleKeydown') !== false) {
                 $this->info("   ✅ Método handleKeydown presente");
             } else {
@@ -43,13 +40,11 @@ class CheckChatbotComponents extends Command
             $this->error("   ❌ Archivo no encontrado");
         }
 
-        // Verificar FloatingBubbleComponent
         $this->info("\n📋 FloatingBubbleComponent:");
         $bubblePath = resource_path('js/components/app/ui/FloatingBubbleComponent.vue');
         if (File::exists($bubblePath)) {
             $content = File::get($bubblePath);
-            
-            // Verificar URL de Ollama
+
             if (strpos($content, 'localhost:11434') !== false) {
                 $this->error("   ❌ Aún usa localhost:11434");
             } else {
@@ -61,8 +56,7 @@ class CheckChatbotComponents extends Command
             } else {
                 $this->error("   ❌ URL incorrecta");
             }
-            
-            // Verificar método handleAIKeydown
+
             if (strpos($content, 'handleAIKeydown') !== false) {
                 $this->info("   ✅ Método handleAIKeydown presente");
             } else {
@@ -72,7 +66,6 @@ class CheckChatbotComponents extends Command
             $this->error("   ❌ Archivo no encontrado");
         }
 
-        // Verificar rutas
         $this->info("\n🌐 Rutas de Ollama:");
         $routes = \Route::getRoutes();
         $ollamaRoutes = [];
@@ -94,7 +87,6 @@ class CheckChatbotComponents extends Command
             $this->error("   ❌ No se encontraron rutas de Ollama");
         }
 
-        // Verificar controlador
         $this->info("\n🎮 Controlador OllamaProxyController:");
         $controllerPath = app_path('Http/Controllers/OllamaProxyController.php');
         if (File::exists($controllerPath)) {
@@ -117,4 +109,4 @@ class CheckChatbotComponents extends Command
 
         return 0;
     }
-} 
+}

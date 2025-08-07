@@ -15,7 +15,6 @@ class CheckNotesCreation extends Command
     {
         $this->info('🔍 Verificando creación de notas...');
 
-        // Verificar todas las notas ordenadas por fecha de creación
         $notes = Note::orderBy('created_at', 'desc')->get();
         
         $this->info("📊 Total de notas: {$notes->count()}");
@@ -27,7 +26,6 @@ class CheckNotesCreation extends Command
             $this->line("ID: {$note->id} | Título: '{$note->title}' | User: {$userName} (ID: {$note->user_id}) | Creada: {$note->created_at}");
         }
 
-        // Verificar si hay notas recientes (últimas 24 horas)
         $recentNotes = Note::where('created_at', '>=', now()->subDay())->get();
         $this->info("\n📅 Notas creadas en las últimas 24 horas: {$recentNotes->count()}");
         
@@ -38,7 +36,6 @@ class CheckNotesCreation extends Command
             $this->line("   - ID: {$note->id} | Título: '{$note->title}' | User: {$userName} | Creada: {$note->created_at}");
         }
 
-        // Verificar si hay notas sin user_id
         $orphanNotes = Note::whereNull('user_id')->get();
         if ($orphanNotes->count() > 0) {
             $this->error("\n❌ ERROR: Se encontraron {$orphanNotes->count()} notas sin user_id:");
@@ -49,7 +46,6 @@ class CheckNotesCreation extends Command
             $this->info("\n✅ Todas las notas tienen user_id asignado");
         }
 
-        // Verificar si hay notas con user_id inválido
         $invalidUserNotes = Note::whereNotIn('user_id', User::pluck('id'))->get();
         if ($invalidUserNotes->count() > 0) {
             $this->error("\n❌ ERROR: Se encontraron {$invalidUserNotes->count()} notas con user_id inválido:");
@@ -62,4 +58,4 @@ class CheckNotesCreation extends Command
 
         return 0;
     }
-} 
+}

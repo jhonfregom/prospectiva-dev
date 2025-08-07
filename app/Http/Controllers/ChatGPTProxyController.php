@@ -8,12 +8,12 @@ use Illuminate\Support\Facades\Log;
 
 class ChatGPTProxyController extends Controller
 {
-    protected $baseUrl = 'https://api.openai.com/v1/chat/completions';
+    protected $baseUrl = 'https:
     protected $apiKey;
 
     public function __construct()
     {
-        // Usar una API key gratuita o configurada
+        
         $this->apiKey = config('services.openai.api_key', env('OPENAI_API_KEY'));
     }
 
@@ -32,7 +32,6 @@ class ChatGPTProxyController extends Controller
             $maxTokens = $request->input('max_tokens', 1000);
             $temperature = $request->input('temperature', 0.7);
 
-            // Si no hay API key configurada, usar un servicio gratuito alternativo
             if (empty($this->apiKey)) {
                 return $this->useFreeAlternative($prompt, $maxTokens, $temperature);
             }
@@ -45,7 +44,7 @@ class ChatGPTProxyController extends Controller
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'Eres un asistente IA amigable y útil. Responde en español de manera natural y concisa.'
+                                                 'content' => 'Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Responde en español de manera natural y concisa.'
                     ],
                     [
                         'role' => 'user',
@@ -70,26 +69,23 @@ class ChatGPTProxyController extends Controller
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-                
-                // Verificar si es error de cuota agotada
+
                 $errorData = $response->json();
                 if ($response->status() === 429 && isset($errorData['error']['type']) && $errorData['error']['type'] === 'insufficient_quota') {
                     return response()->json([
                         'success' => true,
-                        'response' => 'Tu cuenta de OpenAI ha agotado los créditos gratuitos. Para usar ChatGPT, necesitas agregar una tarjeta de crédito en https://platform.openai.com/account/billing o usar Ollama (local) que es completamente gratuito.',
+                        'response' => 'Tu cuenta de OpenAI ha agotado los créditos gratuitos. Para usar ChatGPT, necesitas agregar una tarjeta de crédito en https:
                         'model' => 'gpt-3.5-turbo',
                         'provider' => 'openai-quota-exceeded'
                     ]);
                 }
-                
-                // Fallback a servicio gratuito para otros errores
+
                 return $this->useFreeAlternative($prompt, $maxTokens, $temperature);
             }
 
         } catch (\Exception $e) {
             Log::error('ChatGPT Proxy error', ['error' => $e->getMessage()]);
-            
-            // Fallback a servicio gratuito
+
             return $this->useFreeAlternative($request->input('prompt'), 1000, 0.7);
         }
     }
@@ -97,11 +93,11 @@ class ChatGPTProxyController extends Controller
     protected function useFreeAlternative($prompt, $maxTokens, $temperature)
     {
         try {
-            // Usar un servicio gratuito alternativo (ejemplo con Hugging Face)
+            
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . config('services.huggingface.api_key', 'hf_xxx'),
                 'Content-Type' => 'application/json',
-            ])->timeout(30)->withoutVerifying()->post('https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium', [
+            ])->timeout(30)->withoutVerifying()->post('https:
                 'inputs' => $prompt,
                 'parameters' => [
                     'max_length' => $maxTokens,
@@ -124,7 +120,6 @@ class ChatGPTProxyController extends Controller
             Log::error('Free alternative error', ['error' => $e->getMessage()]);
         }
 
-        // Respuesta de fallback
         return response()->json([
             'success' => true,
             'response' => 'Lo siento, los servicios de IA no están disponibles en este momento. Te sugiero usar el chatbot local (Ollama) como alternativa.',
@@ -141,4 +136,4 @@ class ChatGPTProxyController extends Controller
             'available' => !empty($this->apiKey)
         ]);
     }
-} 
+}

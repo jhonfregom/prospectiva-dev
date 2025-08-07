@@ -32,25 +32,10 @@ class Matriz extends Model
         'state' => 'string'
     ];
 
-    /**
-     * Valores por defecto para los atributos
-     * 
-     * @var array
-     */
     protected $attributes = [
         'state' => '0'
     ];
 
-    /**
-     * Relación con el modelo User
-     * 
-     * Define una relación belongsTo con el modelo User, lo que permite:
-     * - Acceder al usuario que creó la variable
-     * - Mantener integridad referencial en la base de datos
-     * - Facilitar consultas relacionadas
-     * 
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -61,20 +46,8 @@ class Matriz extends Model
         return $this->belongsTo(Variable::class, 'id_variable');
     }
 
-    /**
-     * Relación con el modelo Traceability
-     * 
-     * Define una relación belongsTo con el modelo Traceability, lo que permite:
-     * - Acceder a la ruta de traceability asociada
-     * - Mantener integridad referencial en la base de datos
-     * - Facilitar consultas relacionadas
-     * 
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
     public function traceability()
     {
         return $this->belongsTo(Traceability::class, 'tried_id');
     }
-} 
-
-
+}

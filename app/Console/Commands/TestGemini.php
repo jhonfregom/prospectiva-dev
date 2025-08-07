@@ -20,7 +20,7 @@ class TestGemini extends Command
             return 1;
         }
         
-        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=' . $apiKey;
+        $url = 'https:
         
         try {
             $response = Http::withHeaders([
@@ -30,7 +30,7 @@ class TestGemini extends Command
                     [
                         'parts' => [
                             [
-                                'text' => 'Eres un asistente IA amigable y útil. Responde en español de manera natural y concisa. Hola, ¿cómo estás?'
+                                                                 'text' => 'Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Responde en español de manera natural y concisa. Hola, ¿cómo estás?'
                             ]
                         ]
                     ]
@@ -67,4 +67,4 @@ class TestGemini extends Command
         
         return 0;
     }
-} 
+}

@@ -16,26 +16,22 @@ class CheckSeederData extends Command
     public function handle()
     {
         $this->info('🔍 Verificando datos del seeder...');
-        
-        // Verificar usuarios
+
         $users = User::all();
         $this->info("📊 Total de usuarios: " . $users->count());
-        
-        // Verificar notas por usuario
+
         $this->info("\n📝 Notas por usuario:");
         foreach ($users as $user) {
             $noteCount = Note::where('user_id', $user->id)->count();
             $this->line("   Usuario {$user->id} ({$user->first_name} {$user->last_name}): {$noteCount} notas");
         }
-        
-        // Verificar trazabilidad por usuario
+
         $this->info("\n🔗 Trazabilidad por usuario:");
         foreach ($users as $user) {
             $traceCount = Traceability::where('user_id', $user->id)->count();
             $this->line("   Usuario {$user->id} ({$user->first_name} {$user->last_name}): {$traceCount} registros");
         }
-        
-        // Verificar distribución de notas
+
         $this->info("\n📈 Distribución de notas:");
         $noteDistribution = Note::select('user_id', DB::raw('count(*) as total'))
             ->groupBy('user_id')
@@ -50,4 +46,4 @@ class CheckSeederData extends Command
         
         $this->info("\n✅ Verificación completada");
     }
-} 
+}

@@ -4,7 +4,7 @@ import { useTextsStore } from './texts';
 
 export const useFutureDriversStore = defineStore('futureDrivers', {
     state: () => ({
-        drivers: [], // [{ id, variable_id, variable_name, descriptionH0, descriptionH1, state }]
+        drivers: [], 
         isLoading: false,
         error: null
     }),
@@ -14,7 +14,7 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
         },
         isLocked: (state) => (index) => {
             const driver = state.drivers[index];
-            // Verificar si cualquiera de las dos hipótesis está bloqueada
+            
             return driver ? (driver.stateH0 === '1' || driver.stateH1 === '1') : false;
         }
     },
@@ -35,24 +35,23 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
         async saveDriver(variableId, nameHypothesis, description, secondaryHypothesis, zoneId, state) {
             const payload = {
                 variable_id: variableId,
-                name_hypothesis: nameHypothesis, // 'H1' o 'H2'
-                description: description,         // texto del textarea
-                secondary_hypothesis: secondaryHypothesis, // 'H0' o 'H1'
+                name_hypothesis: nameHypothesis, 
+                description: description,         
+                secondary_hypothesis: secondaryHypothesis, 
                 zone_id: zoneId,
             };
-            
-            // Solo enviar state si se especifica explícitamente (para cerrar/regresar módulo)
+
             if (state !== undefined && state !== null) {
                 payload.state = state;
             }
             
             try {
-                // Buscar el driver existente
+                
                 const existing = this.drivers.find(d => d.variable_id === variableId);
                 let recordId = null;
                 
                 if (existing) {
-                    // Si es H0, usar idH0, si es H1, usar idH1
+                    
                     if (secondaryHypothesis === 'H0') {
                         recordId = existing.idH0;
                     } else if (secondaryHypothesis === 'H1') {
@@ -74,20 +73,17 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
         },
         async saveBothHypotheses(variableId, nameHypothesis, h0Text, h1Text, zoneId, state) {
             try {
-                
-                // Guarda H0
+
                 const resultH0 = await this.saveDriver(variableId, nameHypothesis, h0Text, 'H0', zoneId, state);
                 if (!resultH0.success) {
                     return resultH0;
                 }
-                
-                // Guarda H1
+
                 const resultH1 = await this.saveDriver(variableId, nameHypothesis, h1Text, 'H1', zoneId, state);
                 if (!resultH1.success) {
                     return resultH1;
                 }
-                
-                // Recargar datos para obtener el estado actualizado
+
                 await this.fetchDrivers();
                 return { success: true, message: 'Hipótesis guardadas correctamente' };
             } catch (error) {
@@ -128,4 +124,4 @@ export const useFutureDriversStore = defineStore('futureDrivers', {
             this.error = null;
         }
     }
-}); 
+});

@@ -14,19 +14,16 @@ class CheckDatabaseTables extends Command
     {
         $this->info('🔍 Verificando todas las tablas de la base de datos...');
 
-        // Obtener todas las tablas
         $tables = DB::select('SHOW TABLES');
         
         foreach ($tables as $table) {
             $tableName = array_values((array)$table)[0];
             $this->line("\n📋 Tabla: {$tableName}");
-            
-            // Contar registros en cada tabla
+
             try {
                 $count = DB::table($tableName)->count();
                 $this->line("   📊 Registros: {$count}");
-                
-                // Si es la tabla notes, mostrar detalles
+
                 if ($tableName === 'notes') {
                     $notes = DB::table($tableName)->get();
                     foreach ($notes as $note) {
@@ -40,4 +37,4 @@ class CheckDatabaseTables extends Command
 
         return 0;
     }
-} 
+}

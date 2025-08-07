@@ -48,27 +48,27 @@
         v-if="!cerrado"
         @click="mostrarModal = true"
         :disabled="cerrado"
-      >Cerrar</button>
+      >{{ textsStore.getText('initial_conditions_section.close_button') }}</button>
       <button
         class="cerrar-btn"
         v-else-if="state !== null && state === '0'"
         @click="mostrarModalRegresar = true"
-      >Regresar</button>
+      >{{ textsStore.getText('initial_conditions_section.return_button') }}</button>
     </div>
         <!-- Modal de confirmación -->
         <div v-if="mostrarModal" class="modal-confirm">
           <div class="modal-content">
-            <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
-            <button @click="cerrarModulo">Sí, cerrar</button>
-            <button @click="mostrarModal = false">Cancelar</button>
+            <p>{{ textsStore.getText('initial_conditions_section.close_confirm_message') }}</p>
+            <button @click="cerrarModulo">{{ textsStore.getText('initial_conditions_section.confirm_yes') }}</button>
+            <button @click="mostrarModal = false">{{ textsStore.getText('initial_conditions_section.confirm_no') }}</button>
           </div>
         </div>
             <!-- Modal de confirmación para regresar -->
     <div v-if="mostrarModalRegresar" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
-        <button @click="regresarModulo">Sí, regresar</button>
-        <button @click="mostrarModalRegresar = false">Cancelar</button>
+        <p>{{ textsStore.getText('initial_conditions_section.return_confirm_message') }}</p>
+        <button @click="regresarModulo">{{ textsStore.getText('initial_conditions_section.confirm_yes_return') }}</button>
+        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('initial_conditions_section.confirm_no') }}</button>
       </div>
     </div>
     </div>
@@ -90,7 +90,7 @@ export default {
     },
     data() {
         return {
-            // Estados de edición
+            
             isComponentPracticeEditing: false,
             isActualityEditing: false,
             isAplicationEditing: false,
@@ -111,10 +111,9 @@ export default {
             mostrarModalRegresar: false,
             cerrado: false,
             forceRerender: 0,
-            tried: null, // Se inicializa como null hasta cargar desde traceability
+            tried: null, 
         };
     },
-
 
     setup() {
         const sectionStore = useSectionStore();
@@ -124,7 +123,7 @@ export default {
         const editingRow = ref(null);
         const localNowConditions = ref([]);
         const traceabilityStore = useTraceabilityStore();
-        // Inicializar 'cerrado' leyendo de localStorage directamente
+        
         let initialCerrado = false;
         if (typeof window !== 'undefined') {
             const user = JSON.parse(localStorage.getItem('user')) || {};
@@ -134,31 +133,30 @@ export default {
         const cerrado = ref(initialCerrado);
         const mostrarModal = ref(false);
         const mostrarModalRegresar = ref(false);
-        const state = ref(null); // Se inicializa como null hasta cargar desde traceability
+        const state = ref(null); 
 
         onMounted(async () => {
             sectionStore.setTitleSection(textsStore.getText('initialConditions.title'));
             await initialConditionsStore.fetchConditions();
-            // Sincronizar valores locales
+            
             initialConditionsStore.conditions.forEach((c) => {
                 localNowConditions.value[c.id] = c.now_condition || '';
             });
-            // Actualizar estado de cerrado al entrar (por si cambia en otra pestaña)
+            
             if (typeof window !== 'undefined') {
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = 'initialconditions_cerrado_' + (user.id || 'anon');
                 cerrado.value = localStorage.getItem(cerradoKey) === 'true';
             }
-            // Cargar el valor de tried desde traceability
+            
             await loadStateValue();
         });
 
         onBeforeUnmount(() => {
-            // Limpiar botones dinámicos al desmontar el componente
+            
             sectionStore.clearDynamicButtons();
         });
 
-        // Función para cargar el valor de state desde traceability
         const loadStateValue = async () => {
             try {
                 const response = await axios.get('/traceability/current-route-state');
@@ -170,7 +168,6 @@ export default {
             }
         };
 
-        // Función para actualizar state
         const incrementState = async () => {
             try {
                 await axios.put('/traceability/current-route-state', { state: '1' });
@@ -195,12 +192,12 @@ export default {
             }
             
             if (editingRow.value === row.id) {
-                // Guardar
+                
                 console.log('Saving initial condition for variable ID:', row.id);
                 const result = await initialConditionsStore.updateCondition(row.id, localNowConditions.value[row.id] || '');
                 
                 if (result && result.success) {
-                    // Recargar datos para obtener el estado actualizado
+                    
                     await initialConditionsStore.fetchConditions();
                     const updated = initialConditionsStore.conditions.find(c => c.id === row.id);
                     if (updated) {
@@ -210,23 +207,22 @@ export default {
                     console.log('After save - Variable ID:', row.id, 'New state:', updated?.state);
                 }
             } else {
-                // Entrar en modo edición
+                
                 editingRow.value = row.id;
             }
         };
 
-        // Actualizar condición inicial existente usando PUT
         async function updateInitialConditionInServer(id) {
             try {
-                // Usar PUT para actualizar el registro existente
+                
                 const result = await axios.put(`/initial-conditions/${id}`, {
                     now_condition: localNowConditions.value[id] || '',
-                    edits_now_condition: 3, // Bloquear
+                    edits_now_condition: 3, 
                     state: 1
                 });
                 
                 if (result.data && result.data.data) {
-                    // Actualizar el estado local
+                    
                     const updatedCondition = initialConditionsStore.conditions.find(c => c.id === id);
                     if (updatedCondition) {
                         updatedCondition.edits_now_condition = result.data.data.edits_now_condition;
@@ -238,11 +234,10 @@ export default {
             }
         }
 
-        // NUEVO método cerrarModulo
         const cerrarModulo = async () => {
             mostrarModal.value = false;
             try {
-                // Cambiar state y edits_now_condition en todas las condiciones
+                
                 const requests = initialConditionsStore.conditions.map(cond =>
                     axios.put(`/initial-conditions/${cond.id}`, {
                         now_condition: cond.now_condition,
@@ -252,34 +247,34 @@ export default {
                 );
                 await Promise.all(requests);
                 await initialConditionsStore.fetchConditions();
-                // Sincronizar valores locales
+                
                 initialConditionsStore.conditions.forEach((c) => {
                     localNowConditions.value[c.id] = c.now_condition || '';
                 });
                 editingRow.value = null;
-                // Guardar acción pendiente en localStorage
+                
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'initialconditions' }));
-                // Guardar estado de cerrado en localStorage
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = 'initialconditions_cerrado_' + (user.id || 'anon');
                 localStorage.setItem(cerradoKey, 'true');
-                // Mostrar mensaje de éxito
+                
                 if (typeof window !== 'undefined' && window.$buefy) {
                     window.$buefy.toast.open({
                         message: 'Módulo de condiciones iniciales cerrado correctamente',
                         type: 'is-success'
                     });
                 }
-                // Volver al main
+                
                 sessionStore.setActiveContent('main');
-                // Esperar 1 segundo antes de desbloquear el siguiente módulo
+                
                 setTimeout(async () => {
                     await traceabilityStore.markSectionCompleted('initialconditions');
                 }, 1000);
                 cerrado.value = true;
             } catch (error) {
                 cerrado.value = false;
-                // Mostrar error
+                
                 if (typeof window !== 'undefined' && window.$buefy) {
                     window.$buefy.toast.open({
                         message: 'Error al cerrar el módulo de condiciones iniciales',
@@ -289,34 +284,33 @@ export default {
             }
         };
 
-        // NUEVO método regresarModulo
         const regresarModulo = async () => {
             mostrarModalRegresar.value = false;
             try {
-                // Incrementar tried a 2
+                
                 await incrementState();
-                // Volver a cargar el valor actualizado de tried
+                
                 await loadStateValue();
-                // Guardar acción pendiente en localStorage
+                
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'initialconditions' }));
-                // Desbloquear módulos posteriores (eliminar su flag de cerrado en localStorage)
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const posteriores = [
-                  'scenarios', 'conclusions', 'results' // Agrega aquí los módulos posteriores a condiciones iniciales
+                  'scenarios', 'conclusions', 'results' 
                 ];
                 posteriores.forEach(mod => {
                   const cerradoKey = mod + '_cerrado_' + (user.id || 'anon');
                   localStorage.removeItem(cerradoKey);
                 });
-                // Regresa a la vista principal
+                
                 sessionStore.setActiveContent('main');
-                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                
                 const cerradoKey = 'initialconditions_cerrado_' + (user.id || 'anon');
                 localStorage.removeItem(cerradoKey);
                 cerrado.value = false;
-                // Recargar los datos para actualizar los estados de edición
+                
                 await initialConditionsStore.fetchConditions();
-                // Mostrar mensaje de éxito
+                
                 if (typeof window !== 'undefined' && window.$buefy) {
                     window.$buefy.toast.open({
                         message: 'Módulo de condiciones iniciales reabierto correctamente',
@@ -371,13 +365,11 @@ export default {
     padding: 20px;
 }
 
-/* Centrado vertical EXACTO como en VariablesMainComponent */
 :deep(.b-table .table tbody td) {
     vertical-align: middle !important;
     height: 80px !important;
 }
 
-/* El resto de estilos de borders y backgrounds se mantienen */
 :deep(.b-table .table),
 :deep(.b-table .table th),
 :deep(.b-table .table td),
@@ -460,7 +452,7 @@ export default {
     box-shadow: none !important;
     width: 100%;
     height: 100%;
-    /* Centrado vertical del texto dentro del textarea */
+    
     display: flex;
     align-items: center;
 }

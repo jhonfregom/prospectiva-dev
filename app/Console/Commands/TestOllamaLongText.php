@@ -19,7 +19,7 @@ class TestOllamaLongText extends Command
         $this->line("   Longitud del texto: " . strlen($longText) . " caracteres");
         
         try {
-            $response = Http::timeout(60)->post('http://localhost:11434/api/generate', [
+            $response = Http::timeout(60)->post('http:
                 'model' => 'gemma3:4b',
                 'prompt' => "Analiza este texto y dime qué corregir: " . $longText,
                 'stream' => false,
@@ -50,4 +50,4 @@ class TestOllamaLongText extends Command
         
         return 0;
     }
-} 
+}

@@ -18,7 +18,7 @@
                 <!-- Segunda fila: Subtítulo Componente Práctico -->
                 <div class="table-row subtitle-row">
                     <div class="row-content">
-                        <h4 class="title is-5">{{ textsStore.getText('conclusions_section.component_practice_subtitle') }}</h4>
+                        <h4 class="title is-5 subtitle-text">{{ textsStore.getText('conclusions_section.component_practice_subtitle') }}</h4>
                     </div>
                 </div>
 
@@ -57,7 +57,7 @@
                 <!-- Cuarta fila: Subtítulo Actualidad -->
                 <div class="table-row subtitle-row">
                     <div class="row-content">
-                        <h4 class="title is-5">{{ textsStore.getText('conclusions_section.actuality_subtitle') }}</h4>
+                        <h4 class="title is-5 subtitle-text">{{ textsStore.getText('conclusions_section.actuality_subtitle') }}</h4>
                     </div>
                 </div>
 
@@ -96,7 +96,7 @@
                 <!-- Sexta fila: Subtítulo Aplicación -->
                 <div class="table-row subtitle-row">
                     <div class="row-content">
-                        <h4 class="title is-5">{{ textsStore.getText('conclusions_section.aplication_subtitle') }}</h4>
+                        <h4 class="title is-5 subtitle-text">{{ textsStore.getText('conclusions_section.aplication_subtitle') }}</h4>
                     </div>
                 </div>
 
@@ -141,27 +141,27 @@
         class="cerrar-btn"
         v-if="!cerrado"
         @click="confirmarCerrar"
-      >Cerrar</button>
+      >{{ textsStore.getText('conclusions_section.close_button') }}</button>
       <button
         class="cerrar-btn"
         v-else-if="state !== null && state === '0'"
         @click="mostrarModalRegresar = true"
-      >Regresar</button>
+      >{{ textsStore.getText('conclusions_section.return_button') }}</button>
     </div>
     <!-- Modal de confirmación -->
     <div v-if="mostrarModal" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
-        <button @click="cerrarModulo">Sí, cerrar</button>
-        <button @click="mostrarModal = false">Cancelar</button>
+        <p>{{ textsStore.getText('conclusions_section.close_confirm_message') }}</p>
+        <button @click="cerrarModulo">{{ textsStore.getText('conclusions_section.confirm_yes') }}</button>
+        <button @click="mostrarModal = false">{{ textsStore.getText('conclusions_section.confirm_no') }}</button>
       </div>
     </div>
     <!-- Modal de confirmación para regresar -->
     <div v-if="mostrarModalRegresar" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
-        <button @click="regresarModulo">Sí, regresar</button>
-        <button @click="mostrarModalRegresar = false">Cancelar</button>
+        <p>{{ textsStore.getText('conclusions_section.return_confirm_message') }}</p>
+        <button @click="regresarModulo">{{ textsStore.getText('conclusions_section.confirm_yes_return') }}</button>
+        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('conclusions_section.confirm_no') }}</button>
       </div>
     </div>
 </template>
@@ -175,42 +175,37 @@ import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
 import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
-
 export default {
-
 
     setup() {
         const sectionStore = useSectionStore();
         const textsStore = useTextsStore();
         const conclusionsStore = useConclusionsStore();
         const storeSession = useSessionStore();
-        
-        // Constante para el límite de caracteres
+
         const MAX_CHARACTERS = 2000;
 
-        // Función para manejar input de texto con límite de caracteres
         const handleTextInput = (field, event = null) => {
             const text = event ? event.target.value : conclusionsStore.conclusions[field];
             if (text.length > MAX_CHARACTERS) {
-                // Truncar el texto al límite
+                
                 conclusionsStore.conclusions[field] = text.substring(0, MAX_CHARACTERS);
                 console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
             }
         };
 
-        // Función para manejar pegado de texto
         const handleTextPaste = (field, event) => {
             const pastedText = (event.clipboardData || window.clipboardData).getData('text');
             const currentText = conclusionsStore.conclusions[field] || '';
             const combinedText = currentText + pastedText;
             
             if (combinedText.length <= MAX_CHARACTERS) {
-                // Permitir el pegado normal
+                
                 return;
             } else {
-                // Prevenir el pegado por defecto y manejar manualmente
+                
                 event.preventDefault();
-                // Calcular cuántos caracteres se pueden agregar
+                
                 const availableSpace = MAX_CHARACTERS - currentText.length;
                 if (availableSpace > 0) {
                     const truncatedPastedText = pastedText.substring(0, availableSpace);
@@ -222,11 +217,10 @@ export default {
             }
         };
 
-        // Función para manejar keyup
         const handleTextKeyup = (field, event) => {
             const text = event.target.value;
             if (text.length >= MAX_CHARACTERS) {
-                // Prevenir escritura adicional
+                
                 if (event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
                     event.preventDefault();
                     console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
@@ -251,7 +245,7 @@ export default {
 
     data() {
         return {
-            // Estados de edición
+            
             isComponentPracticeEditing: false,
             isActualityEditing: false,
             isAplicationEditing: false,
@@ -272,7 +266,7 @@ export default {
             mostrarModalRegresar: false,
             cerrado: false,
             forceRerender: 0,
-            state: null, // Se inicializa como null hasta cargar desde traceability
+            state: null, 
         };
     },
 
@@ -299,9 +293,9 @@ export default {
         this.loadConclusions().then(() => {
             this.forceRerender++;
         });
-        // Cargar el valor de state desde traceability
+        
         this.loadStateValue();
-        // Inicializar 'cerrado' leyendo de localStorage directamente
+        
         if (typeof window !== 'undefined') {
             const user = JSON.parse(localStorage.getItem('user')) || {};
             const cerradoKey = 'conclusions_cerrado_' + (user.id || 'anon');
@@ -310,7 +304,7 @@ export default {
     },
 
     beforeUnmount() {
-        // Limpiar botones dinámicos al desmontar el componente
+        
         this.sectionStore.clearDynamicButtons();
     },
 
@@ -334,28 +328,27 @@ export default {
             }
         },
 
-        // Handlers para cambios en los campos
         handleComponentPracticeChange() {
-            // Lógica adicional si es necesaria
+            
         },
 
         handleActualityChange() {
-            // Lógica adicional si es necesaria
+            
         },
 
         handleAplicationChange() {
-            // Lógica adicional si es necesaria
+            
         },
 
         async handleComponentPracticeEditSave() {
             if (!this.isComponentPracticeEditable) return;
 
             if (this.isComponentPracticeEditing) {
-                // Guardar
+                
                 await this.saveField('component_practice', this.conclusionsData.component_practice);
                 this.isComponentPracticeEditing = false;
             } else {
-                // Entrar en modo edición
+                
                 this.isComponentPracticeEditing = true;
             }
         },
@@ -364,11 +357,11 @@ export default {
             if (!this.isActualityEditable) return;
 
             if (this.isActualityEditing) {
-                // Guardar
+                
                 await this.saveField('actuality', this.conclusionsData.actuality);
                 this.isActualityEditing = false;
             } else {
-                // Entrar en modo edición
+                
                 this.isActualityEditing = true;
             }
         },
@@ -377,11 +370,11 @@ export default {
             if (!this.isAplicationEditable) return;
 
             if (this.isAplicationEditing) {
-                // Guardar
+                
                 await this.saveField('aplication', this.conclusionsData.aplication);
                 this.isAplicationEditing = false;
             } else {
-                // Entrar en modo edición
+                
                 this.isAplicationEditing = true;
             }
         },
@@ -409,7 +402,7 @@ export default {
                               this.editCounts.aplication >= 3;
             
             if (allBlocked) {
-                // Actualizar el state en el backend
+                
                 this.conclusionsStore.updateState('1');
             }
         },
@@ -423,7 +416,6 @@ export default {
                     type: 'is-success'
                 });
 
-                // Verificar si todos los campos están bloqueados
                 this.conclusionsStore.checkIfAllBlocked();
             } catch (error) {
                 this.$buefy.toast.open({
@@ -452,12 +444,12 @@ export default {
         },
         async cerrarModulo() {
             this.mostrarModal = false;
-            // Bloquear conclusiones en el backend y store
+            
             try {
                 await this.conclusionsStore.closeAllConclusions();
-                // Guardar acción pendiente en localStorage
+                
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'conclusions' }));
-                // Guardar estado de cerrado en localStorage
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = 'conclusions_cerrado_' + (user.id || 'anon');
                 localStorage.setItem(cerradoKey, 'true');
@@ -466,13 +458,13 @@ export default {
                     type: 'is-success'
                 });
                 this.storeSession.setActiveContent('main');
-                // Habilitar el siguiente módulo en la trazabilidad después de 1 segundo
+                
                 setTimeout(async () => {
                     const { useTraceabilityStore } = await import('../../../../stores/traceability');
                     const traceabilityStore = useTraceabilityStore();
                     await traceabilityStore.markSectionCompleted('conclusions');
                 }, 1000);
-                // Cambiar el estado local después de volver al main
+                
                 this.cerrado = true;
             } catch (error) {
                 this.$buefy.toast.open({
@@ -504,30 +496,30 @@ export default {
         async regresarModulo() {
             this.mostrarModalRegresar = false;
             try {
-                // Incrementar state a 2
+                
                 await this.incrementState();
-                // Volver a cargar el valor actualizado de state
+                
                 await this.loadStateValue();
-                // Guardar acción pendiente en localStorage
+                
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'conclusions' }));
-                // Desbloquear módulos posteriores (eliminar su flag de cerrado en localStorage)
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const posteriores = [
-                  'results' // Agrega aquí los módulos posteriores a conclusiones
+                  'results' 
                 ];
                 posteriores.forEach(mod => {
                   const cerradoKey = mod + '_cerrado_' + (user.id || 'anon');
                   localStorage.removeItem(cerradoKey);
                 });
-                // Regresa a la vista principal
+                
                 this.storeSession.setActiveContent('main');
-                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                
                 const cerradoKey = 'conclusions_cerrado_' + (user.id || 'anon');
                 localStorage.removeItem(cerradoKey);
                 this.cerrado = false;
-                // Recargar los datos para actualizar los estados de edición
+                
                 await this.conclusionsStore.fetchConclusions();
-                // Mostrar mensaje de éxito
+                
                 this.$buefy.toast.open({
                     message: 'Módulo de conclusiones reabierto correctamente',
                     type: 'is-success'
@@ -543,11 +535,14 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
 .conclusions-container {
     padding: 20px;
+}
+
+.subtitle-text {
+    text-align: justify !important;
+    line-height: 1.5;
 }
 
 .conclusions-table {

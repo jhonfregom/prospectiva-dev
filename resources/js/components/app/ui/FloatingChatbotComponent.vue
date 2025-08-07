@@ -17,7 +17,7 @@
     >
       <!-- Header del chat -->
       <div class="chatbot-header">
-        <h3>Asistente IA</h3>
+        <h3>🤖 ProspecIA</h3>
         <button @click="toggleChat" class="close-btn">
           <i class="fas fa-times"></i>
         </button>
@@ -93,10 +93,9 @@ export default {
   },
   computed: {
     shouldShow() {
-      // Obtener la ruta actual
-      const currentPath = window.location.pathname;
       
-      // Ocultar en login y registro
+      const currentPath = window.location.pathname;
+
       const hiddenPaths = ['/login', '/register', '/'];
       
       return !hiddenPaths.includes(currentPath);
@@ -104,10 +103,10 @@ export default {
   },
   mounted() {
     console.log('FloatingChatbotComponent mounted successfully!');
-    // Mensaje de bienvenida
+    
     this.addMessage({
       type: 'bot',
-      text: '¡Hola! Soy tu asistente IA. Puedo ayudarte a corregir y analizar textos. Envía tu texto y te daré feedback detallado.',
+      text: '¡Hola! Soy ProspecIA, tu asistente de prospectiva. Puedo ayudarte a corregir y analizar textos. Envía tu texto y te daré feedback detallado.',
       timestamp: new Date()
     });
   },
@@ -125,8 +124,7 @@ export default {
       if (!this.currentMessage.trim() || this.isTyping) return;
       
       const userMessage = this.currentMessage.trim();
-      
-      // Agregar mensaje del usuario
+
       this.addMessage({
         type: 'user',
         text: userMessage,
@@ -137,13 +135,11 @@ export default {
       this.isTyping = true;
       
       try {
-        // Crear prompt para Ollama
+        
         const prompt = this.createPrompt(userMessage);
-        
-        // Enviar a Ollama
+
         const response = await this.callOllama(prompt);
-        
-        // Agregar respuesta del bot
+
         this.addMessage({
           type: 'bot',
           text: response,
@@ -166,7 +162,7 @@ export default {
     },
     
     createPrompt(userText) {
-      return `Eres un profesor experto en análisis prospectivo y corrección de textos. Analiza el siguiente texto del estudiante y proporciona:
+      return `Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Analiza el siguiente texto del estudiante y proporciona:
 
 1. **Correcciones gramaticales y ortográficas** (si las hay)
 2. **Análisis de estructura y coherencia**
@@ -217,7 +213,7 @@ Responde en español de manera clara y estructurada.`;
     },
     
     formatMessage(text) {
-      // Convertir saltos de línea en <br> y hacer el texto más legible
+      
       return text
         .replace(/\n/g, '<br>')
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -241,10 +237,10 @@ Responde en español de manera clara y estructurada.`;
     handleKeydown(event) {
       if (event.key === 'Enter') {
         if (event.shiftKey) {
-          // Shift+Enter: permitir nueva línea
+          
           return;
         } else {
-          // Enter sin Shift: enviar mensaje
+          
           event.preventDefault();
           this.sendMessage();
         }
@@ -261,7 +257,7 @@ Responde en español de manera clara y estructurada.`;
   right: 20px;
   z-index: 9999;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  /* Debug styles - asegurar que sea visible */
+  
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
@@ -281,7 +277,7 @@ Responde en español de manera clara y estructurada.`;
   color: white;
   font-size: 24px;
   position: relative;
-  /* Debug styles - hacer más visible */
+  
   border: 3px solid #ff0000;
   animation: pulse 2s infinite;
 }
@@ -545,7 +541,6 @@ Responde en español de manera clara y estructurada.`;
   }
 }
 
-/* Scrollbar personalizado */
 .chatbot-messages::-webkit-scrollbar {
   width: 6px;
 }
@@ -564,7 +559,6 @@ Responde en español de manera clara y estructurada.`;
   background: #a8a8a8;
 }
 
-/* Responsive */
 @media (max-width: 480px) {
   .chatbot-window {
     width: 350px;
@@ -576,4 +570,4 @@ Responde en español de manera clara y estructurada.`;
     max-width: 230px;
   }
 }
-</style> 
+</style>

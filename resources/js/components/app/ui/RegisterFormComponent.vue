@@ -1,7 +1,6 @@
 <template>
     <div>
         <form
-            :action="storeUrls.register"
             @submit="clickRegister"
             method="POST">
             <input type="hidden" name="_token" :value="csrf_token">
@@ -43,7 +42,6 @@
                     v-bind:type="{ 'is-danger' : fields.first_name.error }"
                     :message="fields.first_name.error ? fields.first_name.msg : ''">
                     <b-input
-                        name="first_name"
                         size="is-large"
                         type="text"
                         :placeholder="capitalize(fields.first_name.placeholder)"
@@ -54,7 +52,6 @@
                     v-bind:type="{ 'is-danger' : fields.last_name.error }"
                     :message="fields.last_name.error ? fields.last_name.msg : ''">
                     <b-input
-                        name="last_name"
                         size="is-large"
                         type="text"
                         :placeholder="capitalize(fields.last_name.placeholder)"
@@ -65,18 +62,17 @@
                     v-bind:type="{ 'is-danger' : fields.document_id.error }"
                     :message="fields.document_id.error ? fields.document_id.msg : ''">
                     <b-input
-                        name="document_id"
                         size="is-large"
                         type="text"
                         :placeholder="capitalize(fields.document_id.placeholder)"
-                        v-model="document_id" />
+                        v-model="document_id"
+                        @input="validateNumericInput('document_id', $event)" />
                 </b-field>
 
                 <b-field
                     v-bind:type="{ 'is-danger' : fields.city.error }"
                     :message="fields.city.error ? fields.city.msg : ''">
                     <b-input
-                        name="city"
                         size="is-large"
                         type="text"
                         :placeholder="capitalize(fields.city.placeholder)"
@@ -90,7 +86,6 @@
                     v-bind:type="{ 'is-danger' : fields.company_name.error }"
                     :message="fields.company_name.error ? fields.company_name.msg : ''">
                     <b-input
-                        name="company_name"
                         size="is-large"
                         type="text"
                         :placeholder="capitalize(fields.company_name.placeholder)"
@@ -101,18 +96,17 @@
                     v-bind:type="{ 'is-danger' : fields.nit.error }"
                     :message="fields.nit.error ? fields.nit.msg : ''">
                     <b-input
-                        name="nit"
                         size="is-large"
                         type="text"
                         :placeholder="capitalize(fields.nit.placeholder)"
-                        v-model="nit" />
+                        v-model="nit"
+                        @input="validateNumericInput('nit', $event)" />
                 </b-field>
 
                 <b-field
                     v-bind:type="{ 'is-danger' : fields.company_city.error }"
                     :message="fields.company_city.error ? fields.company_city.msg : ''">
                     <b-input
-                        name="company_city"
                         size="is-large"
                         type="text"
                         :placeholder="capitalize(fields.company_city.placeholder)"
@@ -141,7 +135,6 @@
                                 {{ sector.text }}
                             </div>
                         </div>
-                        <input type="hidden" name="economic_sector" :value="economic_sector">
                     </div>
                 </b-field>
             </div>
@@ -151,7 +144,6 @@
                 v-bind:type="{ 'is-danger' : fields.user.error }"
                 :message="fields.user.error ? fields.user.msg : ''">
                 <b-input
-                    name="user"
                     size="is-large"
                     type="email"
                     placeholder="Correo electrónico"
@@ -162,7 +154,6 @@
                 v-bind:type="{ 'is-danger' : fields.password.error }"
                 :message="fields.password.error ? fields.password.msg : ''">
                 <b-input
-                    name="password"
                     size="is-large"
                     type="password"
                     :placeholder="capitalize(fields.password.placeholder)"
@@ -173,7 +164,6 @@
                 v-bind:type="{ 'is-danger' : !passwordMatch }"
                 :message="!passwordMatch ? 'Las contraseñas no coinciden' : ''">
                 <b-input
-                    name="confirm_password"
                     size="is-large"
                     type="password"  
                     :placeholder="capitalize(fields.confirm_password.placeholder)"
@@ -188,7 +178,6 @@
                     <label class="checkbox">
                         <input 
                             type="checkbox" 
-                            name="data_authorization" 
                             v-model="data_authorization"
                             @change="toggleDataAuthorization">
                         <span class="checkmark"></span>
@@ -431,6 +420,64 @@ export default {
         toggleAuthorizationText() {
             this.showAuthorizationText = !this.showAuthorizationText;
         },
+        validateNumericInput(fieldName, event) {
+            // Obtener el valor actual del input
+            let value = event.target.value;
+            
+            // Remover todos los caracteres que no sean números
+            const numericValue = value.replace(/\D/g, '');
+            
+            // Aplicar límites de longitud según el campo
+            let limitedValue = numericValue;
+            if (fieldName === 'document_id') {
+                // Cédula: máximo 10 dígitos
+                limitedValue = numericValue.slice(0, 10);
+                if (numericValue.length > 10) {
+                    this.fields.document_id.error = true;
+                    this.fields.document_id.msg = 'La cédula debe tener exactamente 10 dígitos';
+                } else if (numericValue.length === 10) {
+                    this.fields.document_id.error = false;
+                    this.fields.document_id.msg = '';
+                } else if (numericValue.length > 0) {
+                    this.fields.document_id.error = true;
+                    this.fields.document_id.msg = `La cédula debe tener 10 dígitos (actual: ${numericValue.length})`;
+                } else {
+                    this.fields.document_id.error = false;
+                    this.fields.document_id.msg = '';
+                }
+            } else if (fieldName === 'nit') {
+                // NIT: máximo 9 dígitos
+                limitedValue = numericValue.slice(0, 9);
+                if (numericValue.length > 9) {
+                    this.fields.nit.error = true;
+                    this.fields.nit.msg = 'El NIT debe tener exactamente 9 dígitos';
+                } else if (numericValue.length === 9) {
+                    this.fields.nit.error = false;
+                    this.fields.nit.msg = '';
+                } else if (numericValue.length > 0) {
+                    this.fields.nit.error = true;
+                    this.fields.nit.msg = `El NIT debe tener 9 dígitos (actual: ${numericValue.length})`;
+                } else {
+                    this.fields.nit.error = false;
+                    this.fields.nit.msg = '';
+                }
+            }
+            
+            // Solo actualizar si el valor cambió (para evitar bucles)
+            if (value !== limitedValue) {
+                // Actualizar el valor del campo correspondiente
+                if (fieldName === 'document_id') {
+                    this.document_id = limitedValue;
+                } else if (fieldName === 'nit') {
+                    this.nit = limitedValue;
+                }
+                
+                // Forzar la actualización del input
+                this.$nextTick(() => {
+                    event.target.value = limitedValue;
+                });
+            }
+        },
         clickRegister(e) {
             e.preventDefault();
             
@@ -446,8 +493,17 @@ export default {
                 this.fields.last_name.error = this.last_name === '';
                 this.fields.last_name.msg = this.last_name === '' ? 'Este campo es requerido' : '';
 
-                this.fields.document_id.error = this.document_id === '';
-                this.fields.document_id.msg = this.document_id === '' ? 'Este campo es requerido' : '';
+                // Validar cédula (10 dígitos)
+                if (this.document_id === '') {
+                    this.fields.document_id.error = true;
+                    this.fields.document_id.msg = 'La cédula es obligatoria';
+                } else if (this.document_id.length !== 10) {
+                    this.fields.document_id.error = true;
+                    this.fields.document_id.msg = `La cédula debe tener exactamente 10 dígitos (actual: ${this.document_id.length})`;
+                } else {
+                    this.fields.document_id.error = false;
+                    this.fields.document_id.msg = '';
+                }
 
                 this.fields.city.error = this.city === '';
                 this.fields.city.msg = this.city === '' ? 'Este campo es requerido' : '';
@@ -455,8 +511,17 @@ export default {
                 this.fields.company_name.error = this.company_name === '';
                 this.fields.company_name.msg = this.company_name === '' ? 'Este campo es requerido' : '';
 
-                this.fields.nit.error = this.nit === '';
-                this.fields.nit.msg = this.nit === '' ? 'Este campo es requerido' : '';
+                // Validar NIT (9 dígitos)
+                if (this.nit === '') {
+                    this.fields.nit.error = true;
+                    this.fields.nit.msg = 'El NIT es obligatorio';
+                } else if (this.nit.length !== 9) {
+                    this.fields.nit.error = true;
+                    this.fields.nit.msg = `El NIT debe tener exactamente 9 dígitos (actual: ${this.nit.length})`;
+                } else {
+                    this.fields.nit.error = false;
+                    this.fields.nit.msg = '';
+                }
 
                 this.fields.company_city.error = this.company_city === '';
                 this.fields.company_city.msg = this.company_city === '' ? 'Este campo es requerido' : '';
@@ -494,13 +559,13 @@ export default {
                         first_name: this.first_name,
                         last_name: this.last_name,
                         document_id: this.document_id,
-                        city: this.city
+                        city: this.city || ''
                     });
                 } else if (this.registration_type === 'company') {
                     Object.assign(data, {
                         company_name: this.company_name,
                         nit: this.nit,
-                        company_city: this.company_city,
+                        company_city: this.company_city || '',
                         economic_sector: this.economic_sector
                     });
                 }

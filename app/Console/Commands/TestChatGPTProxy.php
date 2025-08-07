@@ -15,11 +15,11 @@ class TestChatGPTProxy extends Command
         $this->info('🧪 Probando proxy de ChatGPT...');
 
         try {
-            // Simular una petición al proxy
+            
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
                 'Accept' => 'application/json'
-            ])->post('http://localhost/chatgpt/generate', [
+            ])->post('http:
                 'prompt' => 'Hola, ¿cómo estás?',
                 'model' => 'gpt-3.5-turbo',
                 'max_tokens' => 100,
@@ -45,4 +45,4 @@ class TestChatGPTProxy extends Command
 
         return 0;
     }
-} 
+}

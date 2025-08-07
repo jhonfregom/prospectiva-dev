@@ -7,11 +7,7 @@ use Illuminate\Database\Query\Expression;
 
 class CreateStatusUsersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
+    
     public function up()
     {
         Schema::create('status_users', function (Blueprint $table) {
@@ -24,11 +20,6 @@ class CreateStatusUsersTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('status_users');

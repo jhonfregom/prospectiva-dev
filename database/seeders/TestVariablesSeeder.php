@@ -10,12 +10,10 @@ use Illuminate\Support\Facades\DB;
 
 class TestVariablesSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    
     public function run(): void
     {
-        // Limpiar datos existentes y reiniciar auto-incremento
+        
         DB::statement('DELETE FROM variables WHERE id > 0');
         DB::statement('ALTER TABLE variables AUTO_INCREMENT = 1');
 

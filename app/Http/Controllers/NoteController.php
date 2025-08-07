@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class NoteController extends Controller
 {
-    /**
-     * Obtener notas del usuario actual
-     */
+    
     public function index(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -24,9 +22,6 @@ class NoteController extends Controller
         ]);
     }
 
-    /**
-     * Obtener la nota más reciente del usuario
-     */
     public function getLatest(Request $request): JsonResponse
     {
         $user = Auth::user();
@@ -39,15 +34,12 @@ class NoteController extends Controller
         ]);
     }
 
-    /**
-     * Crear una nueva nota
-     */
     public function store(Request $request): JsonResponse
     {
         $user = Auth::user();
         
         $request->validate([
-            'content' => 'required|string|max:10000', // Máximo 10,000 caracteres
+            'content' => 'required|string|max:10000', 
             'title' => 'nullable|string|max:255'
         ]);
 
@@ -64,9 +56,6 @@ class NoteController extends Controller
         ]);
     }
 
-    /**
-     * Actualizar una nota existente
-     */
     public function update(Request $request, $id): JsonResponse
     {
         $user = Auth::user();
@@ -99,9 +88,6 @@ class NoteController extends Controller
         ]);
     }
 
-    /**
-     * Eliminar una nota
-     */
     public function destroy($id): JsonResponse
     {
         $user = Auth::user();
@@ -124,4 +110,4 @@ class NoteController extends Controller
             'message' => 'Nota eliminada correctamente'
         ]);
     }
-} 
+}

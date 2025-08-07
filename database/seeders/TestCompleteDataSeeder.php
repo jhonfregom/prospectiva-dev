@@ -20,12 +20,10 @@ use Illuminate\Support\Facades\Hash;
 
 class TestCompleteDataSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    
     public function run(): void
     {
-        // Limpiar datos existentes para los usuarios específicos (en orden correcto)
+        
         DB::statement('DELETE FROM conclusions WHERE user_id IN (1, 2, 3, 4)');
         DB::statement('DELETE FROM scenarios WHERE user_id IN (1, 2, 3, 4)');
         DB::statement('DELETE FROM hypothesis WHERE user_id IN (1, 2, 3, 4)');
@@ -35,7 +33,6 @@ class TestCompleteDataSeeder extends Seeder
         DB::statement('DELETE FROM notes WHERE user_id IN (1, 2, 3, 4)');
         DB::statement('DELETE FROM traceability WHERE user_id IN (1, 2, 3, 4)');
 
-        // Reiniciar auto-incremento de todas las tablas
         DB::statement('ALTER TABLE variables AUTO_INCREMENT = 1');
         DB::statement('ALTER TABLE matriz AUTO_INCREMENT = 1');
         DB::statement('ALTER TABLE variables_map_analiyis AUTO_INCREMENT = 1');
@@ -45,9 +42,8 @@ class TestCompleteDataSeeder extends Seeder
         DB::statement('ALTER TABLE notes AUTO_INCREMENT = 1');
         DB::statement('ALTER TABLE traceability AUTO_INCREMENT = 1');
 
-        // 1. Crear usuarios de ejemplo con todos los nuevos campos
         $users = [
-            // Usuario Administrador (Natural)
+            
             [
                 'id' => 1,
                 'document_id' => 12345678,
@@ -55,12 +51,12 @@ class TestCompleteDataSeeder extends Seeder
                 'last_name' => 'Pérez',
                 'user' => 'admin',
                 'password' => Hash::make('password'),
-                'role' => 1, // Administrador
-                'status_users_id' => 1, // Activo
-                'economic_sector' => 1, // Tecnología
+                'role' => 1, 
+                'status_users_id' => 1, 
+                'economic_sector' => 1, 
                 'registration_type' => 'natural'
             ],
-            // Usuario Normal (Natural)
+            
             [
                 'id' => 2,
                 'document_id' => 87654321,
@@ -68,12 +64,12 @@ class TestCompleteDataSeeder extends Seeder
                 'last_name' => 'García',
                 'user' => 'usuario',
                 'password' => Hash::make('password'),
-                'role' => 0, // Usuario normal
-                'status_users_id' => 1, // Activo
-                'economic_sector' => 2, // Educación
+                'role' => 0, 
+                'status_users_id' => 1, 
+                'economic_sector' => 2, 
                 'registration_type' => 'natural'
             ],
-            // Usuario Empresa
+            
             [
                 'id' => 3,
                 'document_id' => 900123456,
@@ -81,12 +77,12 @@ class TestCompleteDataSeeder extends Seeder
                 'last_name' => 'Rodríguez',
                 'user' => 'empresa',
                 'password' => Hash::make('password'),
-                'role' => 0, // Usuario normal
-                'status_users_id' => 1, // Activo
-                'economic_sector' => 1, // Tecnología
+                'role' => 0, 
+                'status_users_id' => 1, 
+                'economic_sector' => 1, 
                 'registration_type' => 'company'
             ],
-            // Usuario Empresa 2
+            
             [
                 'id' => 4,
                 'document_id' => 800987654,
@@ -94,14 +90,13 @@ class TestCompleteDataSeeder extends Seeder
                 'last_name' => 'Martínez',
                 'user' => 'empresa2',
                 'password' => Hash::make('password'),
-                'role' => 0, // Usuario normal
-                'status_users_id' => 1, // Activo
-                'economic_sector' => 3, // Medio Ambiente
+                'role' => 0, 
+                'status_users_id' => 1, 
+                'economic_sector' => 3, 
                 'registration_type' => 'company'
             ]
         ];
 
-        // Actualizar o crear usuarios
         foreach ($users as $userData) {
             User::updateOrCreate(
                 ['id' => $userData['id']],
@@ -109,9 +104,8 @@ class TestCompleteDataSeeder extends Seeder
             );
         }
 
-        // 2. Crear registros de trazabilidad
         $traceabilityRecords = [
-            // Para el administrador
+            
             [
                 'id' => 1,
                 'user_id' => 1,
@@ -127,7 +121,7 @@ class TestCompleteDataSeeder extends Seeder
                 'results' => '0',
                 'state' => '1'
             ],
-            // Para el usuario normal
+            
             [
                 'id' => 2,
                 'user_id' => 2,
@@ -143,7 +137,7 @@ class TestCompleteDataSeeder extends Seeder
                 'results' => '0',
                 'state' => '1'
             ],
-            // Para la empresa 1
+            
             [
                 'id' => 3,
                 'user_id' => 3,
@@ -159,7 +153,7 @@ class TestCompleteDataSeeder extends Seeder
                 'results' => '0',
                 'state' => '1'
             ],
-            // Para la empresa 2
+            
             [
                 'id' => 4,
                 'user_id' => 4,
@@ -181,7 +175,6 @@ class TestCompleteDataSeeder extends Seeder
             Traceability::create($data);
         }
 
-        // 3. Crear notas para los usuarios
         $notes = [
             [
                 'id' => 1,
@@ -213,7 +206,6 @@ class TestCompleteDataSeeder extends Seeder
             Note::create($data);
         }
 
-        // 4. Crear variables para todos los usuarios
         $adminVariables = [
             [ 'id' => 1, 'id_variable' => 'V1', 'name_variable' => 'Tecnología Digital', 'description' => 'Avances en tecnologías digitales y su impacto en la sociedad', 'score' => 15, 'user_id' => 1, 'state' => '0', 'now_condition' => 'Infraestructura digital avanzada y conectividad total.', 'tried_id' => 1, 'edits_variable' => 2, 'edits_now_condition' => 1 ],
             [ 'id' => 2, 'id_variable' => 'V2', 'name_variable' => 'Cambio Climático', 'description' => 'Efectos del cambio climático en el medio ambiente', 'score' => 12, 'user_id' => 1, 'state' => '0', 'now_condition' => 'Aumento de eventos climáticos extremos en la región.', 'tried_id' => 1, 'edits_variable' => 1, 'edits_now_condition' => 1 ],
@@ -246,8 +238,7 @@ class TestCompleteDataSeeder extends Seeder
 
         foreach ($allVariables as $data) {
             $v = Variable::create($data);
-            
-            // Mapear IDs por usuario
+
             if ($data['user_id'] == 1) {
                 $adminVarIds[$data['id_variable']] = $v->id;
             } elseif ($data['user_id'] == 2) {
@@ -259,7 +250,6 @@ class TestCompleteDataSeeder extends Seeder
             }
         }
 
-        // 5. Matriz para el usuario administrador
         $adminMatriz = [
             ['id' => 1, 'id_matriz' => 1, 'id_variable' => $adminVarIds['V1'], 'id_resp_depen' => $adminVarIds['V2'], 'id_resp_influ' => 3, 'user_id' => 1, 'state' => '1', 'tried_id' => 1],
             ['id' => 2, 'id_matriz' => 1, 'id_variable' => $adminVarIds['V2'], 'id_resp_depen' => $adminVarIds['V1'], 'id_resp_influ' => 2, 'user_id' => 1, 'state' => '1', 'tried_id' => 1],
@@ -271,7 +261,6 @@ class TestCompleteDataSeeder extends Seeder
             ['id' => 8, 'id_matriz' => 1, 'id_variable' => $adminVarIds['V5'], 'id_resp_depen' => $adminVarIds['V1'], 'id_resp_influ' => 1, 'user_id' => 1, 'state' => '1', 'tried_id' => 1],
         ];
 
-        // Matriz para el usuario normal
         $userMatriz = [
             ['id' => 9, 'id_matriz' => 2, 'id_variable' => $userVarIds['V1'], 'id_resp_depen' => $userVarIds['V2'], 'id_resp_influ' => 2, 'user_id' => 2, 'state' => '1', 'tried_id' => 2],
             ['id' => 10, 'id_matriz' => 2, 'id_variable' => $userVarIds['V2'], 'id_resp_depen' => $userVarIds['V1'], 'id_resp_influ' => 2, 'user_id' => 2, 'state' => '1', 'tried_id' => 2],
@@ -284,7 +273,6 @@ class TestCompleteDataSeeder extends Seeder
             Matriz::create($data);
         }
 
-        // 6. Análisis de variables por zona
         $adminAnalyses = [
             [ 'id' => 1, 'zone_id' => 1, 'description' => 'Las variables de tecnología digital e inteligencia artificial muestran alta influencia y dependencia, posicionándolas como elementos clave del poder en el sistema.', 'score' => 85, 'user_id' => 1, 'state' => '1', 'tried_id' => 1, 'edits' => 2 ],
             [ 'id' => 2, 'zone_id' => 2, 'description' => 'El cambio climático presenta alta influencia pero baja dependencia, generando tensiones y conflictos en el sistema.', 'score' => 72, 'user_id' => 1, 'state' => '1', 'tried_id' => 1, 'edits' => 1 ],
@@ -304,9 +292,8 @@ class TestCompleteDataSeeder extends Seeder
             DB::table('variables_map_analiyis')->insert($data);
         }
 
-        // 7. Hipótesis para todos los usuarios
         $hypotheses = [
-            // Usuario 1 (Administrador)
+            
             [
                 'id' => 1, 'id_variable' => 5, 'zone_id' => 4, 'name_hypothesis' => 'H1',
                 'description' => 'Hipótesis sobre el impacto de la Inteligencia Artificial.',
@@ -327,7 +314,7 @@ class TestCompleteDataSeeder extends Seeder
                 'description' => 'Análisis alternativo del Cambio Climático.',
                 'secondary_hypotheses' => 'H1', 'user_id' => 1, 'state' => '0', 'tried_id' => 1, 'edits' => 0
             ],
-            // Usuario 2 (Normal)
+            
             [
                 'id' => 5, 'id_variable' => 8, 'zone_id' => 4, 'name_hypothesis' => 'H1',
                 'description' => 'Hipótesis h0 sobre comercio electrónico',
@@ -354,7 +341,6 @@ class TestCompleteDataSeeder extends Seeder
             Hypothesis::create($data);
         }
 
-        // 8. Escenarios para usuarios que los tienen
         $adminScenarios = [
             [ 'id' => 1, 'titulo' => 'Escenario Tecnológico Optimista', 'num_scenario' => 1, 'year1' => '2025', 'year2' => '2030', 'year3' => '2035', 'edits' => 2, 'edits_year1' => 1, 'edits_year2' => 1, 'edits_year3' => 0, 'state' => '1', 'user_id' => 1, 'tried_id' => 1 ],
             [ 'id' => 2, 'titulo' => 'Escenario de Transformación Digital', 'num_scenario' => 2, 'year1' => '2025', 'year2' => '2030', 'year3' => '2035', 'edits' => 1, 'edits_year1' => 1, 'edits_year2' => 0, 'edits_year3' => 0, 'state' => '1', 'user_id' => 1, 'tried_id' => 1 ],
@@ -374,7 +360,6 @@ class TestCompleteDataSeeder extends Seeder
             Scenarios::create($data);
         }
 
-        // 9. Conclusiones para usuarios que las tienen
         $adminConclusions = [
             [
                 'id' => 1,
@@ -418,4 +403,4 @@ class TestCompleteDataSeeder extends Seeder
         $this->command->info('   - empresa2 (Empresa - EcoGreen Industries)');
         $this->command->info('🔑 Contraseña para todos: password');
     }
-} 
+}

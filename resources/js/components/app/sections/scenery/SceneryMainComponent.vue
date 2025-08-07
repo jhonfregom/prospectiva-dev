@@ -18,7 +18,6 @@ import { useTextsStore } from '../../../../stores/texts';
 import StrategicScenarioTable from '../scenario/StrategicScenarioTable.vue';
 import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
-
 export default {
     components: {
         StrategicScenarioTable,
@@ -51,9 +50,7 @@ export default {
     },
     mounted() {
         this.sectionStore.setTitleSection('Escenarios');
-        // this.sectionStore.addDynamicButton('Nuevo', () => {
-        //     this.showModal = true;
-        // });
+
     },
 
 }

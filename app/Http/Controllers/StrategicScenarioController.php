@@ -10,7 +10,7 @@ use App\Models\Scenarios;
 
 class StrategicScenarioController extends Controller
 {
-    // Obtener el escenario 1 del usuario autenticado
+    
     public function show(): JsonResponse
     {
         $userId = Auth::id();
@@ -31,7 +31,6 @@ class StrategicScenarioController extends Controller
         ]);
     }
 
-    // Actualizar los campos year1, year2, year3, edits, state del escenario 1
     public function update(Request $request): JsonResponse
     {
         $userId = Auth::id();
@@ -69,4 +68,4 @@ class StrategicScenarioController extends Controller
             'message' => 'Escenario estratégico actualizado correctamente.'
         ]);
     }
-} 
+}

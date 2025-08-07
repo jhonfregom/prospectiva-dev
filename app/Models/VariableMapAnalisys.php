@@ -22,6 +22,5 @@ class VariableMapAnalisys extends Model
         'edits',
     ];
 
-    // Deshabilitar el auto-increment para permitir asignación manual de IDs
     public $incrementing = false;
 }

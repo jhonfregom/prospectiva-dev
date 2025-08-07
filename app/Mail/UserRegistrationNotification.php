@@ -15,13 +15,15 @@ class UserRegistrationNotification extends Mailable
     use Queueable, SerializesModels;
 
     public $newUser;
+    public $activationToken;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $newUser)
+    public function __construct(User $newUser, $activationToken)
     {
         $this->newUser = $newUser;
+        $this->activationToken = $activationToken;
     }
 
     /**

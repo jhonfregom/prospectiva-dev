@@ -96,14 +96,13 @@ export default {
       return textsStore.analysis.description.replace(/de \d+ variables/i, `de ${count} variables`);
     });
 
-    // Cargar análisis guardados al montar
     async function loadSavedAnalysis() {
       try {
         const res = await axios.get('/variables-map-analysis/user');
         
         if (res.data && res.data.data) {
           res.data.data.forEach(analysis => {
-            // El backend ya convierte el ID a nombre, así que usamos directamente
+            
             const row = rows.value.find(r => r.key === analysis.zone_id);
             
             if (row) {
@@ -114,41 +113,38 @@ export default {
           });
         }
       } catch (e) {
-        // Eliminar todos los console.log y console.error en este archivo
+        
       }
     }
 
-    // Guardar o crear análisis en backend
     async function saveOrCreateAnalysis(row, isManualSave = false) {
       try {
         const payload = {
           description: row.comment || '',
           score: Number(row.score) || 0,
-          zone_id: row.key, // Enviar el nombre de la zona directamente
-          state: String(row.state || 0), // Convertir a string para el enum
-          is_manual_save: isManualSave // Indicar si es guardado manual
+          zone_id: row.key, 
+          state: String(row.state || 0), 
+          is_manual_save: isManualSave 
         };
         const res = await axios.post('/variables-map-analysis/save', payload);
         if (res.data && res.data.data) {
           row.state = res.data.data.state;
         }
       } catch (e) {
-        // Eliminar todos los console.log y console.error en este archivo
+        
       }
     }
 
-    // Al hacer click en el botón
     async function handleEditSave(row) {
-      if (row.state === '1') return; // Verificar si está bloqueado
+      if (row.state === '1') return; 
       
       if (editingRow.value === row.key) {
-        // Guardar manualmente
-        debouncedSaveAnalysis.cancel(); // Cancelar guardado automático pendiente
+        
+        debouncedSaveAnalysis.cancel(); 
         await saveOrCreateAnalysis(row, true);
         editingRow.value = null;
       } else {
-        // Entrar en modo edición
-        // Solo crear análisis vacío si no existe ninguno
+
         if (!row.comment && !row.score && row.state === '0') {
           await saveOrCreateAnalysis(row, true);
         }
@@ -162,19 +158,15 @@ export default {
       
       await graphicsStore.fetchGraphicsData();
       updateVariablesByZone();
-      
-      // Cargar análisis después de que todo esté inicializado
+
       await loadSavedAnalysis();
-      
-      // Verificar el estado después de cargar
+
     });
 
-    // Actualiza las variables por zona en tiempo real
     watch(data, () => {
       updateVariablesByZone();
     }, { immediate: true });
 
-    // Watcher para actualizar el puntaje cuando cambie el comentario
     watch(rows, () => {
       rows.value.forEach(row => {
         if (row.comment !== undefined) {
@@ -202,24 +194,21 @@ export default {
     }
 
     function onCommentInput(row) {
-      // El watcher se encarga de actualizar el puntaje automáticamente
-      // Solo guardar automáticamente si hay contenido y estamos en modo edición
+
       if (row.comment && row.comment.trim().length > 0 && editingRow.value === row.key) {
         debouncedSaveAnalysis(row);
       }
     }
 
-    // Función debounced para guardar automáticamente
     const debouncedSaveAnalysis = debounce(async (row) => {
-      // Solo guardar si estamos en modo edición y hay contenido
+      
       if (editingRow.value === row.key && row.comment && row.comment.trim().length > 0) {
         await saveOrCreateAnalysis(row, false);
       }
-    }, 1000); // Guardar después de 1 segundo de inactividad
+    }, 1000); 
 
-    // Función para cancelar el guardado automático
     const cancelAutoSave = debounce(() => {
-      // Esta función cancela el guardado automático
+      
     }, 0);
 
     function updateVariablesByZone() {
@@ -229,15 +218,15 @@ export default {
       const centroX = maxX / 2;
       const centroY = maxY / 2;
       rows.value.forEach(r => r.variables = []);
-      // Limpiar marcas de frontera
+      
       rows.value.forEach(r => r.frontierVars = []);
       data.value.forEach(v => {
         let zona = '';
         let esFrontera = false;
-        // Detectar frontera
+        
         if (v.dependencia === centroX || v.influencia === centroY) {
           esFrontera = true;
-          // Prioridad: Conflicto > Poder > Salida > Indiferencia
+          
           if (v.dependencia > centroX && v.influencia >= centroY) zona = 'conflicto';
           else if (v.dependencia <= centroX && v.influencia > centroY) zona = 'poder';
           else if (v.dependencia > centroX && v.influencia < centroY) zona = 'salida';
@@ -321,4 +310,4 @@ export default {
     color: #48c774 !important;
     font-weight: 600;
 }
-</style> 
+</style>

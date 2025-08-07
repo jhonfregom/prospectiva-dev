@@ -19,7 +19,7 @@ export default {
             type: Array,
             required: true,
             validator: (items) => {
-                //Validate if every item has label and action
+                
                 return items.every(
                     (item) => item.label && typeof item.active === 'boolean' && typeof item.action === 'function'
                 )

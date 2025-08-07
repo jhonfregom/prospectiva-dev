@@ -39,4 +39,4 @@ class TestGeminiController extends Command
         
         return 0;
     }
-} 
+}

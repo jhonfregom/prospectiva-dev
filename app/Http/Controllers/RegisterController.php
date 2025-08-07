@@ -124,25 +124,9 @@ class RegisterController extends Controller
 
     private function findNextAvailableId()
     {
-        // Obtener todos los IDs existentes ordenados
-        $existingIds = User::orderBy('id')->pluck('id')->toArray();
-        
-        // Si no hay usuarios, empezar con ID 1
-        if (empty($existingIds)) {
-            return 1;
-        }
-        
-        // Buscar el primer hueco disponible
-        $expectedId = 1;
-        foreach ($existingIds as $existingId) {
-            if ($existingId > $expectedId) {
-                return $expectedId;
-            }
-            $expectedId = $existingId + 1;
-        }
-        
-        // Si no hay huecos, usar el siguiente ID después del último
-        return $expectedId;
+        // Usar MAX() para obtener el ID más alto de manera eficiente
+        $maxId = User::max('id');
+        return $maxId ? $maxId + 1 : 1;
     }
 
     private function getEconomicSectorText($sectorId)
@@ -153,68 +137,98 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
-        // Validar tipo de registro
-        $request->validate([
-            'registration_type' => 'required|in:natural,company',
-            'user' => 'required|string|email|max:255|unique:users,user',
-            'password' => 'required|string|min:8',
-            'confirm_password' => 'required|string|min:8|same:password',
-        ]);
-
-        // Validaciones específicas según el tipo de registro
-        if ($request->registration_type === 'natural') {
+        try {
+            // Validar tipo de registro y campos comunes
             $request->validate([
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:100',
-                'document_id' => 'required|string|max:20|unique:users,document_id',
+                'registration_type' => 'required|in:natural,company',
+                'user' => 'required|string|email|max:255|unique:users,user',
+                'password' => 'required|string|min:8',
+                'confirm_password' => 'required|string|min:8|same:password',
             ]);
-        } else {
-            $request->validate([
-                'company_name' => 'required|string|max:255',
-                'nit' => 'required|string|max:20|unique:users,document_id',
-                'economic_sector' => 'required|integer|between:1,21',
-            ]);
-        }
 
-        // Obtener el próximo ID disponible
-        $nextId = $this->findNextAvailableId();
-        
-        // Crear usuario según el tipo de registro
-        if ($request->registration_type === 'natural') {
-            $user = User::create([
-                'id' => $nextId,
-                'document_id' => $request->document_id,
-                'first_name' => $request->first_name,
-                'last_name' => $request->last_name,
-                'user' => $request->user,
-                'password' => bcrypt($request->password),
-                'registration_type' => 'natural',
-                'economic_sector' => $request->economic_sector ?? null,
-                'status_users_id' => 2, // Estado inactivo por defecto
+            // Validaciones específicas según el tipo de registro
+            if ($request->registration_type === 'natural') {
+                $request->validate([
+                    'first_name' => 'required|string|max:255',
+                    'last_name' => 'required|string|max:100',
+                    'document_id' => 'required|string|size:10|unique:users,document_id|regex:/^\d+$/',
+                    'city' => 'nullable|string|max:255',
+                ], [
+                    'document_id.required' => 'El documento de identidad es obligatorio.',
+                    'document_id.size' => 'La cédula debe tener exactamente 10 dígitos.',
+                    'document_id.regex' => 'La cédula solo debe contener números.',
+                    'document_id.unique' => 'Esta cédula ya está registrada en el sistema.',
+                ]);
+            } else {
+                $request->validate([
+                    'company_name' => 'required|string|max:255',
+                    'nit' => 'required|string|size:9|unique:users,document_id|regex:/^\d+$/',
+                    'economic_sector' => 'required|integer|between:1,30',
+                    'company_city' => 'nullable|string|max:255',
+                ], [
+                    'nit.required' => 'El NIT es obligatorio.',
+                    'nit.size' => 'El NIT debe tener exactamente 9 dígitos.',
+                    'nit.regex' => 'El NIT solo debe contener números.',
+                    'nit.unique' => 'Este NIT ya está registrado en el sistema.',
+                    'economic_sector.between' => 'El sector económico debe estar entre 1 y 30.',
+                ]);
+            }
+
+            // Obtener el próximo ID disponible
+            $nextId = $this->findNextAvailableId();
+            
+            // Crear usuario según el tipo de registro
+            if ($request->registration_type === 'natural') {
+                $userData = [
+                    'id' => $nextId,
+                    'document_id' => $request->document_id,
+                    'first_name' => $request->first_name,
+                    'last_name' => $request->last_name,
+                    'user' => $request->user,
+                    'password' => bcrypt($request->password),
+                    'registration_type' => 'natural',
+                    'economic_sector' => null,
+                    'city' => $request->city,
+                    'status_users_id' => 2,
+                ];
+                $user = User::create($userData);
+            } else {
+                $userData = [
+                    'id' => $nextId,
+                    'document_id' => $request->nit,
+                    'first_name' => $request->company_name,
+                    'last_name' => '',
+                    'user' => $request->user,
+                    'password' => bcrypt($request->password),
+                    'registration_type' => 'company',
+                    'economic_sector' => $request->economic_sector,
+                    'city' => $request->company_city,
+                    'status_users_id' => 2,
+                ];
+                $user = User::create($userData);
+            }
+            
+            // Crear la ruta de trazabilidad para el usuario
+            $traceability = Traceability::getOrCreateForUser($user->id);
+            
+            session()->flash('success', __('register.success'));
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => __('register.success'),
+                'redirect' => route('login')
             ]);
-        } else {
-            $user = User::create([
-                'id' => $nextId,
-                'document_id' => $request->nit,
-                'first_name' => $request->company_name,
-                'last_name' => '', // Campo vacío para empresas
-                'user' => $request->user,
-                'password' => bcrypt($request->password),
-                'registration_type' => 'company',
-                'economic_sector' => $request->economic_sector,
-                'status_users_id' => 2, // Estado inactivo por defecto
-            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error en registro: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Línea del error: ' . $e->getLine());
+            \Log::error('Archivo del error: ' . $e->getFile());
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ], 500);
         }
-        
-        // Crear la ruta de trazabilidad para el usuario
-        Traceability::getOrCreateForUser($user->id);
-        
-        session()->flash('success', __('register.success'));
-        
-        return response()->json([
-            'status' => 'success',
-            'message' => __('register.success'),
-            'redirect' => route('login')
-        ]);
     }
 }

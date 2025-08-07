@@ -3,20 +3,18 @@ import { ref, computed } from 'vue';
 import axios from 'axios';
 
 export const useMatrizStore = defineStore('matriz', () => {
-    // Estado
+    
     const variables = ref([]);
     const isLoading = ref(false);
     const matrizData = ref({});
-    const isLocked = ref(false); // Nuevo estado para el bloqueo
+    const isLocked = ref(false); 
 
-    // Computed
     const getMatrizData = computed(() => matrizData.value);
 
-    // Métodos
     async function fetchMatrizData() {
         isLoading.value = true;
         try {
-            // Volvemos a separar las llamadas para asegurar la compatibilidad
+            
             const variablesResponse = await axios.get('/variables');
             if (variablesResponse.data && variablesResponse.data.data) {
                 variables.value = variablesResponse.data.data;
@@ -33,8 +31,7 @@ export const useMatrizStore = defineStore('matriz', () => {
                         newMatrizData[key] = item.id_resp_influ;
                     });
                 }
-                
-                // Después de cargar los datos guardados, inicializar los valores por defecto
+
                 variables.value.forEach(varOrigen => {
                     variables.value.forEach(varDestino => {
                         if (varOrigen.id !== varDestino.id) {
@@ -56,7 +53,7 @@ export const useMatrizStore = defineStore('matriz', () => {
     }
 
     function updateMatrizValue(origenId, destinoId, valor) {
-        if (isLocked.value) return; // No permitir cambios si está bloqueado
+        if (isLocked.value) return; 
         const key = `${origenId}-${destinoId}`;
         matrizData.value[key] = valor;
     }
@@ -80,7 +77,7 @@ export const useMatrizStore = defineStore('matriz', () => {
                     }
 
                     matrizPayload.push({
-                        // id_matriz ya no se envía, se genera en el backend
+                        
                         id_variable: origenId,
                         id_resp_depen: destinoId,
                         id_resp_influ: value
@@ -93,8 +90,7 @@ export const useMatrizStore = defineStore('matriz', () => {
             }
 
             const response = await axios.post('/matriz', { matriz: matrizPayload });
-            
-            // Después de guardar, actualizamos el estado de bloqueo
+
             isLocked.value = true;
 
             const successMessage = textsStore ? textsStore.getText('matriz.save_success') : 'Matriz guardada correctamente.';
@@ -112,11 +108,11 @@ export const useMatrizStore = defineStore('matriz', () => {
     return {
         variables,
         isLoading,
-        isLocked, // Exponer el nuevo estado
+        isLocked, 
         matrizData,
         getMatrizData,
         fetchMatrizData,
         updateMatrizValue,
         saveMatriz
     };
-}); 
+});

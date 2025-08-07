@@ -12,8 +12,7 @@ class TestOpenAIKey extends Command
     public function handle()
     {
         $this->info('🔑 Verificando API key de OpenAI...');
-        
-        // Verificar diferentes formas de obtener la API key
+
         $envKey = env('OPENAI_API_KEY');
         $configKey = config('services.openai.api_key');
         
@@ -24,8 +23,7 @@ class TestOpenAIKey extends Command
             $this->line("   Longitud de la key: " . strlen($envKey) . " caracteres");
             $this->line("   Inicio de la key: " . substr($envKey, 0, 10) . "...");
         }
-        
-        // Verificar si la key está vacía o es null
+
         if (empty($envKey)) {
             $this->error("   ❌ La API key está vacía o no se está leyendo correctamente");
             return 1;
@@ -37,14 +35,13 @@ class TestOpenAIKey extends Command
         }
         
         $this->info("   ✅ API key configurada correctamente");
-        
-        // Probar una llamada simple a la API
+
         $this->info("\n🧪 Probando llamada a la API...");
         try {
             $response = \Illuminate\Support\Facades\Http::withHeaders([
                 'Authorization' => 'Bearer ' . $envKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(10)->post('https://api.openai.com/v1/chat/completions', [
+            ])->timeout(10)->post('https:
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
                     ['role' => 'user', 'content' => 'Hola']
@@ -66,4 +63,4 @@ class TestOpenAIKey extends Command
         
         return 0;
     }
-} 
+}

@@ -3,6 +3,7 @@
         <!-- Letrero informativo -->
         <info-banner-component
             :description="textsStore.getText('variables_section.description')"
+            class="description-banner"
         />
         
         <!-- MiniStepper eliminado -->
@@ -82,30 +83,29 @@
         v-if="!cerrado"
         @click="confirmarCerrar"
         :disabled="cerrado"
-      >{{ textsStore.getText('variables_section.close_button') }}</button>
+      >{{ textsStore.getText('variables_section.close_button') || 'Cerrar' }}</button>
       <button
         class="cerrar-btn"
         v-else-if="state !== null && state === '0'"
         @click="confirmarRegresar"
-      >{{ textsStore.getText('variables_section.return_button') }}</button>
+      >{{ textsStore.getText('variables_section.return_button') || 'Regresar' }}</button>
     </div>
     <!-- Modal de confirmación -->
     <div v-if="mostrarModal" class="modal-confirm">
       <div class="modal-content">
-        <p>{{ textsStore.getText('variables_section.close_confirm_message') }}</p>
-        <button @click="cerrarModulo">{{ textsStore.getText('variables_section.confirm_yes') }}</button>
-        <button @click="mostrarModal = false">{{ textsStore.getText('variables_section.confirm_no') }}</button>
+        <p class="modal-text">{{ textsStore.getText('variables_section.close_confirm_message') || '¿Estás seguro de cerrar el módulo? No podrás editar más.' }}</p>
+        <button @click="cerrarModulo">{{ textsStore.getText('variables_section.confirm_yes') || 'Sí, cerrar' }}</button>
+        <button @click="mostrarModal = false">{{ textsStore.getText('variables_section.confirm_no') || 'Cancelar' }}</button>
       </div>
     </div>
     <!-- Modal de confirmación para regresar -->
     <div v-if="mostrarModalRegresar" class="modal-confirm">
       <div class="modal-content">
-        <p>{{ textsStore.getText('variables_section.return_confirm_message') }}</p>
-        <button @click="regresarModulo">{{ textsStore.getText('variables_section.confirm_yes_return') }}</button>
-        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('variables_section.confirm_no') }}</button>
+        <p class="modal-text">{{ textsStore.getText('variables_section.return_confirm_message') || '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.' }}</p>
+        <button @click="regresarModulo">{{ textsStore.getText('variables_section.confirm_yes_return') || 'Sí, regresar' }}</button>
+        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('variables_section.confirm_no') || 'Cancelar' }}</button>
       </div>
     </div>
-    
 
 </template>
 
@@ -113,12 +113,13 @@
 import { useVariablesStore } from '../../../../stores/variables';
 import { useSectionStore } from '../../../../stores/section';
 import { useTextsStore } from '../../../../stores/texts';
+import { useTraceabilityStore } from '../../../../stores/traceability';
 import VariableFormModal from './VariableFormModal.vue';
 import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../../../../stores/session';
-import axios from 'axios'; // Added axios import
+import axios from 'axios'; 
 import { computed } from 'vue';
 
 const CERRADO_KEY_PREFIX = 'variables_cerrado_';
@@ -133,16 +134,15 @@ export default {
         const variablesStore = useVariablesStore();
         const sectionStore = useSectionStore();
         const textsStore = useTextsStore();
+        const traceabilityStore = useTraceabilityStore();
         const storeSession = useSessionStore();
         const { variables, isLoading } = storeToRefs(variablesStore);
 
-        // Computed property para verificar si el usuario es administrador
         const isAdmin = computed(() => {
             const user = JSON.parse(localStorage.getItem('user')) || {};
             return user.role === 1;
         });
 
-        // Computed property para los steps con textos del store
         const steps = computed(() => [
             { key: 'variables', label: textsStore.getText('steps.variables'), icon: 'fas fa-list' },
             { key: 'matrix', label: textsStore.getText('steps.matrix'), icon: 'fas fa-th' },
@@ -161,6 +161,7 @@ export default {
             variablesStore, 
             sectionStore,
             textsStore,
+            traceabilityStore,
             variables,
             isLoading,
             storeSession,
@@ -177,21 +178,20 @@ export default {
             cerrado: false,
             mostrarModal: false,
             mostrarModalRegresar: false,
-            state: null, // Se inicializa como null hasta cargar desde traceability
+            state: null, 
             steps: []
         };
     },
 
     created() {
-        // Crear función debounced para actualizar automáticamente
+        
         this.debouncedUpdate = this.debounce(async (row) => {
-            // Solo actualizar si no está bloqueada y no está en modo edición manual
+            
             if (row.state !== '1' && this.editingRow !== row.id) {
                 await this.updateVariableInServer(row);
             }
         }, 1000);
 
-        // Leer estado de cerrado desde localStorage
         const user = JSON.parse(localStorage.getItem('user')) || {};
         const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
         const cerradoValue = localStorage.getItem(cerradoKey);
@@ -201,9 +201,9 @@ export default {
     async mounted() {
         this.sectionStore.setTitleSection(this.textsStore.getText('variables.title'));
         await this.variablesStore.fetchVariables();
-        // Cargar el valor de tried desde traceability
+        
         await this.loadTriedValue();
-        // Inicializar 'cerrado' leyendo de localStorage directamente
+        
         if (typeof window !== 'undefined') {
             const user = JSON.parse(localStorage.getItem('user')) || {};
             const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
@@ -212,15 +212,48 @@ export default {
         this.sectionStore.addDynamicButton(this.textsStore.getText('variables_section.table.new'), () => {
             this.showModal = true;
         });
+
+        console.log('Debug textos botón cerrar:', {
+            close_button: this.textsStore.getText('variables_section.close_button'),
+            return_button: this.textsStore.getText('variables_section.return_button'),
+            close_confirm_message: this.textsStore.getText('variables_section.close_confirm_message'),
+            confirm_yes: this.textsStore.getText('variables_section.confirm_yes'),
+            confirm_no: this.textsStore.getText('variables_section.confirm_no')
+        });
+
+        window.addEventListener('route-created', this.handleRouteCreated);
     },
 
     beforeUnmount() {
-        // Limpiar botones dinámicos al desmontar el componente
+        
         this.sectionStore.clearDynamicButtons();
+        
+        window.removeEventListener('route-created', this.handleRouteCreated);
     },
 
     methods: {
-        // Función debounce helper
+        
+        handleRouteCreated() {
+            console.log('handleRouteCreated ejecutado');
+
+            this.$forceUpdate();
+
+            this.loadTriedValue();
+
+            this.sectionStore.clearDynamicButtons();
+            this.sectionStore.addDynamicButton(this.textsStore.getText('variables_section.table.new'), () => {
+                this.showModal = true;
+            });
+
+            console.log('Debug textos después de route-created:', {
+                close_button: this.textsStore.getText('variables_section.close_button'),
+                return_button: this.textsStore.getText('variables_section.return_button'),
+                close_confirm_message: this.textsStore.getText('variables_section.close_confirm_message'),
+                confirm_yes: this.textsStore.getText('variables_section.confirm_yes'),
+                confirm_no: this.textsStore.getText('variables_section.confirm_no')
+            });
+        },
+
         debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -239,19 +272,19 @@ export default {
 
         handleDescriptionChange(event, row) {
             row.score = event.target.value.split(/\s+/).filter(word => word.length > 0).length;
-            // this.debouncedUpdate(row); // Comentado temporalmente
+            
         },
 
         async handleEditSave(row) {
             if (row.state === '1') return;
 
             if (this.editingRow === row.id) {
-                // Guardar - incrementar edits_variable para ediciones manuales
+                
                 row.edits_variable = (row.edits_variable || 0) + 1;
                 await this.updateVariableInServer(row);
                 this.editingRow = null;
             } else {
-                // Entrar en modo edición
+                
                 this.editingRow = row.id;
             }
         },
@@ -321,16 +354,18 @@ export default {
         async cerrarModulo() {
           this.mostrarModal = false;
           try {
-            // Cambia edits_variable a 3 en todas las variables y actualiza en el backend
+            
             for (const v of this.variables) {
               v.edits_variable = 3;
               await this.updateVariableInServer(v);
             }
-            // Guardar acción pendiente en localStorage
+
+            await this.traceabilityStore.markSectionCompleted('variables');
+
             localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'variables' }));
-            // Regresa a la vista principal
+            
             this.storeSession.setActiveContent('main');
-            // Guardar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+            
             const user = JSON.parse(localStorage.getItem('user')) || {};
             const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
             localStorage.setItem(cerradoKey, 'true');
@@ -365,21 +400,21 @@ export default {
         async regresarModulo() {
             this.mostrarModalRegresar = false;
             try {
-                // Incrementar state a 1
+                
                 await this.incrementTried();
-                // Volver a cargar el valor actualizado de state
+                
                 await this.loadTriedValue();
-                // Cambia edits_variable y state a 0 en todas las variables y actualiza en el backend
+                
                 for (const v of this.variables) {
                     v.edits_variable = 0;
                     v.state = 0;
                     await this.updateVariableInServer(v);
                 }
-                // Guardar acción pendiente en localStorage
+                
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'variables' }));
-                // Regresa a la vista principal
+                
                 this.storeSession.setActiveContent('main');
-                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
                 localStorage.removeItem(cerradoKey);
@@ -395,11 +430,20 @@ export default {
 };
 </script>
 
-
-
 <style lang="scss" scoped>
 .variables-container {
     padding: 20px;
+}
+
+.description-banner {
+    text-align: justify !important;
+    line-height: 1.6;
+}
+
+.modal-text {
+    text-align: justify !important;
+    line-height: 1.5;
+    margin-bottom: 20px;
 }
 
 .description-column {
@@ -430,13 +474,11 @@ export default {
     font-weight: 600;
 }
 
-/* Centrado vertical SOLO en filas de datos (tbody td) de la tabla de variables */
 :deep(.b-table .table tbody td) {
     vertical-align: middle !important;
     height: 80px !important;
 }
 
-/* Centrado de encabezados de tabla */
 :deep(.b-table .table thead th) {
     text-align: center !important;
 }

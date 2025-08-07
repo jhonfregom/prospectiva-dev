@@ -15,16 +15,14 @@ class TestEmailSystem extends Command
     public function handle()
     {
         $this->info('🧪 Probando sistema de emails...');
-        
-        // Verificar configuración de email
+
         $this->info('📧 Configuración de email:');
         $this->line('   MAIL_MAILER: ' . config('mail.default'));
         $this->line('   MAIL_HOST: ' . config('mail.mailers.smtp.host'));
         $this->line('   MAIL_PORT: ' . config('mail.mailers.smtp.port'));
         $this->line('   MAIL_USERNAME: ' . config('mail.mailers.smtp.username'));
         $this->line('   MAIL_FROM_ADDRESS: ' . config('mail.from.address'));
-        
-        // Obtener administradores
+
         $admins = User::where('role', 1)->get();
         $this->info("\n👥 Administradores encontrados: " . $admins->count());
         
@@ -36,8 +34,7 @@ class TestEmailSystem extends Command
         foreach ($admins as $admin) {
             $this->line("   - {$admin->first_name} {$admin->last_name} ({$admin->user})");
         }
-        
-        // Obtener un usuario de prueba (no administrador)
+
         $testUser = User::where('role', 0)->first();
         
         if (!$testUser) {
@@ -49,7 +46,7 @@ class TestEmailSystem extends Command
         $this->line("   Usuario de prueba: {$testUser->first_name} {$testUser->last_name}");
         
         try {
-            // Enviar email a cada administrador
+            
             foreach ($admins as $admin) {
                 Mail::to($admin->user)->send(new UserRegistrationNotification($testUser));
                 $this->line("   ✅ Email enviado a: {$admin->user}");
@@ -66,4 +63,4 @@ class TestEmailSystem extends Command
         
         return 0;
     }
-} 
+}

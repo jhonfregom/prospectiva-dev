@@ -16,23 +16,20 @@ class TestNotesAPI extends Command
     {
         $this->info('🧪 Probando API de notas simulando frontend...');
 
-        // Probar con usuario 1
         $user = User::find(1);
         Auth::login($user);
         
         $this->info("👤 Usuario: {$user->user} (ID: {$user->id})");
-        
-        // Simular petición GET para obtener notas
+
         $this->info("\n📝 Probando GET /notes");
         try {
-            $response = Http::get('http://127.0.0.1:8000/notes');
+            $response = Http::get('http:
             $this->info("Status: " . $response->status());
             $this->info("Response: " . $response->body());
         } catch (\Exception $e) {
             $this->error("Error GET: " . $e->getMessage());
         }
 
-        // Simular petición POST para crear nota
         $this->info("\n📝 Probando POST /notes");
         try {
             $noteData = [
@@ -40,7 +37,7 @@ class TestNotesAPI extends Command
                 'content' => 'Contenido de prueba creado vía API el ' . now()->format('Y-m-d H:i:s')
             ];
             
-            $response = Http::post('http://127.0.0.1:8000/notes', $noteData);
+            $response = Http::post('http:
             $this->info("Status: " . $response->status());
             $this->info("Response: " . $response->body());
             
@@ -48,8 +45,7 @@ class TestNotesAPI extends Command
                 $data = $response->json();
                 if ($data['success']) {
                     $this->info("✅ Nota creada con ID: " . $data['data']['id']);
-                    
-                    // Verificar que la nota se creó en la BD
+
                     $note = \App\Models\Note::find($data['data']['id']);
                     if ($note) {
                         $this->info("✅ Nota encontrada en BD: {$note->title}");
@@ -65,4 +61,4 @@ class TestNotesAPI extends Command
         Auth::logout();
         return 0;
     }
-} 
+}

@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Schema::create('zones', function (Blueprint $table) {
@@ -24,11 +22,6 @@ return new class extends Migration
         DB::statement("ALTER TABLE zones MODIFY id INT AUTO_INCREMENT");
     }
 
-    
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('zones');

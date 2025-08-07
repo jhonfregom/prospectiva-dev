@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class GeminiProxyController extends Controller
 {
-    protected $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent';
+    protected $baseUrl = 'https:
     protected $apiKey;
 
     public function __construct()
@@ -29,7 +29,6 @@ class GeminiProxyController extends Controller
             $model = $request->input('model', 'gemini-pro');
             $temperature = $request->input('temperature', 0.7);
 
-            // Si no hay API key configurada, usar fallback
             if (empty($this->apiKey)) {
                 return $this->useFallback($prompt, $temperature);
             }
@@ -43,7 +42,7 @@ class GeminiProxyController extends Controller
                     [
                         'parts' => [
                             [
-                                'text' => 'Eres un asistente IA amigable y útil. Responde en español de manera natural y concisa. ' . $prompt
+                                                                 'text' => 'Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Responde en español de manera natural y concisa. ' . $prompt
                             ]
                         ]
                     ]
@@ -52,7 +51,7 @@ class GeminiProxyController extends Controller
                     'temperature' => $temperature,
                     'topK' => 40,
                     'topP' => 0.95,
-                    'maxOutputTokens' => 8192, // Sin límite práctico
+                    'maxOutputTokens' => 8192, 
                     'candidateCount' => 1
                 ],
                 'safetySettings' => [
@@ -94,8 +93,7 @@ class GeminiProxyController extends Controller
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-                
-                // Verificar si es error de cuota agotada
+
                 $errorData = $response->json();
                 Log::info('Gemini error data', ['errorData' => $errorData]);
                 
@@ -112,14 +110,13 @@ class GeminiProxyController extends Controller
                 }
                 
                 Log::info('Gemini falling back to generic error');
-                // Fallback para otros errores
+                
                 return $this->useFallback($prompt, $temperature);
             }
 
         } catch (\Exception $e) {
             Log::error('Gemini Proxy error', ['error' => $e->getMessage()]);
-            
-            // Fallback
+
             return $this->useFallback($request->input('prompt'), 0.7);
         }
     }
@@ -142,4 +139,4 @@ class GeminiProxyController extends Controller
             'available' => !empty($this->apiKey)
         ]);
     }
-} 
+}

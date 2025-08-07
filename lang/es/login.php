@@ -9,7 +9,7 @@ return [
     |
     */
 
-    'forgot_password'   => 'restablecer',
+    'forgot_password'   => '¿Olvidaste tu contraseña? Restablécelo aquí',
     'login'             => 'Iniciar sesión',
     'need_help'         => '¿ayuda?',
     'sign_up'           => 'registrarse',

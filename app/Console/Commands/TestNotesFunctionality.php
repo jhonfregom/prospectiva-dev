@@ -20,20 +20,16 @@ class TestNotesFunctionality extends Command
         
         foreach ($users as $user) {
             $this->info("\n👤 Probando usuario: {$user->first_name} {$user->last_name} (ID: {$user->id})");
-            
-            // Simular autenticación
+
             Auth::login($user);
-            
-            // Obtener notas del usuario
+
             $notes = Note::getByUser($user->id);
             $this->line("   📝 Notas encontradas: " . $notes->count());
-            
-            // Mostrar detalles de las notas
+
             foreach ($notes as $note) {
                 $this->line("      - ID: {$note->id}, Título: {$note->title}, Contenido: " . substr($note->content, 0, 50) . "...");
             }
-            
-            // Verificar que las notas pertenecen al usuario correcto
+
             $wrongNotes = Note::where('user_id', '!=', $user->id)->count();
             if ($wrongNotes > 0) {
                 $this->error("   ❌ ERROR: Se encontraron {$wrongNotes} notas que no pertenecen a este usuario");
@@ -44,4 +40,4 @@ class TestNotesFunctionality extends Command
         
         $this->info("\n✅ Prueba completada");
     }
-} 
+}

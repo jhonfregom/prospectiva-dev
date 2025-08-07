@@ -4,7 +4,7 @@ import { useTextsStore } from './texts';
 
 export const useInitialConditionsStore = defineStore('initialConditions', {
     state: () => ({
-        conditions: [], // [{ id, id_variable, name_variable, now_condition, state }]
+        conditions: [], 
         isLoading: false,
         error: null
     }),
@@ -37,7 +37,7 @@ export const useInitialConditionsStore = defineStore('initialConditions', {
                 const response = await axios.put(`/initial-conditions/${id}`, payload);
                 
                 if (response.data.status === 200) {
-                    // Recargar datos para obtener el estado actualizado
+                    
                     await this.fetchConditions();
                     return { success: true };
                 }
@@ -49,7 +49,7 @@ export const useInitialConditionsStore = defineStore('initialConditions', {
         },
         async closeAllConditions() {
             try {
-                // Usar el endpoint masivo
+                
                 await axios.post('/initial-conditions/close-all');
                 await this.fetchConditions();
                 return { success: true };
@@ -62,4 +62,4 @@ export const useInitialConditionsStore = defineStore('initialConditions', {
             this.error = null;
         }
     }
-}); 
+});

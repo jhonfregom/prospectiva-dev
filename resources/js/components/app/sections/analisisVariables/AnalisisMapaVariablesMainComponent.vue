@@ -1,7 +1,7 @@
 <template>
     <div v-if="traceabilityStore.isLoading || !seccionesValidas" style="min-height:160px;"></div>
     <div v-else class="analisis-mapa-variables-container">
-        <b-message type="is-info" has-icon>
+        <b-message type="is-info" has-icon class="description-message">
             {{ descriptionWithCount }}
         </b-message>
         <b-table
@@ -77,27 +77,27 @@
         v-if="!cerrado"
         @click="confirmarCerrar"
         :disabled="cerrado"
-      >Cerrar</button>
+      >{{ textsStore.getText('analysis_section.close_button') }}</button>
       <button
         class="cerrar-btn"
         v-else-if="state !== null && state === '0'"
         @click="confirmarRegresar"
-      >Regresar</button>
+      >{{ textsStore.getText('analysis_section.return_button') }}</button>
     </div>
     <!-- Modal de confirmación -->
     <div v-if="mostrarModal" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Estás seguro de cerrar el módulo? No podrás editar más.</p>
-        <button @click="cerrarModulo">Sí, cerrar</button>
-        <button @click="mostrarModal = false">Cancelar</button>
+        <p class="modal-text">{{ textsStore.getText('analysis_section.close_confirm_message') }}</p>
+        <button @click="cerrarModulo">{{ textsStore.getText('analysis_section.confirm_yes') }}</button>
+        <button @click="mostrarModal = false">{{ textsStore.getText('analysis_section.confirm_no') }}</button>
       </div>
     </div>
     <!-- Modal de confirmación para regresar -->
     <div v-if="mostrarModalRegresar" class="modal-confirm">
       <div class="modal-content">
-        <p>¿Estás seguro de regresar el módulo? Podrás editar y guardar nuevamente.</p>
-        <button @click="regresarModulo">Sí, regresar</button>
-        <button @click="mostrarModalRegresar = false">Cancelar</button>
+        <p class="modal-text">{{ textsStore.getText('analysis_section.return_confirm_message') }}</p>
+        <button @click="regresarModulo">{{ textsStore.getText('analysis_section.confirm_yes_return') }}</button>
+        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('analysis_section.confirm_no') }}</button>
       </div>
     </div>
 </template>
@@ -129,12 +129,12 @@ export default {
             mostrarModal: false,
             mostrarModalRegresar: false,
             cerrado: false,
-            state: null, // Se inicializa como null hasta cargar desde traceability
-            debouncedSaveAnalysis: null, // Se inicializará en mounted
+            state: null, 
+            debouncedSaveAnalysis: null, 
         };
     },
     created() {
-        // Leer estado de cerrado desde localStorage
+        
         const user = JSON.parse(localStorage.getItem('user')) || {};
         const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
         const cerradoValue = localStorage.getItem(cerradoKey);
@@ -149,19 +149,18 @@ export default {
         const traceabilityStore = useTraceabilityStore();
         const { rows } = storeToRefs(analysisStore);
         const { data } = storeToRefs(graphicsStore);
-        const editingRow = ref(null); // Usar ref para reactividad
+        const editingRow = ref(null); 
         
         const descriptionWithCount = computed(() => {
             const count = data.value ? data.value.length : 0;
             return textsStore.getText('analysis.description').replace(/de \d+ variables/i, `de ${count} variables`);
         });
-        // --- NUEVO: Validación extra de secciones válidas ---
+        
         const seccionesValidas = computed(() => {
             const secciones = traceabilityStore.availableSections;
             return secciones && secciones.analysis === true;
         });
-        // --- FIN NUEVO ---
-        
+
         return {
             analysisStore,
             textsStore,
@@ -180,9 +179,9 @@ export default {
         this.sectionStore.setTitleSection(this.textsStore.getText('analysis.title'));
         this.loadVariables();
         this.loadSavedAnalysis();
-        // Cargar el valor de tried desde traceability
+        
         this.loadTriedValue();
-        // Inicializar el debouncedSaveAnalysis
+        
         this.debouncedSaveAnalysis = debounce(async (row) => {
             if (row.state !== '1') {
                 await this.saveOrCreateAnalysis(row, false);
@@ -191,9 +190,9 @@ export default {
     },
 
     beforeUnmount() {
-        // Limpiar botones dinámicos al desmontar el componente
+        
         this.sectionStore.clearDynamicButtons();
-        // Limpiar el debounce
+        
         if (this.debouncedSaveAnalysis) {
             this.debouncedSaveAnalysis.cancel();
         }
@@ -218,19 +217,17 @@ export default {
         },
         async loadVariables() {
             try {
-                // Cargar los datos de gráficos que contienen las variables por zona
-                await this.graphicsStore.fetchGraphicsData();
                 
-                // Verificar que tenemos datos de la ruta actual
+                await this.graphicsStore.fetchGraphicsData();
+
                 if (!this.data || this.data.length === 0) {
                     console.warn('No hay datos de variables para la ruta actual');
                     return;
                 }
-                
-                // Asignar las variables a las zonas correspondientes
+
                 this.rows.forEach(row => {
                     const zoneVariables = this.data.filter(variable => {
-                        // Mapear las claves de zona a los nombres completos
+                        
                         const zoneMapping = {
                             'poder': 'ZONA DE PODER',
                             'conflicto': 'ZONA DE CONFLICTO',
@@ -242,8 +239,7 @@ export default {
                     
                     row.variables = zoneVariables;
                 });
-                
-                // Debug: mostrar las variables por zona
+
                 console.log('Variables por zona:', this.rows.map(row => ({
                     zona: row.key,
                     variables: row.variables.map(v => v.codigo)
@@ -283,12 +279,12 @@ export default {
         handleCommentChange(row) {
             const words = row.comment ? row.comment.split(/\s+/).filter(word => word.length > 0) : [];
             row.score = words.length;
-            // Usar debounce para evitar llamadas excesivas
+            
             this.debouncedSaveAnalysis(row);
         },
         async saveOrCreateAnalysis(row, isManualSave = false) {
             try {
-                // Mapear la zona del frontend al nombre completo de la zona
+                
                 const zoneMapping = {
                     'poder': 'ZONA DE PODER',
                     'conflicto': 'ZONA DE CONFLICTO',
@@ -306,7 +302,7 @@ export default {
                 const result = await this.analysisStore.saveAnalysis(analysisData);
                 if (result.success && result.data) {
                     row.state = result.data.state;
-                    // Solo recargar los datos si es un guardado manual
+                    
                     if (isManualSave) {
                         await this.loadSavedAnalysis();
                     }
@@ -324,7 +320,7 @@ export default {
                         const result = await this.analysisStore.updateAnalysis(existingAnalysis.id, {
                             description: row.comment || '',
                             score: Number(row.score) || 0,
-                            state: '1' // Bloquear
+                            state: '1' 
                         });
                         if (result.success && result.data) {
                             row.state = result.data.state;
@@ -340,7 +336,7 @@ export default {
         async handleEditSave(row) {
             if (row.state === '1') return;
             if (this.editingRow === row.key) {
-                // Cancelar el debounce antes de guardar manualmente
+                
                 if (this.debouncedSaveAnalysis) {
                 this.debouncedSaveAnalysis.cancel();
                 }
@@ -364,17 +360,19 @@ export default {
         },
         async cerrarModulo() {
             this.mostrarModal = false;
-            // Bloquear todos los análisis en el backend y store
+            
             const result = await this.analysisStore.closeAllAnalyses();
             if (result.success) {
-                // Guardar acción pendiente en localStorage
+                
+                await this.traceabilityStore.markSectionCompleted('analysis');
+
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'analysis' }));
                 this.$buefy.toast.open({
                     message: 'Módulo de análisis de variables cerrado correctamente',
                     type: 'is-success'
                 });
                 this.sessionStore.setActiveContent('main');
-                // Guardar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
                 localStorage.setItem(cerradoKey, 'true');
@@ -389,21 +387,21 @@ export default {
         async regresarModulo() {
             this.mostrarModalRegresar = false;
             try {
-                // Reabrir todos los análisis en el backend y store
+                
                 const result = await this.analysisStore.reopenAllAnalyses();
                 if (result.success) {
-                // Incrementar tried a 2
+                
                 await this.incrementTried();
-                // Volver a cargar el valor actualizado de tried
+                
                 await this.loadTriedValue();
-                // Guardar acción pendiente en localStorage
+                
                 localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'analysis' }));
                 this.$buefy.toast.open({
                     message: 'Módulo de análisis de variables reabierto correctamente',
                     type: 'is-success'
                 });
                 this.sessionStore.setActiveContent('main');
-                // Eliminar estado de cerrado en localStorage y cambiar la bandera después de volver al main
+                
                 const user = JSON.parse(localStorage.getItem('user')) || {};
                 const cerradoKey = CERRADO_KEY_PREFIX + (user.id || 'anon');
                 localStorage.removeItem(cerradoKey);
@@ -447,7 +445,7 @@ export default {
 
 <style scoped>
 .analisis-mapa-variables-container {
-    position: relative; /* Para posicionar el botón de cerrar */
+    position: relative; 
 }
 
 .variables-container {
@@ -477,6 +475,17 @@ export default {
     margin-bottom: 20px;
 }
 
+.description-message {
+    text-align: justify !important;
+    line-height: 1.6;
+}
+
+.modal-text {
+    text-align: justify !important;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
 .has-text-danger {
     color: #ff3860 !important;
     font-weight: 600;
@@ -494,13 +503,11 @@ export default {
     font-weight: 600;
 }
 
-/* Centrado vertical SOLO en filas de datos (tbody td) de la tabla de análisis mapa de variables */
 :deep(.b-table .table tbody td) {
     vertical-align: middle !important;
     height: 80px !important;
 }
 
-/* Centrar textareas en la columna de análisis */
 .textarea-container {
     display: flex;
     justify-content: center;
@@ -509,7 +516,6 @@ export default {
     height: 100%;
 }
 
-/* Centrar el contenido del textarea */
 :deep(.textarea-container .b-input[type="textarea"]) {
     text-align: center !important;
     display: flex;
@@ -517,7 +523,6 @@ export default {
     justify-content: center;
 }
 
-/* Asegurar que el textarea esté centrado dentro de su contenedor */
 :deep(.textarea-container .b-input[type="textarea"] textarea) {
     text-align: center !important;
     resize: vertical;

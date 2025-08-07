@@ -7,36 +7,26 @@ use App\Models\EconomicSector;
 
 class CheckEconomicSectors extends Command
 {
-    protected $signature = 'economic-sectors:check';
-    protected $description = 'Verificar que los sectores económicos se cargaron correctamente';
+    
+    protected $signature = 'check:economic-sectors';
+
+    protected $description = 'Verificar los IDs de los sectores económicos';
 
     public function handle()
     {
-        $this->info('🔍 Verificando sectores económicos...');
+        $this->info('Sectores económicos en la base de datos:');
+        $this->info('ID | Nombre');
+        $this->info('---|-------');
         
-        try {
-            $sectors = EconomicSector::active()->ordered()->get();
-            
-            if ($sectors->count() > 0) {
-                $this->info("✅ Se encontraron {$sectors->count()} sectores económicos:");
-                
-                foreach ($sectors as $sector) {
-                    $this->line("   ID: {$sector->id} - {$sector->name}");
-                }
-                
-                $this->info('');
-                $this->info('🎯 API endpoint disponible en: /economic-sectors');
-                
-            } else {
-                $this->warn('⚠️  No se encontraron sectores económicos');
-                $this->info('Ejecuta: php artisan migrate para crear la tabla');
-            }
-            
-        } catch (\Exception $e) {
-            $this->error('❌ Error al verificar sectores económicos:');
-            $this->line("   {$e->getMessage()}");
+        $sectors = EconomicSector::orderBy('id')->get(['id', 'name']);
+        
+        foreach ($sectors as $sector) {
+            $this->line($sector->id . ' | ' . $sector->name);
         }
         
-        return 0;
+        $this->info('');
+        $this->info('Total de sectores: ' . $sectors->count());
+        $this->info('ID mínimo: ' . $sectors->min('id'));
+        $this->info('ID máximo: ' . $sectors->max('id'));
     }
-} 
+}

@@ -52,7 +52,6 @@ const lastStep = ref(getPersistedStep());
 const animating = ref(false);
 const isStoreInitialized = ref(false);
 
-// Inicializar el store de traceability
 onMounted(async () => {
   try {
     await traceabilityStore.initialize();
@@ -63,7 +62,6 @@ onMounted(async () => {
   }
 });
 
-// Calcula el paso activo basado en las secciones disponibles para usuarios rol 0
 const currentActiveStep = computed(() => {
   if (!isStoreInitialized.value) {
     return props.modelValue;
@@ -256,10 +254,10 @@ function getTooltipText(stepLabel) {
   color: #7c3aed;
 }
 .step.is-enabled {
-  color: #7c3aed; /* Color para burbujas habilitadas */
+  color: #7c3aed; 
 }
 .step.is-disabled {
-  color: #d1d5db; /* Color para burbujas deshabilitadas */
+  color: #d1d5db; 
   cursor: not-allowed;
 }
 .step.is-disabled .step-circle {
@@ -299,4 +297,4 @@ function getTooltipText(stepLabel) {
   margin-bottom: 2px;
   white-space: nowrap;
 }
-</style> 
+</style>

@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Schema::table('scenarios', function (Blueprint $table) {
@@ -21,13 +19,10 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('scenarios', function (Blueprint $table) {
             $table->dropColumn(['year1', 'year2', 'year3', 'edits_year1', 'edits_year2', 'edits_year3']);
         });
     }
-}; 
+};

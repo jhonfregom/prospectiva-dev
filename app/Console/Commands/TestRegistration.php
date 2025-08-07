@@ -15,10 +15,8 @@ class TestRegistration extends Command
     {
         $this->info('🧪 Probando registro de usuarios...');
 
-        // Limpiar usuarios de prueba anteriores
         User::where('user', 'like', 'test_%')->delete();
 
-        // Probar registro de usuario natural
         $this->info("\n👤 Probando registro de usuario natural...");
         try {
             $naturalUser = User::create([
@@ -37,7 +35,6 @@ class TestRegistration extends Command
             return 1;
         }
 
-        // Probar registro de usuario empresa
         $this->info("\n🏢 Probando registro de usuario empresa...");
         try {
             $companyUser = User::create([
@@ -56,7 +53,6 @@ class TestRegistration extends Command
             return 1;
         }
 
-        // Verificar usuarios creados
         $this->info("\n📋 Verificando usuarios creados:");
         $users = User::where('user', 'like', 'test_%')->get();
         foreach ($users as $user) {
@@ -66,4 +62,4 @@ class TestRegistration extends Command
         $this->info("\n🎉 ¡Prueba de registro completada exitosamente!");
         return 0;
     }
-} 
+}

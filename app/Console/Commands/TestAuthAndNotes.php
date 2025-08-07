@@ -16,28 +16,23 @@ class TestAuthAndNotes extends Command
     {
         $this->info('🧪 Probando autenticación y notas...');
 
-        // Probar con diferentes usuarios
         $users = User::whereIn('id', [1, 2, 3, 4])->get();
         
         foreach ($users as $user) {
             $this->line("\n👤 Probando con usuario: {$user->user} (ID: {$user->id})");
-            
-            // Simular login del usuario
+
             Auth::login($user);
-            
-            // Verificar autenticación
+
             $this->info("   🔐 Autenticado: " . (Auth::check() ? 'SÍ' : 'NO'));
             $this->info("   👤 Usuario actual: " . (Auth::user() ? Auth::user()->user : 'NINGUNO'));
-            
-            // Obtener notas del usuario
+
             $userNotes = Note::where('user_id', $user->id)->get();
             $this->info("   📝 Notas del usuario: {$userNotes->count()}");
             
             foreach ($userNotes as $note) {
                 $this->line("      - ID: {$note->id} | Título: '{$note->title}'");
             }
-            
-            // Probar el controlador
+
             $controller = new \App\Http\Controllers\NoteController();
             $request = new \Illuminate\Http\Request();
             
@@ -62,7 +57,6 @@ class TestAuthAndNotes extends Command
             Auth::logout();
         }
 
-        // Verificar todas las notas
         $this->info("\n📊 Todas las notas en la BD:");
         $allNotes = Note::all();
         foreach ($allNotes as $note) {
@@ -71,4 +65,4 @@ class TestAuthAndNotes extends Command
 
         return 0;
     }
-} 
+}

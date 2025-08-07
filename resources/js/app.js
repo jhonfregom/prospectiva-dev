@@ -53,6 +53,9 @@ app.component('main-app', MainAppComponent);
 import RegisterFormComponent from './components/app/ui/RegisterFormComponent.vue';
 app.component('register-form', RegisterFormComponent);
 
+import RestorePasswordFormComponent from './components/app/ui/RestorePasswordFormComponent.vue';
+app.component('restore-password-form', RestorePasswordFormComponent);
+
 import FloatingBubbleComponent from './components/app/ui/FloatingBubbleComponent.vue';
 app.component('floating-bubble-component', FloatingBubbleComponent);
 //Mount the app

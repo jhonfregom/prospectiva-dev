@@ -15,29 +15,16 @@ use App\Models\Traceability;
 
 class DeleteUserData extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
+    
     protected $signature = 'user:delete-data {user_id} {--force : Forzar eliminación sin confirmación}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Elimina todos los registros relacionados con un usuario específico';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
         $userId = $this->argument('user_id');
         $force = $this->option('force');
 
-        // Verificar si el usuario existe
         $user = User::find($userId);
         if (!$user) {
             $this->error("Usuario con ID {$userId} no encontrado.");
@@ -58,7 +45,6 @@ class DeleteUserData extends Command
         try {
             DB::beginTransaction();
 
-            // Contar registros antes de eliminar
             $counts = [
                 'variables' => Variable::where('user_id', $userId)->count(),
                 'matriz' => Matriz::where('user_id', $userId)->count(),
@@ -74,34 +60,26 @@ class DeleteUserData extends Command
                 $this->line("  - {$table}: {$count} registros");
             }
 
-            // Eliminar registros en orden (respetando claves foráneas)
             $this->info("Eliminando registros...");
 
-            // 1. Eliminar conclusions (depende de hypothesis)
             $conclusionsDeleted = Conclusion::where('user_id', $userId)->delete();
             $this->info("  - Conclusions eliminados: {$conclusionsDeleted}");
 
-            // 2. Eliminar scenarios (depende de hypothesis)
             $scenariosDeleted = Scenarios::where('user_id', $userId)->delete();
             $this->info("  - Scenarios eliminados: {$scenariosDeleted}");
 
-            // 3. Eliminar hypothesis
             $hypothesisDeleted = Hypothesis::where('user_id', $userId)->delete();
             $this->info("  - Hypothesis eliminados: {$hypothesisDeleted}");
 
-            // 4. Eliminar variables_map_analysis
             $variablesMapDeleted = VariableMapAnalisys::where('user_id', $userId)->delete();
             $this->info("  - Variables Map Analysis eliminados: {$variablesMapDeleted}");
 
-            // 5. Eliminar matriz
             $matrizDeleted = Matriz::where('user_id', $userId)->delete();
             $this->info("  - Matriz eliminados: {$matrizDeleted}");
 
-            // 6. Eliminar variables
             $variablesDeleted = Variable::where('user_id', $userId)->delete();
             $this->info("  - Variables eliminados: {$variablesDeleted}");
 
-            // 7. Eliminar traceability
             $traceabilityDeleted = Traceability::where('user_id', $userId)->delete();
             $this->info("  - Traceability eliminados: {$traceabilityDeleted}");
 

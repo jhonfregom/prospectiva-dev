@@ -30,7 +30,7 @@ export const useStrategicScenarioStore = defineStore('strategicScenario', {
         async updateScenario(numScenario, payload) {
             this.loading = true;
             try {
-                // El backend decide si crea o actualiza
+                
                 const res = await axios.post('/scenarios', { ...payload, num_scenario: numScenario });
                 if (numScenario == 1) {
                     this.scenario1 = res.data.data;
@@ -53,37 +53,32 @@ export const useStrategicScenarioStore = defineStore('strategicScenario', {
         async saveScenario(numScenario, yearField, value) {
             this.loading = true;
             try {
-                // Obtener el escenario actual para los valores por defecto
-                const currentScenario = this[`scenario${numScenario}`];
                 
-                // Determinar qué contador de edición incrementar
+                const currentScenario = this[`scenario${numScenario}`];
+
                 let editsField = 'edits_year1';
                 if (yearField === 'year2') {
                     editsField = 'edits_year2';
                 } else if (yearField === 'year3') {
                     editsField = 'edits_year3';
                 }
-                
-                // Incrementar el contador correspondiente
+
                 const currentEdits = currentScenario?.[editsField] || 0;
                 const newEdits = currentEdits + 1;
-                
-                // Preparar el payload con el campo específico y los campos obligatorios
+
                 const payload = {
                     num_scenario: numScenario,
                     [yearField]: value,
                     edits: currentScenario?.edits || 0,
                     state: currentScenario?.state || 0,
-                    // Incluir los contadores de edición específicos con el incremento
+                    
                     edits_year1: yearField === 'year1' ? newEdits : (currentScenario?.edits_year1 || 0),
                     edits_year2: yearField === 'year2' ? newEdits : (currentScenario?.edits_year2 || 0),
                     edits_year3: yearField === 'year3' ? newEdits : (currentScenario?.edits_year3 || 0)
                 };
-                
-                // El backend decide si crea o actualiza
+
                 const res = await axios.post('/scenarios', payload);
-                
-                // Recargar los datos para obtener el estado actualizado
+
                 await this.fetchScenarios();
                 
                 this.error = null;
@@ -118,4 +113,4 @@ export const useStrategicScenarioStore = defineStore('strategicScenario', {
             }
         }
     }
-}); 
+});

@@ -57,7 +57,6 @@ export default {
       { key: 'nueva', label: 'Nueva', icon: 'fas fa-star' },
     ];
 
-    // Función para calcular los límites de los ejes
     function getAxisLimits(points, minX = 10, minY = 12) {
       let maxX = minX, maxY = minY;
       points.forEach(p => {
@@ -72,10 +71,8 @@ export default {
       };
     }
 
-    // Función para calcular el centro de la cruz
     function getCrossCenter(points, maxX, maxY) {
-      // Puedes usar la media de los valores o el punto medio del rango
-      // Aquí usamos el punto medio del rango
+
       return {
         x: maxX / 2,
         y: maxY / 2
@@ -84,19 +81,18 @@ export default {
 
     function renderChart() {
       if (chartInstance) chartInstance.destroy();
-      // Usar datos externos si están presentes
+      
       const usedData = props.externalData && props.externalData.length > 0 ? props.externalData : data.value;
       if (!usedData || usedData.length === 0) return;
-      
-      // Verificar que el canvas existe
+
       if (!chartCanvas.value) {
         console.error('Canvas no encontrado');
         return;
       }
       
       const points = usedData.map(item => ({
-        x: item.dependencia, // Eje X: dependencia
-        y: item.influencia,  // Eje Y: influencia
+        x: item.dependencia, 
+        y: item.influencia,  
         label: item.id_variable || item.codigo || ''
       }));
       const { maxX, maxY, minX, minY } = getAxisLimits(points);
@@ -129,7 +125,7 @@ export default {
             },
             annotation: {
               annotations: {
-                // Línea diagonal negra
+                
                 diagonal: {
                   type: 'line',
                   borderColor: 'black',
@@ -142,7 +138,7 @@ export default {
                     display: false
                   }
                 },
-                // Línea roja vertical (cruz)
+                
                 crossVertical: {
                   type: 'line',
                   borderColor: 'red',
@@ -153,7 +149,7 @@ export default {
                   yMax: maxY,
                   borderDash: [6, 6]
                 },
-                // Línea roja horizontal (cruz)
+                
                 crossHorizontal: {
                   type: 'line',
                   borderColor: 'red',
@@ -164,7 +160,7 @@ export default {
                   xMax: maxX,
                   borderDash: [6, 6]
                 },
-                // Zona de Poder
+                
                 zonaPoder: {
                   type: 'label',
                   xValue: cross.x * 0.3,
@@ -183,7 +179,7 @@ export default {
                   },
                   rotation: 0
                 },
-                // Zona de Indiferencia
+                
                 zonaIndiferencia: {
                   type: 'label',
                   xValue: cross.x * 0.3,
@@ -202,7 +198,7 @@ export default {
                   },
                   rotation: 0
                 },
-                // Zona de Conflicto
+                
                 zonaConflicto: {
                   type: 'label',
                   xValue: cross.x * 1.7,
@@ -221,7 +217,7 @@ export default {
                   },
                   rotation: 0
                 },
-                // Zona de Salida
+                
                 zonaSalida: {
                   type: 'label',
                   xValue: cross.x * 1.7,
@@ -271,19 +267,18 @@ export default {
   }
 
       onMounted(async () => {
-      // Solo cambiar el título si no está en modo readonly (modal)
+      
       if (!props.readonly) {
         sectionStore.setTitleSection(textsStore.graphics.title);
       }
       if (!props.externalData) {
         await graphicsStore.fetchGraphicsData();
       }
-      // Esperar a que el DOM esté listo antes de renderizar
+      
       await nextTick();
       renderChart();
     });
 
-    // Forzar render cuando cambian los datos externos o el modal se muestra
     watch(() => props.externalData, async () => {
       await nextTick();
       renderChart();
@@ -333,4 +328,4 @@ canvas {
 <!--
 IMPORTANTE: Instala el plugin de anotaciones de Chart.js si no lo tienes:
 npm install chartjs-plugin-annotation
---> 
+-->

@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+    
     public function up(): void
     {
         Schema::create('variables', function (Blueprint $table) {
@@ -22,7 +20,7 @@ return new class extends Migration
             $table->integer('score');
             $table->integer('user_id')->nullable();
             $table->enum('state', ['0', '1'])->default('0');
-            $table->text('now_condition')->nullable(); // Default value for now_condition
+            $table->text('now_condition')->nullable(); 
             $table->integer('tried_id')->nullable();
             $table->dateTime('created_at')->default(new Expression('CURRENT_TIMESTAMP'));
             $table->dateTime('updated_at')->default(new Expression('CURRENT_TIMESTAMP'));
@@ -50,13 +48,9 @@ return new class extends Migration
 
         });
 
-        //Add autoincrement to id
         DB::statement("ALTER TABLE variables MODIFY id INT AUTO_INCREMENT");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('variables');

@@ -8,12 +8,12 @@ use Illuminate\Support\Facades\Log;
 
 class OpenRouterProxyController extends Controller
 {
-    protected $baseUrl = 'https://openrouter.ai/api/v1/chat/completions';
+    protected $baseUrl = 'https:
     protected $apiKey;
 
     public function __construct()
     {
-        $this->apiKey = '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';
+        $this->apiKey = config('services.openrouter.api_key', env('OPENROUTER_API_KEY'));
     }
 
     public function generate(Request $request)
@@ -43,7 +43,7 @@ class OpenRouterProxyController extends Controller
             ])->timeout(60)->post($this->baseUrl, [
                 'model' => $model,
                 'messages' => [
-                    ['role' => 'system', 'content' => 'Eres un asistente IA profesional, responde en español de manera natural y concisa.'],
+                                         ['role' => 'system', 'content' => 'Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Responde en español de manera natural y concisa.'],
                     ['role' => 'user', 'content' => $prompt]
                 ],
                 'temperature' => $temperature,

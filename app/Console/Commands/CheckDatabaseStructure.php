@@ -95,8 +95,7 @@ class CheckDatabaseStructure extends Command
                     $this->warn("   ⚠️  Columnas extra: " . implode(', ', $extraColumns));
                 }
             }
-            
-            // Verificar claves foráneas
+
             $this->checkForeignKeys($tableName);
         }
         
@@ -158,4 +157,4 @@ class CheckDatabaseStructure extends Command
             }
         }
     }
-} 
+}

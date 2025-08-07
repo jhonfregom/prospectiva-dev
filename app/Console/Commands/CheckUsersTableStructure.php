@@ -6,25 +6,13 @@ use Illuminate\Console\Command;
 
 class CheckUsersTableStructure extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
+    
     protected $signature = 'app:check-users-table-structure';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Command description';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
-        //
+        
     }
 }

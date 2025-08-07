@@ -9,9 +9,7 @@ export const useFieldsStore = defineStore('fields',{
         }
     },
     actions: {
-        /**
-         * @param objFields Object
-         */
+        
         setFields(objFields){
             this.participant = objFields.participant;
         }

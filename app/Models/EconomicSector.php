@@ -21,9 +21,6 @@ class EconomicSector extends Model
         'sort_order' => 'integer'
     ];
 
-    /**
-     * Obtener sectores activos ordenados
-     */
     public static function getActiveSectors()
     {
         return self::where('is_active', true)
@@ -31,17 +28,11 @@ class EconomicSector extends Model
                    ->get();
     }
 
-    /**
-     * Scope para sectores activos
-     */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    /**
-     * Scope para ordenar por sort_order
-     */
     public function scopeOrdered($query)
     {
         return $query->orderBy('sort_order');

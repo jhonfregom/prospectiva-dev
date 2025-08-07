@@ -15,25 +15,20 @@ class LoginController extends Controller
     {
         if( Auth::check() )
         {
-            //TODO use '/' if it's not necessary welcome page
+            
             return redirect('/app');
         }
 
         return view('login.login');
     }
 
-    /**
-     * Handle an authentication attempt.
-     * @param  \Illuminate\Http\Request $request
-     * @return Response
-     */
     public function authenticate(Request $request): JsonResponse
     {
         $credentials = $request->only('user', 'password');
         $credentials['status_users_id'] = StateUser::STATUS_ACTIVE;
 
         if (Auth::attempt($credentials)) {
-            // Authentication passed...
+            
             $user = Auth::user();
             return response()->json(
                 array(

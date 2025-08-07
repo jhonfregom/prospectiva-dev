@@ -45,7 +45,6 @@
          <span class="option-text">{{ textsStore.getText('floating_bubble.information') }}</span>
        </div>
 
-
     </div>
 
          <!-- Modal de Notas -->
@@ -153,8 +152,7 @@
        >
          <div class="modal-header">
            <div class="header-content">
-             <h3>🦙 Asistente IA Llama 3</h3>
-             <span class="provider-status openrouter">✅ Conectado</span>
+             <h3>🤖 ProspecIA</h3>
            </div>
            <button @click="closeAI" class="close-btn">
              <i class="fas fa-times"></i>
@@ -213,7 +211,6 @@
                 </div>
        </div>
 
-       
    </div>
  </template>
 
@@ -229,29 +226,25 @@ export default {
   
   data() {
     return {
-      // Posición de la burbuja
+      
       position: { x: 0, y: 0 },
       isDragging: false,
       hasDragged: false,
       dragOffset: { x: 0, y: 0 },
-      
-             // Estados de las ventanas
+
        isMenuOpen: false,
        isNotesOpen: false,
        isAIOpen: false,
        isOrientingTextOpen: false,
-      
-      // Notas
+
       notes: [],
       selectedNoteIndex: null,
       currentNote: { title: '', content: '' },
-      
-             // IA
+
        aiMessages: [],
        currentAIMessage: '',
        isTyping: false,
        openrouterUrl: '/openrouter/generate',
-        
 
     }
   },
@@ -261,7 +254,6 @@ export default {
        const hiddenPaths = ['/login', '/register', '/'];
        return !hiddenPaths.includes(currentPath);
      },
-     
 
    },
   mounted() {
@@ -269,17 +261,14 @@ export default {
     this.loadNotes();
     this.initializeAIMessage();
     this.initializePosition();
-    
-    // Event listeners para el drag
+
     document.addEventListener('mousemove', this.onDrag);
     document.addEventListener('mouseup', this.stopDrag);
     document.addEventListener('touchmove', this.onDrag);
     document.addEventListener('touchend', this.stopDrag);
-    
-    // Event listener para cerrar modales con Escape
+
     document.addEventListener('keydown', this.handleKeydown);
-    
-    // Event listener para redimensionamiento de ventana
+
     window.addEventListener('resize', this.handleResize);
   },
   beforeUnmount() {
@@ -291,9 +280,9 @@ export default {
     window.removeEventListener('resize', this.handleResize);
   },
   methods: {
-    // Posición inicial y manejo de redimensionamiento
+    
     initializePosition() {
-      // Posicionar en el lado derecho, 20px desde el borde derecho y 100px desde abajo
+      
       this.position = {
         x: window.innerWidth - 80,
         y: window.innerHeight - 100
@@ -301,7 +290,7 @@ export default {
     },
     
     handleResize() {
-      // Asegurar que la burbuja permanezca visible cuando se redimensiona la ventana
+      
       const maxX = window.innerWidth - 80;
       const maxY = window.innerHeight - 100;
       
@@ -310,10 +299,9 @@ export default {
         y: Math.min(this.position.y, maxY)
       };
     },
-    
-    // Drag functionality
+
     startDrag(event) {
-      // Solo permitir drag en el botón principal, no en las ventanas ni inputs
+      
       if (event.target.closest('.modal-overlay') || 
           event.target.closest('.bubble-menu') || 
           event.target.closest('input') || 
@@ -342,32 +330,27 @@ export default {
         x: Math.max(0, Math.min(window.innerWidth - 80, clientX - this.dragOffset.x)),
         y: Math.max(0, Math.min(window.innerHeight - 80, clientY - this.dragOffset.y))
       };
-      
-      // Marcar que se ha arrastrado
+
       this.hasDragged = true;
     },
     
     stopDrag() {
       this.isDragging = false;
-      // Resetear hasDragged después de un pequeño delay para permitir clicks normales
+      
       setTimeout(() => {
         this.hasDragged = false;
       }, 100);
     },
-    
-    // Menu functionality
+
          toggleMenu() {
        if (this.isDragging || this.hasDragged) return;
-       
-       // Cerrar todas las ventanas primero
+
        this.isNotesOpen = false;
        this.isAIOpen = false;
-       
-       // Luego alternar el menú
+
        this.isMenuOpen = !this.isMenuOpen;
      },
-    
-    // Notes functionality
+
     openNotes() {
       this.isMenuOpen = false;
       this.isNotesOpen = true;
@@ -403,7 +386,7 @@ export default {
     },
     
     saveNotes() {
-      // Este método ya no se usa, las notas se guardan directamente en la BD
+      
       console.log('📝 Método saveNotes obsoleto - las notas se guardan en la BD');
     },
     
@@ -432,19 +415,19 @@ export default {
         
         let response;
         if (this.selectedNoteIndex !== null && this.notes[this.selectedNoteIndex].id) {
-          // Actualizar nota existente
+          
           const noteId = this.notes[this.selectedNoteIndex].id;
           console.log('🔄 Actualizando nota ID:', noteId);
           response = await axios.put(`/notes/${noteId}`, noteData);
         } else {
-          // Crear nueva nota
+          
           console.log('➕ Creando nueva nota...');
           response = await axios.post('/notes', noteData);
         }
         
         if (response.data.success) {
           console.log('✅ Nota guardada exitosamente');
-          // Recargar lista de notas
+          
           await this.loadNotes();
           this.newNote();
         } else {
@@ -476,10 +459,9 @@ export default {
         
         if (response.data.success) {
           console.log('✅ Nota eliminada exitosamente');
-          // Recargar lista de notas
-          await this.loadNotes();
           
-          // Ajustar índice seleccionado
+          await this.loadNotes();
+
           if (this.selectedNoteIndex === index) {
             this.newNote();
           } else if (this.selectedNoteIndex > index) {
@@ -505,8 +487,7 @@ export default {
         minute: '2-digit'
       });
     },
-    
-    // AI functionality
+
     openAI() {
       this.isMenuOpen = false;
       this.isNotesOpen = false;
@@ -516,8 +497,7 @@ export default {
     closeAI() {
       this.isAIOpen = false;
     },
-    
-    // Texto orientador functionality
+
     showOrientingText() {
       this.isOrientingTextOpen = true;
     },
@@ -527,7 +507,7 @@ export default {
     },
     
     initializeAIMessage() {
-      const welcomeMessage = '¡Hola! Soy tu 🦙 Asistente IA Llama 3. ¿En qué puedo ayudarte hoy? 😊';
+      const welcomeMessage = '¡Hola! Soy ProspecIA, tu asistente de prospectiva. ¿En qué puedo ayudarte hoy? 😊';
       this.addAIMessage({
         type: 'bot',
         text: welcomeMessage,
@@ -548,8 +528,7 @@ export default {
       
       this.currentAIMessage = '';
       this.isTyping = true;
-      
-      // Agregar mensaje de "pensando" mientras procesa
+
       this.addAIMessage({
         type: 'bot',
         text: '🤔 Pensando...',
@@ -562,8 +541,7 @@ export default {
          
          const prompt = this.createPrompt(userMessage);
          response = await this.callAI(prompt);
-         
-         // Reemplazar el mensaje de "pensando" con la respuesta real
+
          const thinkingMessageIndex = this.aiMessages.findIndex(msg => msg.isThinking);
          if (thinkingMessageIndex !== -1) {
            this.aiMessages[thinkingMessageIndex] = {
@@ -583,15 +561,13 @@ export default {
            console.error('Error al comunicarse con la IA:', error);
            
            let errorMessage = 'Lo siento, no pude procesar tu solicitud. Inténtalo de nuevo más tarde.';
-           
-           // Intentar obtener mensaje de error más específico
+
            if (error.message && error.message.includes('500')) {
              errorMessage = 'Error del servidor. Verifica que el sistema esté funcionando correctamente.';
            } else if (error.message && error.message.includes('503')) {
              errorMessage = 'Servicio no disponible. Inténtalo de nuevo más tarde.';
            }
-           
-           // Remover el mensaje de "pensando" si existe
+
            const thinkingMessageIndex = this.aiMessages.findIndex(msg => msg.isThinking);
            if (thinkingMessageIndex !== -1) {
              this.aiMessages.splice(thinkingMessageIndex, 1);
@@ -611,10 +587,9 @@ export default {
     },
     
     createPrompt(userText) {
-      // Construir el historial de la conversación
+      
       let conversationHistory = '';
-      
-      
+
       const recentMessages = this.aiMessages.slice(-6);
       
       if (recentMessages.length > 0) {
@@ -628,7 +603,7 @@ export default {
         }).filter(text => text !== '').join('\n') + '\n';
       }
       
-      return `Eres un asistente IA amigable. Responde de manera natural y concisa. Mantén el contexto de la conversación. Para análisis de textos largos, sé específico y directo.
+      return `Eres ProspecIA, un asistente especializado en prospectiva y análisis estratégico. Responde de manera natural y concisa. Mantén el contexto de la conversación. Para análisis de textos largos, sé específico y directo.
 
 ${conversationHistory}Usuario: ${userText}`;
     },
@@ -655,11 +630,7 @@ ${conversationHistory}Usuario: ${userText}`;
        const data = await response.json();
        return data.response || 'No se recibió respuesta del modelo.';
      },
-     
 
-     
-
-    
     addAIMessage(message) {
       this.aiMessages.push(message);
     },
@@ -698,20 +669,18 @@ ${conversationHistory}Usuario: ${userText}`;
      handleAIKeydown(event) {
        if (event.key === 'Enter') {
          if (event.shiftKey) {
-           // Shift+Enter: permitir nueva línea
+           
            return;
          } else {
-           // Enter sin Shift: enviar mensaje
+           
            event.preventDefault();
            this.sendAIMessage();
          }
        }
      },
-     
 
-      
       showNotification(message) {
-        // Crear notificación temporal
+        
         const notification = document.createElement('div');
         notification.className = 'notification';
         notification.textContent = message;
@@ -834,7 +803,6 @@ ${conversationHistory}Usuario: ${userText}`;
   color: #333;
 }
 
-/* Modales */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -970,7 +938,6 @@ ${conversationHistory}Usuario: ${userText}`;
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Estilos específicos para Notas */
 .notes-content {
   flex: 1;
   display: flex;
@@ -1173,9 +1140,6 @@ ${conversationHistory}Usuario: ${userText}`;
   cursor: not-allowed;
 }
 
-
-
-/* Estilos específicos para IA */
 .ai-messages {
   flex: 1;
   padding: 15px;
@@ -1327,8 +1291,6 @@ ${conversationHistory}Usuario: ${userText}`;
    transform: none;
  }
 
-
- 
  .loading-container {
    display: flex;
    flex-direction: column;
@@ -1434,8 +1396,6 @@ ${conversationHistory}Usuario: ${userText}`;
     color: #dc3545;
     margin-bottom: 20px;
   }
-  
-
 
 @keyframes fadeIn {
   from {
@@ -1459,7 +1419,6 @@ ${conversationHistory}Usuario: ${userText}`;
   }
 }
 
-/* Scrollbar personalizado */
 .notes-list::-webkit-scrollbar,
 .ai-messages::-webkit-scrollbar {
   width: 8px;
@@ -1482,7 +1441,6 @@ ${conversationHistory}Usuario: ${userText}`;
   background: #5a6fd8;
 }
 
-/* Texto orientador */
 .orienting-text {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border: 1px solid #dee2e6;
@@ -1514,7 +1472,6 @@ ${conversationHistory}Usuario: ${userText}`;
   font-size: 0.95rem;
 }
 
-/* Tooltips mejorados */
 .menu-option {
   position: relative;
 }
@@ -1548,7 +1505,6 @@ ${conversationHistory}Usuario: ${userText}`;
   z-index: 10000;
 }
 
-/* Tooltip para la burbuja principal */
 .bubble-toggle {
   position: relative;
 }
@@ -1582,7 +1538,6 @@ ${conversationHistory}Usuario: ${userText}`;
   z-index: 10000;
 }
 
-/* Estilos para el selector de IA */
 .header-content {
   display: flex;
   align-items: center;
@@ -1590,35 +1545,6 @@ ${conversationHistory}Usuario: ${userText}`;
   flex: 1;
 }
 
-
-
-/* Efecto sutil para el estado del proveedor */
-.provider-status:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.provider-status {
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  margin-left: 8px;
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-
-
-.provider-status.openrouter {
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.9), rgba(33, 150, 243, 0.7));
-  color: white;
-  border-color: rgba(33, 150, 243, 0.5);
-}
-
-/* Responsive */
  @media (max-width: 1024px) {
    .notes-modal {
      width: 90vw;
@@ -1629,7 +1555,6 @@ ${conversationHistory}Usuario: ${userText}`;
      width: 90vw;
      height: 70vh;
    }
-   
 
  }
 
@@ -1649,9 +1574,7 @@ ${conversationHistory}Usuario: ${userText}`;
      width: 100%;
      height: 100%;
    }
-   
 
-  
   .notes-content {
     flex-direction: column;
   }
@@ -1683,4 +1606,4 @@ ${conversationHistory}Usuario: ${userText}`;
     max-width: 230px;
   }
 }
-</style> 
+</style>
