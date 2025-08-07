@@ -15,7 +15,7 @@ class CheckOpenRouter extends Command
         $this->info('🔍 Verificando configuración de OpenRouter...');
 
         // Verificar API key
-        $apiKey = env('OPENROUTER_API_KEY');
+        $apiKey = config('services.openrouter.api_key', env('OPENROUTER_API_KEY'));
         $configKey = config('services.openrouter.api_key');
         
         $this->line("   ENV OPENROUTER_API_KEY: " . ($apiKey ? '✅ Configurada' : '❌ No configurada'));

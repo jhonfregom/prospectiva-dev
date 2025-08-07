@@ -99,6 +99,8 @@ Route::group(['middleware' => ['auth']], function(){
         Route::post('/notes', 'store')->name('notes.store');
         Route::put('/notes/{id}', 'update')->name('notes.update');
         Route::delete('/notes/{id}', 'destroy')->name('notes.destroy');
+        Route::get('/notes/search', 'search')->name('notes.search');
+        Route::get('/notes/stats', 'stats')->name('notes.stats');
     });
 
     Route::controller(TraceabilityController::class)->group(function(){

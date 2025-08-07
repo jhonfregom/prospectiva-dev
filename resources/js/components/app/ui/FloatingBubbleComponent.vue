@@ -74,16 +74,16 @@
              </div>
              <div class="notes-list">
                <div 
-                 v-for="(note, index) in notes" 
+                 v-for="(note, index) in notes.filter(n => n !== null && n !== undefined)" 
                  :key="index"
                  class="note-item"
                  @click="selectNote(index)"
                  :class="{ 'selected': selectedNoteIndex === index }"
                >
                  <div class="note-preview">
-                   <h5>{{ note.title || textsStore.getText('floating_bubble.note_without_title') }}</h5>
-                   <p>{{ note.content ? (note.content.substring(0, 80) + (note.content.length > 80 ? '...' : '')) : textsStore.getText('floating_bubble.no_content') }}</p>
-                   <small>{{ formatDate(note.updated_at) }}</small>
+                   <h5>{{ note && note.title ? note.title : textsStore.getText('floating_bubble.note_without_title') }}</h5>
+                   <p>{{ note && note.content ? (note.content.substring(0, 80) + (note.content.length > 80 ? '...' : '')) : textsStore.getText('floating_bubble.no_content') }}</p>
+                   <small>{{ formatDate(note && note.updated_at ? note.updated_at : null) }}</small>
                  </div>
                  <button @click.stop="deleteNote(index)" class="delete-note-btn" :title="textsStore.getText('floating_bubble.delete_note_tooltip')">
                    <i class="fas fa-trash"></i>
@@ -374,6 +374,8 @@ export default {
         
         if (response.data.success) {
           this.notes = response.data.data || [];
+          // Filtrar notas que no sean null o undefined
+          this.notes = this.notes.filter(note => note !== null && note !== undefined);
           console.log('✅ Notas cargadas:', this.notes.length);
         } else {
           console.error('❌ Error cargando notas:', response.data);
@@ -382,6 +384,8 @@ export default {
       } catch (error) {
         console.error('❌ Error cargando notas:', error);
         this.notes = [];
+        this.selectedNoteIndex = null;
+        this.currentNote = { title: '', content: '' };
       }
     },
     
@@ -393,10 +397,14 @@ export default {
     selectNote(index) {
       this.selectedNoteIndex = index;
       const note = this.notes[index];
-      this.currentNote = { 
-        title: note.title || '', 
-        content: note.content || '' 
-      };
+      if (note) {
+        this.currentNote = { 
+          title: note.title || '', 
+          content: note.content || '' 
+        };
+      } else {
+        this.currentNote = { title: '', content: '' };
+      }
     },
     
     async saveNote() {
@@ -444,7 +452,7 @@ export default {
     },
     
     async deleteNote(index) {
-      if (index === undefined) return;
+      if (index === undefined || index < 0 || index >= this.notes.length) return;
       
       const note = this.notes[index];
       if (!note || !note.id) {
@@ -478,14 +486,21 @@ export default {
     formatDate(timestamp) {
       if (!timestamp) return 'Sin fecha';
       
-      const date = new Date(timestamp);
-      return date.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      try {
+        const date = new Date(timestamp);
+        if (isNaN(date.getTime())) return 'Sin fecha';
+        
+        return date.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      } catch (error) {
+        console.error('Error formateando fecha:', error);
+        return 'Sin fecha';
+      }
     },
 
     openAI() {
