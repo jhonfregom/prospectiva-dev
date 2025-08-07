@@ -917,7 +917,7 @@ ${conversationHistory}Usuario: ${userText}`;
 
 .orienting-content {
   padding: 30px;
-  text-align: center;
+  text-align: justify;
 }
 
 .orienting-icon {
@@ -931,6 +931,7 @@ ${conversationHistory}Usuario: ${userText}`;
   line-height: 1.7;
   color: #495057;
   margin: 0;
+  text-align: justify;
 }
 
 .close-btn {
@@ -1485,6 +1486,7 @@ ${conversationHistory}Usuario: ${userText}`;
   line-height: 1.6;
   margin: 0;
   font-size: 0.95rem;
+  text-align: justify;
 }
 
 .menu-option {
