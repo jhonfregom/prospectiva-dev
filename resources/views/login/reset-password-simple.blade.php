@@ -179,7 +179,7 @@
                                         </div>
                                         <div class="requirement" id="req-special">
                                             <span class="requirement-icon">⭕</span>
-                                            Al menos un carácter especial (@$!%*?&)
+                                            Al menos un carácter especial (!@#$%^&*()_+-=[]{};':"\|,.<>/?~`)
                                         </div>
                                     </div>
                                 </div>
@@ -258,7 +258,7 @@
                 uppercase: /[A-Z]/.test(password),
                 lowercase: /[a-z]/.test(password),
                 number: /\d/.test(password),
-                special: /[@$!%*?&]/.test(password)
+                special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)
             };
             
             return requirements;

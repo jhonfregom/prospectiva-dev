@@ -27,6 +27,8 @@ Route::group(['middleware' => ['auth']], function(){
         return view('app');
     })->name('home');
 
+    Route::get('/texts', [\App\Http\Controllers\TextsController::class, 'index'])->name('texts.index');
+
     Route::controller(VariableController::class)->group(function(){
 
         Route::get('/variables', 'index')->name('variables.index');

@@ -66,6 +66,7 @@
                         type="text"
                         :placeholder="capitalize(fields.document_id.placeholder)"
                         v-model="document_id"
+                        maxlength="10"
                         @input="validateNumericInput('document_id', $event)" />
                 </b-field>
 
@@ -100,6 +101,7 @@
                         type="text"
                         :placeholder="capitalize(fields.nit.placeholder)"
                         v-model="nit"
+                        maxlength="9"
                         @input="validateNumericInput('nit', $event)" />
                 </b-field>
 
@@ -183,7 +185,7 @@
                     </li>
                     <li :class="{ 'valid': hasSpecialChar }">
                         <i :class="hasSpecialChar ? 'fas fa-check' : 'fas fa-times'"></i>
-                        Al menos un carácter especial (@$!%*?&)
+                        Al menos un carácter especial (!@#$%^&*()_+-=[]{};':"\|,.<>/?~`)
                     </li>
                 </ul>
             </div>
@@ -379,6 +381,8 @@ export default {
                 this.fields.password.error = false;
                 this.fields.password.msg = '';
             }
+            // Validar contraseña en tiempo real
+            this.validatePassword();
         },
         confirm_password(newValue) {
             if (newValue !== '') {
@@ -463,13 +467,18 @@ export default {
             
             // Aplicar límites de longitud según el campo
             let limitedValue = numericValue;
+            let maxLength = 0;
+            
             if (fieldName === 'document_id') {
                 // Cédula: máximo 10 dígitos
-                limitedValue = numericValue.slice(0, 10);
-                if (numericValue.length > 10) {
+                maxLength = 10;
+                limitedValue = numericValue.slice(0, maxLength);
+                
+                // Validar y mostrar mensajes de error
+                if (numericValue.length > maxLength) {
                     this.fields.document_id.error = true;
                     this.fields.document_id.msg = 'La cédula debe tener exactamente 10 dígitos';
-                } else if (numericValue.length === 10) {
+                } else if (numericValue.length === maxLength) {
                     this.fields.document_id.error = false;
                     this.fields.document_id.msg = '';
                 } else if (numericValue.length > 0) {
@@ -481,11 +490,14 @@ export default {
                 }
             } else if (fieldName === 'nit') {
                 // NIT: máximo 9 dígitos
-                limitedValue = numericValue.slice(0, 9);
-                if (numericValue.length > 9) {
+                maxLength = 9;
+                limitedValue = numericValue.slice(0, maxLength);
+                
+                // Validar y mostrar mensajes de error
+                if (numericValue.length > maxLength) {
                     this.fields.nit.error = true;
                     this.fields.nit.msg = 'El NIT debe tener exactamente 9 dígitos';
-                } else if (numericValue.length === 9) {
+                } else if (numericValue.length === maxLength) {
                     this.fields.nit.error = false;
                     this.fields.nit.msg = '';
                 } else if (numericValue.length > 0) {
@@ -497,23 +509,22 @@ export default {
                 }
             }
             
-            // Solo actualizar si el valor cambió (para evitar bucles)
+            // Actualizar el valor del campo correspondiente
+            if (fieldName === 'document_id') {
+                this.document_id = limitedValue;
+            } else if (fieldName === 'nit') {
+                this.nit = limitedValue;
+            }
+            
+            // Forzar la actualización del input si el valor cambió
             if (value !== limitedValue) {
-                // Actualizar el valor del campo correspondiente
-                if (fieldName === 'document_id') {
-                    this.document_id = limitedValue;
-                } else if (fieldName === 'nit') {
-                    this.nit = limitedValue;
-                }
-                
-                // Forzar la actualización del input
                 this.$nextTick(() => {
                     event.target.value = limitedValue;
                 });
             }
         },
         validatePassword() {
-            const password = this.password;
+            const password = this.password || '';
             
             // Validar longitud mínima (8 caracteres)
             this.passwordLength = password.length >= 8;
@@ -527,8 +538,10 @@ export default {
             // Validar número
             this.hasNumber = /\d/.test(password);
             
-            // Validar carácter especial
-            this.hasSpecialChar = /[@$!%*?&]/.test(password);
+            // Validar carácter especial (simplificado para evitar problemas de escape)
+            this.hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password);
+            
+
         },
         clickRegister(e) {
             e.preventDefault();

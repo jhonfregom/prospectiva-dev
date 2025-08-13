@@ -1,7 +1,8 @@
 <template>
     <div class="schwartz-container">
-        <!-- Letrero informativo -->
+        <!-- Letrero informativo - solo mostrar si no es readonly y no es modo externo -->
         <info-banner-component
+            v-if="!readonly && !externalScenarios && !externalHypotheses"
             :description="textsStore.getText('schwartz.description')"
         />
         

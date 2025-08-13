@@ -152,8 +152,8 @@
           <div v-if="props.row.future_drivers && props.row.future_drivers.length > 0" class="future-drivers-container">
             <div v-for="(driver, index) in props.row.future_drivers" :key="driver.id" class="future-driver-item">
               <span class="future-driver-link" @click="showFutureDriverDescription(driver)">
-                <strong>Hipótesis {{ driver.name_hypothesis }}:</strong> 
-                <span class="driver-variable">{{ driver.variable_name }} - {{ driver.secondary_hypotheses }}</span>
+                <strong>{{ driver.variable_name }}:</strong> 
+                <span class="driver-variable">H0 y H1</span>
               </span>
             </div>
           </div>
@@ -300,13 +300,20 @@
         </header>
         <section class="modal-card-body">
           <div class="modal-info">
-            <p><strong>Hipótesis:</strong> {{ selectedFutureDriver?.name_hypothesis }}</p>
             <p><strong>Variable:</strong> {{ selectedFutureDriver?.variable_name }}</p>
-            <p><strong>Tipo:</strong> {{ selectedFutureDriver?.secondary_hypotheses }}</p>
-            
-            <p><strong>Descripción:</strong></p>
+          </div>
+          
+          <div class="modal-section">
+            <h4 class="modal-section-title">Hipótesis H0</h4>
             <div class="modal-content">
-              {{ selectedFutureDriver?.description || 'Sin descripción disponible' }}
+              {{ selectedFutureDriver?.h0_description || 'Sin descripción disponible para H0' }}
+            </div>
+          </div>
+          
+          <div class="modal-section">
+            <h4 class="modal-section-title">Hipótesis H1</h4>
+            <div class="modal-content">
+              {{ selectedFutureDriver?.h1_description || 'Sin descripción disponible para H1' }}
             </div>
           </div>
         </section>
@@ -586,7 +593,7 @@
     style="position: absolute; left: -9999px; top: 0; width: 800px; height: 640px; background: white;"
     class="pdf-graphic-container"
   >
-    <SchwartzChartComponent :scenarios="user.scenarios" :hypotheses="user.hypotheses" :readonly="true" />
+    <SchwartzChartComponent :scenarios="user.scenarios" :hypotheses="convertFutureDriversToHypotheses(user.future_drivers)" :readonly="true" />
   </div>
 
   <!-- Diagrama de Schwartz oculto solo para PDF -->
@@ -598,43 +605,14 @@
   >
     <SchwartzMainComponent
       :scenarios="user.scenarios"
-      :hypotheses="user.hypotheses"
+      :hypotheses="convertFutureDriversToHypotheses(user.future_drivers)"
       :readonly="true"
       :pdfMode="true"
       style="width: 900px; height: 700px;"
     />
   </div>
 
-  <!-- Botón cerrar/regresar en la esquina inferior derecha -->
-  <div class="cerrar-container">
-    <button
-      class="cerrar-btn"
-      v-if="!cerrado"
-      @click="confirmarCerrar"
-      :disabled="cerrado"
-    >{{ textsStore.getText('results_section.close_button') || 'Cerrar' }}</button>
-    <button
-      class="cerrar-btn"
-      v-else-if="state !== null && state === '0'"
-      @click="confirmarRegresar"
-    >{{ textsStore.getText('results_section.return_button') || 'Regresar' }}</button>
-  </div>
-  <!-- Modal de confirmación -->
-  <div v-if="mostrarModal" class="modal-confirm">
-    <div class="modal-content">
-      <p class="modal-text">{{ textsStore.getText('results_section.close_confirm_message') || '¿Estás seguro de cerrar el módulo? No podrás editar más.' }}</p>
-      <button @click="cerrarModulo">{{ textsStore.getText('results_section.confirm_yes') || 'Sí, cerrar' }}</button>
-      <button @click="mostrarModal = false">{{ textsStore.getText('results_section.confirm_no') || 'Cancelar' }}</button>
-    </div>
-  </div>
-  <!-- Modal de confirmación para regresar -->
-  <div v-if="mostrarModalRegresar" class="modal-confirm">
-    <div class="modal-content">
-      <p class="modal-text">{{ textsStore.getText('results_section.return_confirm_message') || '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.' }}</p>
-      <button @click="regresarModulo">{{ textsStore.getText('results_section.confirm_yes_return') || 'Sí, regresar' }}</button>
-      <button @click="mostrarModalRegresar = false">{{ textsStore.getText('results_section.confirm_no') || 'Cancelar' }}</button>
-    </div>
-  </div>
+
 
 </template>
 <script>
@@ -722,10 +700,7 @@ export default {
 
         const loadingPdfId = ref(null);
 
-        const cerrado = ref(false);
-        const state = ref(null);
-        const mostrarModal = ref(false);
-        const mostrarModalRegresar = ref(false);
+
 
         function showVariableDescription(variable) {
             selectedVariable.value = variable;
@@ -920,7 +895,7 @@ export default {
         const selectedSchwartzScenarios = ref([]);
         const selectedSchwartzUser = ref('');
         const selectedSchwartzHypotheses = ref([]);
-        function showSchwartzModal(scenarios, firstName, lastName, hypotheses = []) {
+        function showSchwartzModal(scenarios, firstName, lastName, futureDrivers = []) {
           
           let normScenarios = Array.isArray(scenarios) ? scenarios.slice(0, 4) : [];
           normScenarios = [0, 1, 2, 3].map(i => {
@@ -933,28 +908,12 @@ export default {
           selectedSchwartzScenarios.value = normScenarios;
           selectedSchwartzUser.value = `${firstName} ${lastName}`;
 
-          let hypothesesByVariable = {};
-          hypotheses.forEach(h => {
-            if (!hypothesesByVariable[h.variable_id]) {
-              hypothesesByVariable[h.variable_id] = {};
-            }
-            hypothesesByVariable[h.variable_id][h.secondary_hypotheses] = h.description || '';
-          });
-
-          let variableIds = Object.keys(hypothesesByVariable).sort();
-          let firstVariableId = variableIds[0];
-          let secondVariableId = variableIds[1];
+          // Mapear los future_drivers a la estructura esperada por SchwartzMainComponent
+          const mappedHypotheses = futureDrivers.slice(0, 2).map(driver => ({
+            descriptionH0: driver.h0_description || '',
+            descriptionH1: driver.h1_description || ''
+          }));
           
-          const mappedHypotheses = [
-            {
-              descriptionH0: hypothesesByVariable[secondVariableId]?.H0 || '', 
-              descriptionH1: hypothesesByVariable[secondVariableId]?.H1 || ''  
-            },
-            {
-              descriptionH0: hypothesesByVariable[firstVariableId]?.H0 || '', 
-              descriptionH1: hypothesesByVariable[firstVariableId]?.H1 || ''  
-            }
-          ];
           selectedSchwartzHypotheses.value = mappedHypotheses;
           showSchwartzModalRef.value = true;
         }
@@ -998,6 +957,53 @@ export default {
             }
           }
           return [];
+        }
+
+        function convertFutureDriversToHypotheses(futureDrivers) {
+          // Convertir future_drivers al formato esperado por los componentes de Schwartz estándar
+          if (!futureDrivers || !Array.isArray(futureDrivers) || futureDrivers.length === 0) {
+            return [];
+          }
+          
+          // Tomar los primeros 2 future_drivers (las 2 variables principales)
+          const mainDrivers = futureDrivers.slice(0, 2);
+          
+          return mainDrivers.map(driver => ({
+            descriptionH0: driver.h0_description || '',
+            descriptionH1: driver.h1_description || ''
+          }));
+        }
+
+        function convertFutureDriversToPDFFormat(futureDrivers) {
+          // Convertir future_drivers al formato esperado por SchwartzPDFEditableCanvas
+          if (!futureDrivers || !Array.isArray(futureDrivers) || futureDrivers.length === 0) {
+            return [];
+          }
+          
+          // Tomar los primeros 2 future_drivers (las 2 variables principales)
+          const mainDrivers = futureDrivers.slice(0, 2);
+          
+          const pdfFormat = [];
+          mainDrivers.forEach((driver, index) => {
+            if (driver.h0_description) {
+              pdfFormat.push({
+                name_hypothesis: `H${index + 1}`,
+                secondary_hypotheses: 'H0',
+                description: driver.h0_description,
+                variable_name: driver.variable_name || ''
+              });
+            }
+            if (driver.h1_description) {
+              pdfFormat.push({
+                name_hypothesis: `H${index + 1}`,
+                secondary_hypotheses: 'H1',
+                description: driver.h1_description,
+                variable_name: driver.variable_name || ''
+              });
+            }
+          });
+          
+          return pdfFormat;
         }
 
         async function imprimirUsuario(usuario) {
@@ -1097,38 +1103,56 @@ export default {
               const bottomMargin = margin;
               const availableSpace = pageHeight - bottomMargin - currentY;
 
+              // Si el espacio requerido es mayor al disponible, crear nueva página
               if (requiredSpace > availableSpace) {
-                
-                if (title) {
-                  doc.addPage();
-                  y = margin + 40;
-                  return true;
-                }
                 doc.addPage();
                 y = margin + 40;
+                
+                // Si hay título, agregarlo en la nueva página
+                if (title) {
+                  doc.setFontSize(12);
+                  doc.setFont(undefined, 'bold');
+                  doc.text(title, margin, y);
+                  y += 25;
+                }
                 return true;
               }
               return false;
             };
 
             const checkTablePageBreak = (tableData, title = '') => {
-              const titleHeight = 30; 
-              const tableHeaderHeight = 20; 
-              const rowHeight = 15; 
-              const tableFooterHeight = 20; 
+              if (!tableData || tableData.length === 0) return false;
               
-              const estimatedTableHeight = titleHeight + tableHeaderHeight + (tableData.length * rowHeight) + tableFooterHeight;
+              const titleHeight = 25; 
+              const tableHeaderHeight = 25; 
+              const rowHeight = Math.min(18, Math.max(12, 600 / tableData.length)); // Altura dinámica basada en cantidad de filas
+              const tableFooterHeight = 25; 
+              const spacing = 20;
+              
+              const estimatedTableHeight = titleHeight + tableHeaderHeight + (tableData.length * rowHeight) + tableFooterHeight + spacing;
               
               return checkPageBreak(estimatedTableHeight, title);
             };
 
             const checkGraphicPageBreak = (graphicHeight, title = '') => {
-              const titleHeight = 30; 
-              const graphicSpacing = 40; 
+              const titleHeight = 25; 
+              const graphicSpacing = 30; 
               
               const totalHeight = titleHeight + graphicHeight + graphicSpacing;
               
               return checkPageBreak(totalHeight, title);
+            };
+
+            const optimizeTableLayout = (tableData, maxRowsPerPage = 15) => {
+              if (!tableData || tableData.length <= maxRowsPerPage) {
+                return [tableData];
+              }
+              
+              const chunks = [];
+              for (let i = 0; i < tableData.length; i += maxRowsPerPage) {
+                chunks.push(tableData.slice(i, i + maxRowsPerPage));
+              }
+              return chunks;
             };
 
             const prepareGraphics = () => {
@@ -1211,21 +1235,37 @@ export default {
             element.style.background = '#ffffff';
             element.style.zIndex = '9999';
 
+            // Configuración dinámica basada en el tipo de gráfica
             let captureWidth = 800;
             let captureHeight = 560;
             let maxWidth = 600;
             let maxHeight = 400;
+            
             if (elementId.includes('schwartz')) {
               captureWidth = 900;
               captureHeight = 700;
               maxWidth = 800; 
               maxHeight = 600;
+            } else if (elementId.includes('matriz')) {
+              captureWidth = 900;
+              captureHeight = 600;
+              maxWidth = 700;
+              maxHeight = 500;
+            } else {
+              // Gráfica de variables
+              captureWidth = 800;
+              captureHeight = 560;
+              maxWidth = 600;
+              maxHeight = 400;
             }
 
+            // Tiempos de espera optimizados
             if (elementId.includes('schwartz')) {
-              await new Promise(resolve => setTimeout(resolve, 5000)); 
-            } else {
               await new Promise(resolve => setTimeout(resolve, 3000)); 
+            } else if (elementId.includes('matriz')) {
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            } else {
+              await new Promise(resolve => setTimeout(resolve, 1500)); 
             }
             
             try {
@@ -1328,8 +1368,19 @@ export default {
 
               const xOffset = (pageWidth - finalWidth) / 2;
               
+              // Verificar si hay espacio suficiente en la página actual
+              const pageHeight = doc.internal.pageSize.getHeight();
+              const bottomMargin = margin;
+              const availableSpace = pageHeight - bottomMargin - y;
+              
+              if (finalHeight > availableSpace) {
+                // Crear nueva página si no hay espacio suficiente
+                doc.addPage();
+                y = margin + 40;
+              }
+              
               doc.addImage(imgData, 'PNG', xOffset, y, finalWidth, finalHeight);
-              y += finalHeight + 40; 
+              y += finalHeight + 20; // Reducir espacio entre elementos
               
               return y;
             } catch (error) {
@@ -1430,14 +1481,21 @@ export default {
               y += 20;
             }
 
-            checkPageBreak(30);
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
-            doc.text('MATRIZ DE ANÁLISIS ESTRUCTURAL', margin, y); y += 20;
+            // Verificar si hay espacio suficiente para la matriz completa
+            const variables = usuario.matriz_cruzada ? [...new Set(usuario.matriz_cruzada.map(m => m.origen))].sort() : [];
+            const matrizEstimatedHeight = variables.length > 0 ? (variables.length + 2) * 20 + 100 : 0;
             
-            if (usuario.matriz && usuario.matriz.length > 0 && usuario.matriz_cruzada) {
-              
-              const variables = [...new Set(usuario.matriz_cruzada.map(m => m.origen))].sort();
+            if (matrizEstimatedHeight > 0) {
+              checkPageBreak(matrizEstimatedHeight, 'MATRIZ DE ANÁLISIS ESTRUCTURAL');
+            } else {
+              checkPageBreak(30);
+              doc.setFontSize(12);
+              doc.setFont(undefined, 'bold');
+              doc.text('MATRIZ DE ANÁLISIS ESTRUCTURAL', margin, y); 
+              y += 20;
+            }
+            
+            if (usuario.matriz && usuario.matriz.length > 0 && usuario.matriz_cruzada && variables.length > 0) {
 
               const matrizHeaders = ['CÓDIGO', 'NOMBRE', ...variables.map(v => v), 'TOTAL INFLUENCIA'];
               const matrizBody = variables.map(varOrigen => {
@@ -1491,14 +1549,18 @@ export default {
 
               matrizBody[matrizBody.length - 1][matrizBody[matrizBody.length - 1].length - 1] = totalGeneral;
 
+              // Calcular tamaño de fuente dinámico basado en cantidad de variables
+              const dynamicFontSize = variables.length > 10 ? 7 : variables.length > 8 ? 8 : 9;
+              const dynamicCellPadding = variables.length > 10 ? 2 : variables.length > 8 ? 3 : 4;
+              
               autoTable(doc, {
                 startY: y,
                 head: [matrizHeaders],
                 body: matrizBody,
                 theme: 'grid',
                 styles: { 
-                  fontSize: 9, 
-                  cellPadding: 4,
+                  fontSize: dynamicFontSize, 
+                  cellPadding: dynamicCellPadding,
                   lineColor: [0, 0, 0],
                   lineWidth: 0.5,
                   halign: 'center',
@@ -1507,7 +1569,7 @@ export default {
                 headStyles: {
                   fillColor: [238, 242, 255], 
                   textColor: [79, 70, 229], 
-                  fontSize: 10,
+                  fontSize: dynamicFontSize + 1,
                   fontStyle: 'bold',
                   halign: 'center',
                   valign: 'middle'
@@ -1516,6 +1578,8 @@ export default {
                   fillColor: [249, 250, 251] 
                 },
                 margin: { left: margin, right: margin },
+                pageBreak: 'auto',
+                showFoot: 'lastPage',
                 didParseCell: function(data) {
                   
                   if (data.column.index === 0 || data.column.index === 1) {
@@ -1566,9 +1630,8 @@ export default {
               });
               y = doc.lastAutoTable.finalY + 20;
 
-              doc.setFontSize(12);
-              doc.setFont(undefined, 'bold');
-              doc.text('RESUMEN DE DEPENDENCIA E INFLUENCIA', 40, y); y += 20;
+              // Verificar espacio para el resumen
+              checkPageBreak(60, 'RESUMEN DE DEPENDENCIA E INFLUENCIA');
               
               const resumenHeaders = ['RESUMEN', ...variables];
               const resumenBody = [
@@ -1598,8 +1661,8 @@ export default {
                 body: resumenBody,
                 theme: 'grid',
                 styles: { 
-                  fontSize: 9, 
-                  cellPadding: 4,
+                  fontSize: dynamicFontSize, 
+                  cellPadding: dynamicCellPadding,
                   lineColor: [0, 0, 0],
                   lineWidth: 0.5,
                   halign: 'center',
@@ -1608,12 +1671,13 @@ export default {
                 headStyles: {
                   fillColor: [238, 242, 255], 
                   textColor: [79, 70, 229], 
-                  fontSize: 10,
+                  fontSize: dynamicFontSize + 1,
                   fontStyle: 'bold',
                   halign: 'center',
                   valign: 'middle'
                 },
                 margin: { left: margin, right: margin },
+                pageBreak: 'auto',
                 didParseCell: function(data) {
                   
                   if (data.column.index === 0) {
@@ -1640,17 +1704,16 @@ export default {
               y += 25;
             }
 
+            // Verificar espacio para la gráfica de variables
+            checkGraphicPageBreak(400, 'GRÁFICA DE VARIABLES - MAPA DE ANÁLISIS');
             y = await captureGraphic(`grafica-variables-${uniqueId}`, 'GRÁFICA DE VARIABLES - MAPA DE ANÁLISIS', y, true);
             if (y) {
-              
+              y += 20; // Espacio adicional después de la gráfica
             } else {
               y += 60; 
             }
 
             checkTablePageBreak(usuario.zone_analyses || [], 'ANÁLISIS MAPA DE VARIABLES');
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
-            doc.text('ANÁLISIS MAPA DE VARIABLES', margin, y); y += 20;
             
             if (usuario.zone_analyses && usuario.zone_analyses.length > 0) {
               autoTable(doc, {
@@ -1711,9 +1774,6 @@ export default {
             }
 
             checkTablePageBreak(usuario.future_drivers || [], 'DIRECCIONADORES DE FUTURO');
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
-            doc.text('DIRECCIONADORES DE FUTURO', margin, y); y += 20;
             
             if (usuario.future_drivers && usuario.future_drivers.length > 0) {
               autoTable(doc, {
@@ -1760,7 +1820,7 @@ export default {
             document.body.appendChild(tempDivSchwartz);
             const appSchwartz = createApp(SchwartzPDFEditableCanvas, {
               scenarios: usuario.scenarios || [],
-              hypotheses: usuario.future_drivers || [],
+              hypotheses: convertFutureDriversToPDFFormat(usuario.future_drivers || []),
               width: 900,
               height: 700,
               boxWidth: 210,
@@ -1807,9 +1867,6 @@ export default {
             document.body.removeChild(tempDivSchwartz);
 
             checkTablePageBreak(usuario.initial_conditions || [], 'CONDICIONES INICIALES');
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
-            doc.text('CONDICIONES INICIALES', margin, y); y += 20;
             
             if (usuario.initial_conditions && usuario.initial_conditions.length > 0) {
               autoTable(doc, {
@@ -1846,9 +1903,6 @@ export default {
             }
 
             checkTablePageBreak(usuario.scenarios || [], 'ESCENARIOS');
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
-            doc.text('ESCENARIOS', margin, y); y += 20;
             
             if (usuario.scenarios && usuario.scenarios.length > 0) {
               autoTable(doc, {
@@ -1885,9 +1939,6 @@ export default {
             }
 
             checkTablePageBreak(usuario.conclusions || [], 'CONCLUSIONES DE APRENDIZAJE');
-            doc.setFontSize(12);
-            doc.setFont(undefined, 'bold');
-            doc.text('CONCLUSIONES DE APRENDIZAJE', margin, y); y += 20;
             
             if (usuario.conclusions && usuario.conclusions.length > 0) {
               
@@ -2081,39 +2132,13 @@ export default {
             SchwartzMainComponent,
             selectedSchwartzHypotheses,
             convertMatrizToGraphicsData,
+            convertFutureDriversToHypotheses,
+            convertFutureDriversToPDFFormat,
             loadingPdfId,
             imprimirUsuario,
             getVariablesByZone,
             
-            cerrado,
-            state,
-            mostrarModal,
-            mostrarModalRegresar,
-            
-            confirmarCerrar: () => {
-                mostrarModal.value = true;
-            },
-            confirmarRegresar: () => {
-                mostrarModalRegresar.value = true;
-            },
-            cerrarModulo: async () => {
-                try {
-                    await traceabilityStore.markSectionCompleted('results');
-                    cerrado.value = true;
-                    mostrarModal.value = false;
-                } catch (error) {
-                    console.error('Error al cerrar módulo:', error);
-                }
-            },
-            regresarModulo: async () => {
-                try {
-                    await traceabilityStore.reverseSectionCompleted('results');
-                    cerrado.value = false;
-                    mostrarModalRegresar.value = false;
-                } catch (error) {
-                    console.error('Error al regresar módulo:', error);
-                }
-            },
+
         };
     },
     data() {
@@ -3026,9 +3051,9 @@ export default {
 }
 
 .matriz-modal-card {
-  width: 950px;
+  width: 95vw;
+  max-width: 1200px;
   min-width: 900px;
-  max-width: 1000px;
   min-height: 420px;
   max-height: 90vh;
   margin: 0 auto;
@@ -3042,7 +3067,7 @@ export default {
   border-radius: 12px;
   min-height: 350px;
   max-height: none;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .matriz-table-container {
@@ -3050,52 +3075,70 @@ export default {
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   margin-bottom: 2rem;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
+  width: 100%;
 }
 
 .matriz-table {
   width: 100%;
+  min-width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
+  table-layout: fixed;
 }
 
 .matriz-header-cell {
   background-color: #EEF2FF;
   color: #4F46E5;
-  padding: 1rem;
+  padding: 0.75rem 0.5rem;
   text-align: center;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-size: 13px;
+  font-size: 12px;
   border: none;
   border-bottom: 2px solid #E0E7FF;
-  min-width: 60px;
+  min-width: 50px;
+  max-width: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .matriz-codigo-cell {
-  min-width: 70px;
+  min-width: 60px;
+  max-width: 70px;
 }
 
 .matriz-nombre-cell {
-  min-width: 180px;
+  min-width: 150px;
+  max-width: 180px;
   text-align: left;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .matriz-data-cell {
-  min-width: 60px;
+  min-width: 50px;
+  max-width: 60px;
 }
 
 .matriz-total-cell, .matriz-total-header-cell {
   background-color: #F0FDF4;
   color: #166534;
-  padding: 1rem;
+  padding: 0.75rem 0.5rem;
   text-align: center;
   font-weight: 600;
   border: none;
-  font-size: 13px;
+  font-size: 12px;
   letter-spacing: 0.5px;
+  min-width: 80px;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .matriz-total-header-cell {
@@ -3105,17 +3148,24 @@ export default {
 .matriz-cell-header {
   background-color: #EEF2FF;
   color: #4F46E5;
-  padding: 1rem;
+  padding: 0.75rem 0.5rem;
   text-align: center;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-size: 13px;
+  font-size: 12px;
   border: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .matriz-cell-center {
   text-align: center;
+  padding: 0.75rem 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .matriz-cell-diagonal {
@@ -3484,69 +3534,3 @@ canvas {
   font-style: italic;
 }
 
-.cerrar-container {
-  position: fixed;
-  bottom: 32px;
-  right: 48px;
-  z-index: 100;
-}
-
-.cerrar-btn {
-  background: #7c3aed;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 14px 32px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.cerrar-btn:disabled {
-  background: #b0b0b0;
-  cursor: not-allowed;
-}
-
-.modal-confirm {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-}
-
-.modal-content {
-  background: white;
-  padding: 32px 48px;
-  border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
-  text-align: center;
-}
-
-.modal-content button {
-  margin: 0 12px;
-  padding: 10px 24px;
-  border-radius: 6px;
-  border: none;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.modal-content button:first-child {
-  background: #7c3aed;
-  color: white;
-}
-
-.modal-content button:last-child {
-  background: #6b7280;
-  color: white;
-}
-
-.modal-content button:hover {
-  opacity: 0.9;
-}

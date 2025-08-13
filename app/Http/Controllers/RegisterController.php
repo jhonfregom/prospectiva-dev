@@ -143,16 +143,42 @@ class RegisterController extends Controller
             $request->validate([
                 'registration_type' => 'required|in:natural,company',
                 'user' => 'required|string|email|max:255|unique:users,user',
-                'password' => 'required|string|min:8|max:255|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
+                'password' => 'required|string|min:8|max:255',
                 'confirm_password' => 'required|string|min:8|same:password',
             ], [
                 'password.required' => 'La contraseña es obligatoria.',
                 'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
                 'password.max' => 'La contraseña no puede exceder los 255 caracteres.',
-                'password.regex' => 'La contraseña debe contener al menos una letra mayúscula, una minúscula, un número y un carácter especial (@$!%*?&).',
                 'confirm_password.required' => 'La confirmación de contraseña es obligatoria.',
                 'confirm_password.same' => 'La confirmación de contraseña no coincide.',
             ]);
+
+            // Validación personalizada de contraseña
+            $password = $request->password;
+            $errors = [];
+            
+            if (!preg_match('/[a-z]/', $password)) {
+                $errors[] = 'La contraseña debe contener al menos una letra minúscula.';
+            }
+            
+            if (!preg_match('/[A-Z]/', $password)) {
+                $errors[] = 'La contraseña debe contener al menos una letra mayúscula.';
+            }
+            
+            if (!preg_match('/\d/', $password)) {
+                $errors[] = 'La contraseña debe contener al menos un número.';
+            }
+            
+            if (!preg_match('/[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?~`]/', $password)) {
+                $errors[] = 'La contraseña debe contener al menos un carácter especial (!@#$%^&*()_+-=[]{};\':"\|,.<>/?~`).';
+            }
+            
+            if (!empty($errors)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'La contraseña no cumple con los requisitos de seguridad: ' . implode(' ', $errors)
+                ], 422);
+            }
 
             // Validaciones específicas según el tipo de registro
             if ($request->registration_type === 'natural') {

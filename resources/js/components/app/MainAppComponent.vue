@@ -98,9 +98,9 @@ import FloatingBubbleComponent from './ui/FloatingBubbleComponent.vue';
                 //return !_.isEmpty( this.company ) && !_.isEmpty( this.participant );
             },
         },
-        created() {
+        async created() {
             this.initUrlsStore();
-            this.initTextsStore();
+            await this.initTextsStore();
             this.initFieldsStore();
         },
         async mounted() {
@@ -130,9 +130,8 @@ import FloatingBubbleComponent from './ui/FloatingBubbleComponent.vue';
                 let urls = JSON.parse( this.urls_json );
                 this.storeUrls.setUrls( urls );
             },
-            initTextsStore(){
-                let texts = JSON.parse( this.texts_json );
-                this.storeTexts.setTexts( texts );
+            async initTextsStore(){
+                await this.storeTexts.loadTexts();
                 this.storeTexts.setLocale( this.locale );
             },
             initFieldsStore(){

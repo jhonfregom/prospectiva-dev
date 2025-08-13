@@ -3,13 +3,13 @@
         class="title-section">
         <div class="columns">
             <div class="column is-11-desktop is-12-touch is-12-tablet is-offset-1-desktop content-title">
-                <template v-if="isMainSection">
+                <template v-if="isMainSection && storeTexts.main_section">
                     <div class="columns header">
                         <div class="column">
-                            <span class="title-group">{{ capitalizeWords(storeTexts.main_section.modules_title) }}</span>
+                            <span class="title-group">{{ capitalizeWords(storeTexts.main_section?.modules_title || '') }}</span>
                         </div>
                         <div class="column">
-                            <span class="title-group">{{ capitalizeWords(storeTexts.main_section.queries_title) }}</span>
+                            <span class="title-group">{{ capitalizeWords(storeTexts.main_section?.queries_title || '') }}</span>
                         </div>
                     </div>
                 </template>
@@ -35,10 +35,10 @@
                                 :key="'html-'+index" />
                         </template>
                         <a
-                            v-if="isVisibleBackBtn"
+                            v-if="isVisibleBackBtn && storeTexts.global"
                             href="#"
                             v-on:click.prevent="toBack()">
-                            {{ capitalizeWords(storeTexts.global.go_back) }}
+                            {{ capitalizeWords(storeTexts.global?.go_back || '') }}
                         </a>
                     </div>
                 </template>

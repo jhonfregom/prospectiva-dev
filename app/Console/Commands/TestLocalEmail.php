@@ -59,3 +59,6 @@ class TestLocalEmail extends Command
         $this->info("   2. Ejecuta: php artisan config:cache");
     }
 }
+
+
+

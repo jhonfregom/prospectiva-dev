@@ -8,6 +8,7 @@ export const useTextsStore = defineStore('texts', {
          * These will not be visible in the development console
          */
         locale: null, //Current language to translations
+        isLoading: false, //Loading state for texts
         graphics: {
             title: 'Gráfica Variables',
             zone_power: 'Zona de Poder',
@@ -185,27 +186,7 @@ export const useTextsStore = defineStore('texts', {
                 locked: 'Bloqueado'
             }
         },
-        conclusions_section: {
-            title: 'Conclusiones de aprendizaje',
-            component_practice_subtitle: 'DESDE EL COMPONENTE PRÁCTICO (Análisis del proceso, practicidad, comprensible, se adapta al proceso de aprendizaje y al objetivo del curso)',
-            actuality_subtitle: 'Actualidad (Consideraciones del proceso para que sea implementado en las organizaciones, ¿deben las empresas hacer ejercicios de este tipo?)',
-            aplication_subtitle: 'APLICACIÓN (Qué tanto se adapta a la organización para la que trabajas, o para tu emprendimiento, o para tu vida personal y profesional)',
-            table: {
-                edit: 'Editar',
-                save: 'Guardar',
-                locked: 'Bloqueado'
-            },
-            component_practice_placeholder: 'Describe el componente práctico de tu aprendizaje...',
-            actuality_placeholder: 'Reflexiona sobre la actualidad y relevancia de lo aprendido...',
-            aplication_placeholder: 'Explica cómo aplicarás lo aprendido en el futuro...',
-            messages: {
-                load_error: 'Error al cargar las conclusiones',
-                save_success: 'Conclusiones guardadas correctamente',
-                save_error: 'Error al guardar las conclusiones',
-                update_success: 'Conclusiones actualizadas correctamente',
-                update_error: 'Error al actualizar las conclusiones'
-            }
-        },
+
         results_section: {
             title: 'Resultados',
             table: {
@@ -302,13 +283,34 @@ export const useTextsStore = defineStore('texts', {
         
         // Conclusions Section - Textos para botones y confirmaciones
         conclusions_section: {
+            title: 'Conclusiones de aprendizaje',
+            component_practice_subtitle: 'DESDE EL COMPONENTE PRÁCTICO (Análisis del proceso, practicidad, comprensible, se adapta al proceso de aprendizaje y al objetivo del curso)',
+            actuality_subtitle: 'Actualidad (Consideraciones del proceso para que sea implementado en las organizaciones, ¿deben las empresas hacer ejercicios de este tipo?)',
+            aplication_subtitle: 'APLICACIÓN (Qué tanto se adapta a la organización para la que trabajas, o para tu emprendimiento, o para tu vida personal y profesional)',
+            table: {
+                edit: 'Editar',
+                save: 'Guardar',
+                locked: 'Bloqueado'
+            },
+            component_practice_placeholder: 'Describe el componente práctico de tu aprendizaje...',
+            actuality_placeholder: 'Reflexiona sobre la actualidad y relevancia de lo aprendido...',
+            aplication_placeholder: 'Explica cómo aplicarás lo aprendido en el futuro...',
             close_button: 'Cerrar',
             return_button: 'Regresar',
             close_confirm_message: '¿Estás seguro de cerrar el módulo? No podrás editar más.',
             return_confirm_message: '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.',
             confirm_yes: 'Sí, cerrar',
             confirm_yes_return: 'Sí, regresar',
-            confirm_no: 'Cancelar'
+            confirm_no: 'Cancelar',
+            messages: {
+                load_error: 'Error al cargar las conclusiones',
+                save_success: 'Conclusiones guardadas correctamente',
+                save_error: 'Error al guardar las conclusiones',
+                update_success: 'Conclusiones actualizadas correctamente',
+                update_error: 'Error al actualizar las conclusiones',
+                close_success: 'Conclusiones cerradas correctamente',
+                close_error: 'Error al cerrar las conclusiones'
+            }
         },
 
         // Results Section - Textos para botones y confirmaciones
@@ -385,14 +387,44 @@ export const useTextsStore = defineStore('texts', {
         },
         getLocale: (state) => {
             return state.locale
+        },
+        isTextsLoaded: (state) => {
+            return !state.isLoading && state.conclusions_section !== undefined;
         }
     },
     actions: {
+        async loadTexts() {
+            this.isLoading = true;
+            try {
+                const response = await fetch('/texts');
+                const result = await response.json();
+                
+                if (result.status === 200) {
+                    console.log('🔍 Debug: loadTexts called with:', result.data);
+                    console.log('🔍 Debug: conclusions_section in result.data:', result.data.conclusions_section);
+                    
+                    for(const key in result.data) {
+                        this[key] = result.data[key];
+                    }
+                    
+                    console.log('🔍 Debug: After loadTexts, this.conclusions_section:', this.conclusions_section);
+                }
+            } catch (error) {
+                console.error('Error loading texts:', error);
+            } finally {
+                this.isLoading = false;
+            }
+        },
         setTexts(objTexts){
+            console.log('🔍 Debug: setTexts called with:', objTexts);
+            console.log('🔍 Debug: conclusions_section in objTexts:', objTexts.conclusions_section);
+            
             for(const key in objTexts)
             {
                 this[key] = objTexts[key];
             }
+            
+            console.log('🔍 Debug: After setTexts, this.conclusions_section:', this.conclusions_section);
         },
         setLocale(locale){
             this.locale = locale;

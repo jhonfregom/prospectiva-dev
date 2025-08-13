@@ -142,17 +142,33 @@
 
     //Texts conclusions section
     $text_conclusions = [
-        'title' => 'Conclusiones',
-        'description' => 'En esta sección analizarás lo aprendido del proceso prospectivo. Reflexionarás sobre los hallazgos clave, las tendencias detectadas, las alertas tempranas y las estrategias que deberían considerarse. Las conclusiones permiten traducir los escenarios en acciones, aprendizajes y decisiones para el presente. Para cumplir con este apartado, responde las siguientes preguntas:… .<br><br>Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
+        'title' => 'Conclusiones de aprendizaje',
+        'component_practice_subtitle' => 'DESDE EL COMPONENTE PRÁCTICO (Análisis del proceso, practicidad, comprensible, se adapta al proceso de aprendizaje y al objetivo del curso)',
+        'actuality_subtitle' => 'Actualidad (Consideraciones del proceso para que sea implementado en las organizaciones, ¿deben las empresas hacer ejercicios de este tipo?)',
+        'aplication_subtitle' => 'APLICACIÓN (Qué tanto se adapta a la organización para la que trabajas, o para tu emprendimiento, o para tu vida personal y profesional)',
         'table' => [
-            'close' => 'Cerrar',
-            'save' => 'Guardar',
             'edit' => 'Editar',
-            'locked' => 'BLOQUEADO'
+            'save' => 'Guardar',
+            'locked' => 'Bloqueado'
         ],
+        'component_practice_placeholder' => 'Describe el componente práctico de tu aprendizaje...',
+        'actuality_placeholder' => 'Reflexiona sobre la actualidad y relevancia de lo aprendido...',
+        'aplication_placeholder' => 'Explica cómo aplicarás lo aprendido en el futuro...',
+        'close_button' => 'Cerrar',
+        'return_button' => 'Regresar',
+        'close_confirm_message' => '¿Estás seguro de cerrar el módulo? No podrás editar más.',
+        'return_confirm_message' => '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.',
+        'confirm_yes' => 'Sí, cerrar',
+        'confirm_yes_return' => 'Sí, regresar',
+        'confirm_no' => 'Cancelar',
         'messages' => [
-            'close_success' => 'Conclusiones cerradas correctamente.',
-            'close_error' => 'Error al cerrar las conclusiones.'
+            'load_error' => 'Error al cargar las conclusiones',
+            'save_success' => 'Conclusiones guardadas correctamente',
+            'save_error' => 'Error al guardar las conclusiones',
+            'update_success' => 'Conclusiones actualizadas correctamente',
+            'update_error' => 'Error al actualizar las conclusiones',
+            'close_success' => 'Conclusiones cerradas correctamente',
+            'close_error' => 'Error al cerrar las conclusiones'
         ]
     ];
 
@@ -362,7 +378,7 @@
         "hypothesis" => $text_hypothesis,
         "initialConditions" => $text_initial_conditions,
         "scenarios" => $text_scenarios,
-        "conclusions" => $text_conclusions,
+        "conclusions_section" => $text_conclusions,
         "results_section" => $text_results_section,
     ];
 

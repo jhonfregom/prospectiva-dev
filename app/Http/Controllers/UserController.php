@@ -219,6 +219,7 @@ class UserController extends Controller
 
         $variables = \App\Models\Variable::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
+            ->orderByRaw('CAST(SUBSTRING(id_variable, 2) AS UNSIGNED) ASC')
             ->get();
         
         $userData->variables_count = $variables->count();
@@ -340,24 +341,80 @@ class UserController extends Controller
             ];
         });
 
+        // Usar la misma lógica del HypothesisController para seleccionar variables
+        $varCoords = [];
+        foreach ($variables as $variable) {
+            $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
+            $influencia = $matriz->where('id_resp_depen', $variable->id)->sum('id_resp_influ');
+            
+            $varCoords[] = [
+                'id' => $variable->id,
+                'name' => $variable->name_variable,
+                'dependencia' => $dependencia,
+                'influencia' => $influencia
+            ];
+        }
+
+        $maxInfluencia = max(array_column($varCoords, 'influencia'));
+        $minDependencia = min(array_column($varCoords, 'dependencia'));
+
+        $porEncimaDiagonal = array_filter($varCoords, function($var) {
+            return $var['influencia'] > $var['dependencia'];
+        });
+
+        $distanciaZonaPoder = function($var) use ($minDependencia, $maxInfluencia) {
+            return sqrt(pow($var['dependencia'] - $minDependencia, 2) + pow($var['influencia'] - $maxInfluencia, 2));
+        };
+
+        if (count($porEncimaDiagonal) >= 2) {
+            usort($porEncimaDiagonal, function($a, $b) use ($distanciaZonaPoder) {
+                return $distanciaZonaPoder($a) <=> $distanciaZonaPoder($b);
+            });
+            $seleccionados = array_slice($porEncimaDiagonal, 0, 2);
+        } elseif (count($porEncimaDiagonal) === 1) {
+            $primera = array_values($porEncimaDiagonal)[0];
+            $resto = array_filter($varCoords, function($var) use ($primera) {
+                return $var['id'] !== $primera['id'];
+            });
+            usort($resto, function($a, $b) use ($distanciaZonaPoder) {
+                return $distanciaZonaPoder($a) <=> $distanciaZonaPoder($b);
+            });
+            $seleccionados = [$primera, array_values($resto)[0]];
+        } else {
+            usort($varCoords, function($a, $b) use ($distanciaZonaPoder) {
+                return $distanciaZonaPoder($a) <=> $distanciaZonaPoder($b);
+            });
+            $seleccionados = array_slice($varCoords, 0, 2);
+        }
+
+        // Obtener solo las hipótesis de las variables seleccionadas
+        $selectedVariableIds = array_column($seleccionados, 'id');
         $hypotheses = \App\Models\Hypothesis::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
+            ->whereIn('id_variable', $selectedVariableIds)
             ->get();
         
-        $userData->future_drivers = $hypotheses->map(function($hypothesis) {
-            $variable = \App\Models\Variable::find($hypothesis->id_variable);
+        // Agrupar hipótesis por variable
+        $groupedHypotheses = $hypotheses->groupBy('id_variable');
+        
+        $userData->future_drivers = $groupedHypotheses->map(function($variableHypotheses, $variableId) {
+            $variable = \App\Models\Variable::find($variableId);
             $variableName = $variable ? $variable->name_variable : 'Variable Desconocida';
             
+            // Obtener H0 y H1 para esta variable
+            $h0 = $variableHypotheses->where('secondary_hypotheses', 'H0')->first();
+            $h1 = $variableHypotheses->where('secondary_hypotheses', 'H1')->first();
+            
             return [
-                'id' => $hypothesis->id,
-                'variable_id' => $hypothesis->id_variable,
+                'id' => $variableId,
+                'variable_id' => $variableId,
                 'variable_name' => $variableName,
-                'name_hypothesis' => $hypothesis->name_hypothesis,
-                'description' => $hypothesis->description,
-                'secondary_hypotheses' => $hypothesis->secondary_hypotheses,
-                'state' => $hypothesis->state
+                'name_hypothesis' => $variableName,
+                'h0_description' => $h0 ? $h0->description : null,
+                'h1_description' => $h1 ? $h1->description : null,
+                'state' => $h0 ? $h0->state : ($h1 ? $h1->state : '0')
             ];
-        });
+        })->values();
 
         $userData->initial_conditions = $variables->map(function($variable) {
             return [
@@ -375,6 +432,116 @@ class UserController extends Controller
             ->get();
         
         $userData->scenarios = $scenarios->map(function($scenario) use ($hypotheses) {
+            // Obtener las hipótesis específicas para cada escenario según el método de Schwartz
+            $scenarioHypotheses = [];
+            
+            // Obtener las dos variables principales (las más cercanas a la zona de poder)
+            $groupedHypotheses = $hypotheses->groupBy('id_variable');
+            $mainVariables = $groupedHypotheses->take(2)->values();
+            
+            if ($mainVariables->count() >= 2) {
+                $var1 = $mainVariables[0];
+                $var2 = $mainVariables[1];
+                
+                // Obtener H0 y H1 para cada variable
+                $h0_var1 = $var1->where('secondary_hypotheses', 'H0')->first();
+                $h1_var1 = $var1->where('secondary_hypotheses', 'H1')->first();
+                $h0_var2 = $var2->where('secondary_hypotheses', 'H0')->first();
+                $h1_var2 = $var2->where('secondary_hypotheses', 'H1')->first();
+                
+                // Asignar hipótesis según el número de escenario
+                switch ($scenario->num_scenario) {
+                    case 1: // Escenario 1: H1+ y H2+
+                        if ($h1_var1) {
+                            $variable = \App\Models\Variable::find($h1_var1->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h1_var1->id,
+                                'name_hypothesis' => 'Hipótesis 1+',
+                                'description' => $h1_var1->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h1_var1->state
+                            ];
+                        }
+                        if ($h1_var2) {
+                            $variable = \App\Models\Variable::find($h1_var2->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h1_var2->id,
+                                'name_hypothesis' => 'Hipótesis 2+',
+                                'description' => $h1_var2->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h1_var2->state
+                            ];
+                        }
+                        break;
+                    case 2: // Escenario 2: H2+ y H1-
+                        if ($h1_var2) {
+                            $variable = \App\Models\Variable::find($h1_var2->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h1_var2->id,
+                                'name_hypothesis' => 'Hipótesis 2+',
+                                'description' => $h1_var2->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h1_var2->state
+                            ];
+                        }
+                        if ($h0_var1) {
+                            $variable = \App\Models\Variable::find($h0_var1->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h0_var1->id,
+                                'name_hypothesis' => 'Hipótesis 1-',
+                                'description' => $h0_var1->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h0_var1->state
+                            ];
+                        }
+                        break;
+                    case 3: // Escenario 3: H1- y H2-
+                        if ($h0_var1) {
+                            $variable = \App\Models\Variable::find($h0_var1->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h0_var1->id,
+                                'name_hypothesis' => 'Hipótesis 1-',
+                                'description' => $h0_var1->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h0_var1->state
+                            ];
+                        }
+                        if ($h0_var2) {
+                            $variable = \App\Models\Variable::find($h0_var2->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h0_var2->id,
+                                'name_hypothesis' => 'Hipótesis 2-',
+                                'description' => $h0_var2->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h0_var2->state
+                            ];
+                        }
+                        break;
+                    case 4: // Escenario 4: H2- y H1+
+                        if ($h0_var2) {
+                            $variable = \App\Models\Variable::find($h0_var2->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h0_var2->id,
+                                'name_hypothesis' => 'Hipótesis 2-',
+                                'description' => $h0_var2->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h0_var2->state
+                            ];
+                        }
+                        if ($h1_var1) {
+                            $variable = \App\Models\Variable::find($h1_var1->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h1_var1->id,
+                                'name_hypothesis' => 'Hipótesis 1+',
+                                'description' => $h1_var1->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h1_var1->state
+                            ];
+                        }
+                        break;
+                }
+            }
+            
             return [
                 'id' => $scenario->id,
                 'num_scenario' => $scenario->num_scenario,
@@ -387,7 +554,7 @@ class UserController extends Controller
                 'edits_year2' => $scenario->edits_year2,
                 'edits_year3' => $scenario->edits_year3,
                 'state' => $scenario->state,
-                'hypotheses' => [] 
+                'hypotheses' => $scenarioHypotheses
             ];
         });
 
@@ -397,28 +564,28 @@ class UserController extends Controller
             ->get();
         
         $conclusionsArray = [];
-        for ($i = 1; $i <= 3; $i++) {
-            $actualId = 4 - $i;
-            $existingConclusion = $conclusions->where('id', $actualId)->first();
-            if ($existingConclusion) {
-                $conclusionsArray[] = [
-                    'id' => $existingConclusion->id,
-                    'title' => 'Conclusión ' . $i,
-                    'state' => $existingConclusion->state,
-                    'component_practice' => $existingConclusion->component_practice,
-                    'actuality' => $existingConclusion->actuality,
-                    'aplication' => $existingConclusion->aplication
-                ];
-            } else {
-                $conclusionsArray[] = [
-                    'id' => $actualId,
-                    'title' => 'Conclusión ' . $i,
-                    'state' => '0',
-                    'component_practice' => null,
-                    'actuality' => null,
-                    'aplication' => null
-                ];
-            }
+        
+        // Si hay conclusiones reales, usar solo la primera
+        if ($conclusions->count() > 0) {
+            $conclusion = $conclusions->first();
+            $conclusionsArray[] = [
+                'id' => $conclusion->id,
+                'title' => 'Conclusiones',
+                'state' => $conclusion->state,
+                'component_practice' => $conclusion->component_practice,
+                'actuality' => $conclusion->actuality,
+                'aplication' => $conclusion->aplication
+            ];
+        } else {
+            // Si no hay conclusiones, crear una vacía
+            $conclusionsArray[] = [
+                'id' => 1,
+                'title' => 'Conclusiones',
+                'state' => '0',
+                'component_practice' => null,
+                'actuality' => null,
+                'aplication' => null
+            ];
         }
         
         $userData->conclusions = $conclusionsArray;
@@ -429,7 +596,9 @@ class UserController extends Controller
 
     private function addUserData($userData)
     {
-        $variables = \App\Models\Variable::where('user_id', $userData->id)->get();
+        $variables = \App\Models\Variable::where('user_id', $userData->id)
+            ->orderByRaw('CAST(SUBSTRING(id_variable, 2) AS UNSIGNED) ASC')
+            ->get();
         $userData->variables_count = $variables->count();
         $userData->variables_list = $variables->map(function($variable) {
             return [
@@ -544,21 +713,79 @@ class UserController extends Controller
             ];
         });
 
-        $hypotheses = \App\Models\Hypothesis::where('user_id', $userData->id)->get();
-        $userData->future_drivers = $hypotheses->map(function($hypothesis) {
-            $variable = \App\Models\Variable::find($hypothesis->id_variable);
+        // Usar la misma lógica del HypothesisController para seleccionar variables
+        $varCoords = [];
+        foreach ($variables as $variable) {
+            $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
+            $influencia = $matriz->where('id_resp_depen', $variable->id)->sum('id_resp_influ');
+            
+            $varCoords[] = [
+                'id' => $variable->id,
+                'name' => $variable->name_variable,
+                'dependencia' => $dependencia,
+                'influencia' => $influencia
+            ];
+        }
+
+        $maxInfluencia = max(array_column($varCoords, 'influencia'));
+        $minDependencia = min(array_column($varCoords, 'dependencia'));
+
+        $porEncimaDiagonal = array_filter($varCoords, function($var) {
+            return $var['influencia'] > $var['dependencia'];
+        });
+
+        $distanciaZonaPoder = function($var) use ($minDependencia, $maxInfluencia) {
+            return sqrt(pow($var['dependencia'] - $minDependencia, 2) + pow($var['influencia'] - $maxInfluencia, 2));
+        };
+
+        if (count($porEncimaDiagonal) >= 2) {
+            usort($porEncimaDiagonal, function($a, $b) use ($distanciaZonaPoder) {
+                return $distanciaZonaPoder($a) <=> $distanciaZonaPoder($b);
+            });
+            $seleccionados = array_slice($porEncimaDiagonal, 0, 2);
+        } elseif (count($porEncimaDiagonal) === 1) {
+            $primera = array_values($porEncimaDiagonal)[0];
+            $resto = array_filter($varCoords, function($var) use ($primera) {
+                return $var['id'] !== $primera['id'];
+            });
+            usort($resto, function($a, $b) use ($distanciaZonaPoder) {
+                return $distanciaZonaPoder($a) <=> $distanciaZonaPoder($b);
+            });
+            $seleccionados = [$primera, array_values($resto)[0]];
+        } else {
+            usort($varCoords, function($a, $b) use ($distanciaZonaPoder) {
+                return $distanciaZonaPoder($a) <=> $distanciaZonaPoder($b);
+            });
+            $seleccionados = array_slice($varCoords, 0, 2);
+        }
+
+        // Obtener solo las hipótesis de las variables seleccionadas
+        $selectedVariableIds = array_column($seleccionados, 'id');
+        $hypotheses = \App\Models\Hypothesis::where('user_id', $userData->id)
+            ->whereIn('id_variable', $selectedVariableIds)
+            ->get();
+        
+        // Agrupar hipótesis por variable
+        $groupedHypotheses = $hypotheses->groupBy('id_variable');
+        
+        $userData->future_drivers = $groupedHypotheses->map(function($variableHypotheses, $variableId) {
+            $variable = \App\Models\Variable::find($variableId);
             $variableName = $variable ? $variable->name_variable : 'Variable Desconocida';
             
+            // Obtener H0 y H1 para esta variable
+            $h0 = $variableHypotheses->where('secondary_hypotheses', 'H0')->first();
+            $h1 = $variableHypotheses->where('secondary_hypotheses', 'H1')->first();
+            
             return [
-                'id' => $hypothesis->id,
-                'variable_id' => $hypothesis->id_variable,
+                'id' => $variableId,
+                'variable_id' => $variableId,
                 'variable_name' => $variableName,
-                'name_hypothesis' => $hypothesis->name_hypothesis,
-                'description' => $hypothesis->description,
-                'secondary_hypotheses' => $hypothesis->secondary_hypotheses,
-                'state' => $hypothesis->state
+                'name_hypothesis' => $variableName,
+                'h0_description' => $h0 ? $h0->description : null,
+                'h1_description' => $h1 ? $h1->description : null,
+                'state' => $h0 ? $h0->state : ($h1 ? $h1->state : '0')
             ];
-        });
+        })->values();
 
         $userData->initial_conditions = $variables->map(function($variable) {
             return [
@@ -574,7 +801,117 @@ class UserController extends Controller
             ->orderBy('num_scenario', 'asc')
             ->get();
         
-        $userData->scenarios = $scenarios->map(function($scenario) {
+        $userData->scenarios = $scenarios->map(function($scenario) use ($hypotheses) {
+            // Obtener las hipótesis específicas para cada escenario según el método de Schwartz
+            $scenarioHypotheses = [];
+            
+            // Obtener las dos variables principales (las más cercanas a la zona de poder)
+            $groupedHypotheses = $hypotheses->groupBy('id_variable');
+            $mainVariables = $groupedHypotheses->take(2)->values();
+            
+            if ($mainVariables->count() >= 2) {
+                $var1 = $mainVariables[0];
+                $var2 = $mainVariables[1];
+                
+                // Obtener H0 y H1 para cada variable
+                $h0_var1 = $var1->where('secondary_hypotheses', 'H0')->first();
+                $h1_var1 = $var1->where('secondary_hypotheses', 'H1')->first();
+                $h0_var2 = $var2->where('secondary_hypotheses', 'H0')->first();
+                $h1_var2 = $var2->where('secondary_hypotheses', 'H1')->first();
+                
+                // Asignar hipótesis según el número de escenario
+                switch ($scenario->num_scenario) {
+                    case 1: // Escenario 1: H1+ y H2+
+                        if ($h1_var1) {
+                            $variable = \App\Models\Variable::find($h1_var1->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h1_var1->id,
+                                'name_hypothesis' => 'Hipótesis 1+',
+                                'description' => $h1_var1->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h1_var1->state
+                            ];
+                        }
+                        if ($h1_var2) {
+                            $variable = \App\Models\Variable::find($h1_var2->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h1_var2->id,
+                                'name_hypothesis' => 'Hipótesis 2+',
+                                'description' => $h1_var2->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h1_var2->state
+                            ];
+                        }
+                        break;
+                    case 2: // Escenario 2: H2+ y H1-
+                        if ($h1_var2) {
+                            $variable = \App\Models\Variable::find($h1_var2->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h1_var2->id,
+                                'name_hypothesis' => 'Hipótesis 2+',
+                                'description' => $h1_var2->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h1_var2->state
+                            ];
+                        }
+                        if ($h0_var1) {
+                            $variable = \App\Models\Variable::find($h0_var1->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h0_var1->id,
+                                'name_hypothesis' => 'Hipótesis 1-',
+                                'description' => $h0_var1->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h0_var1->state
+                            ];
+                        }
+                        break;
+                    case 3: // Escenario 3: H1- y H2-
+                        if ($h0_var1) {
+                            $variable = \App\Models\Variable::find($h0_var1->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h0_var1->id,
+                                'name_hypothesis' => 'Hipótesis 1-',
+                                'description' => $h0_var1->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h0_var1->state
+                            ];
+                        }
+                        if ($h0_var2) {
+                            $variable = \App\Models\Variable::find($h0_var2->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h0_var2->id,
+                                'name_hypothesis' => 'Hipótesis 2-',
+                                'description' => $h0_var2->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h0_var2->state
+                            ];
+                        }
+                        break;
+                    case 4: // Escenario 4: H2- y H1+
+                        if ($h0_var2) {
+                            $variable = \App\Models\Variable::find($h0_var2->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h0_var2->id,
+                                'name_hypothesis' => 'Hipótesis 2-',
+                                'description' => $h0_var2->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h0_var2->state
+                            ];
+                        }
+                        if ($h1_var1) {
+                            $variable = \App\Models\Variable::find($h1_var1->id_variable);
+                            $scenarioHypotheses[] = [
+                                'id' => $h1_var1->id,
+                                'name_hypothesis' => 'Hipótesis 1+',
+                                'description' => $h1_var1->description,
+                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
+                                'state' => $h1_var1->state
+                            ];
+                        }
+                        break;
+                }
+            }
+            
             return [
                 'id' => $scenario->id,
                 'num_scenario' => $scenario->num_scenario,
@@ -587,7 +924,7 @@ class UserController extends Controller
                 'edits_year2' => $scenario->edits_year2,
                 'edits_year3' => $scenario->edits_year3,
                 'state' => $scenario->state,
-                'hypotheses' => []
+                'hypotheses' => $scenarioHypotheses
             ];
         });
 
@@ -596,28 +933,28 @@ class UserController extends Controller
             ->get();
         
         $conclusionsArray = [];
-        for ($i = 1; $i <= 3; $i++) {
-            $actualId = 4 - $i;
-            $existingConclusion = $conclusions->where('id', $actualId)->first();
-            if ($existingConclusion) {
-                $conclusionsArray[] = [
-                    'id' => $existingConclusion->id,
-                    'title' => 'Conclusión ' . $i,
-                    'state' => $existingConclusion->state,
-                    'component_practice' => $existingConclusion->component_practice,
-                    'actuality' => $existingConclusion->actuality,
-                    'aplication' => $existingConclusion->aplication
-                ];
-            } else {
-                $conclusionsArray[] = [
-                    'id' => $actualId,
-                    'title' => 'Conclusión ' . $i,
-                    'state' => '0',
-                    'component_practice' => null,
-                    'actuality' => null,
-                    'aplication' => null
-                ];
-            }
+        
+        // Si hay conclusiones reales, usar solo la primera
+        if ($conclusions->count() > 0) {
+            $conclusion = $conclusions->first();
+            $conclusionsArray[] = [
+                'id' => $conclusion->id,
+                'title' => 'Conclusiones',
+                'state' => $conclusion->state,
+                'component_practice' => $conclusion->component_practice,
+                'actuality' => $conclusion->actuality,
+                'aplication' => $conclusion->aplication
+            ];
+        } else {
+            // Si no hay conclusiones, crear una vacía
+            $conclusionsArray[] = [
+                'id' => 1,
+                'title' => 'Conclusiones',
+                'state' => '0',
+                'component_practice' => null,
+                'actuality' => null,
+                'aplication' => null
+            ];
         }
         
         $userData->conclusions = $conclusionsArray;

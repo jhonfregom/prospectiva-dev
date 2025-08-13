@@ -68,3 +68,5 @@ class CheckEmailConfiguration extends Command
         return 0;
     }
 }
+
+

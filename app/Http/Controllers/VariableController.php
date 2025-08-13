@@ -215,7 +215,7 @@ class VariableController extends Controller
         
         $variables = Variable::where('user_id', Auth::id())
             ->where('tried_id', $currentRoute->id)
-            ->orderBy('id_variable', 'asc')
+            ->orderByRaw('CAST(SUBSTRING(id_variable, 2) AS UNSIGNED) ASC')
             ->get(['id', 'id_variable', 'name_variable', 'now_condition', 'state', 'edits_now_condition']);
         return response()->json([
             'data' => $variables,

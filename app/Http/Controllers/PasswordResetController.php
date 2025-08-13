@@ -136,7 +136,7 @@ class PasswordResetController extends Controller
             $request->validate([
                 'token' => 'required|string|max:255',
                 'email' => 'required|email|max:255',
-                'password' => 'required|string|min:8|max:255|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
+                'password' => 'required|string|min:8|max:255',
                 'password_confirmation' => 'required|same:password',
             ], [
                 'token.required' => 'Token de restablecimiento requerido.',
@@ -147,7 +147,7 @@ class PasswordResetController extends Controller
                 'password.required' => 'La nueva contraseña es obligatoria.',
                 'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
                 'password.max' => 'La contraseña no puede exceder los 255 caracteres.',
-                'password.regex' => 'La contraseña debe contener al menos una letra mayúscula, una minúscula, un número y un carácter especial (@$!%*?&).',
+                'password.regex' => 'La contraseña debe contener al menos una letra mayúscula, una minúscula, un número y un carácter especial (@$!%*?&#^+=()[]{}|\:;"\'<>,./~`).',
                 'password_confirmation.required' => 'La confirmación de contraseña es obligatoria.',
                 'password_confirmation.same' => 'La confirmación de contraseña no coincide.',
             ]);

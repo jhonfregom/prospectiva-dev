@@ -105,3 +105,6 @@ class UserActivationController extends Controller
         ]);
     }
 }
+
+
+

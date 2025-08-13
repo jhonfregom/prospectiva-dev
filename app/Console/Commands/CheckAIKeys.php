@@ -58,3 +58,5 @@ class CheckAIKeys extends Command
         $this->info('💡 Nota: Si no configuras ninguna clave, el sistema usará Ollama (local) como fallback.');
     }
 }
+
+

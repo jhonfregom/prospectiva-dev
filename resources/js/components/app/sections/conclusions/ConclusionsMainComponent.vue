@@ -1,12 +1,13 @@
 <template>
     <div class="conclusions-container" :key="forceRerender">
-        <!-- Letrero informativo -->
-        <info-banner-component
-            :description="textsStore.getText('conclusions.description')"
-        />
-        
         <!-- MiniStepper eliminado -->
-        <div class="conclusions-table">
+        
+        <!-- Mostrar mensaje de carga si los textos no están disponibles -->
+        <div v-if="!textsStore.conclusions_section" class="loading-message">
+            <p>Cargando textos...</p>
+        </div>
+        
+        <div v-else class="conclusions-table">
             <div class="table-content">
                 <!-- Primera fila: Título -->
                 <div class="table-row title-row">
@@ -173,7 +174,6 @@ import { useTextsStore } from '../../../../stores/texts';
 import { useConclusionsStore } from '../../../../stores/conclusions';
 import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
-import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
 
 export default {
 
@@ -240,7 +240,6 @@ export default {
     },
 
     components: {
-        InfoBannerComponent,
     },
 
     data() {
@@ -288,7 +287,17 @@ export default {
         }
     },
 
-    mounted() {
+    async mounted() {
+        console.log('🔍 Debug: textsStore state:', this.textsStore);
+        console.log('🔍 Debug: conclusions_section.title:', this.textsStore.getText('conclusions_section.title'));
+        console.log('🔍 Debug: conclusions_section.component_practice_subtitle:', this.textsStore.getText('conclusions_section.component_practice_subtitle'));
+        
+        // Esperar a que los textos estén cargados
+        if (this.textsStore.isLoading || !this.textsStore.conclusions_section) {
+            console.log('🔍 Debug: Esperando a que los textos se carguen...');
+            await this.waitForTexts();
+        }
+        
         this.sectionStore.setTitleSection(this.textsStore.getText('conclusions_section.title'));
         this.loadConclusions().then(() => {
             this.forceRerender++;
@@ -326,6 +335,21 @@ export default {
                     type: 'is-danger'
                 });
             }
+        },
+
+        async waitForTexts() {
+            return new Promise((resolve) => {
+                const checkTexts = () => {
+                    if (!this.textsStore.isLoading && this.textsStore.conclusions_section) {
+                        console.log('🔍 Debug: Textos cargados correctamente');
+                        resolve();
+                    } else {
+                        console.log('🔍 Debug: Textos aún no cargados, esperando...');
+                        setTimeout(checkTexts, 100);
+                    }
+                };
+                checkTexts();
+            });
         },
 
         handleComponentPracticeChange() {

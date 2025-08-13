@@ -27,7 +27,8 @@ class ConclusionController extends Controller
     private function createWithSpecificId(array $data, int $id): Conclusion
     {
         
-        $traceability = \App\Models\Traceability::getOrCreateForUser($data['user_id']);
+        $traceability = \App\Models\Traceability::getCurrentRouteForUser($data['user_id']);
+        $triedId = $traceability ? $traceability->id : null;
 
         \DB::statement("INSERT INTO conclusions (id, user_id, component_practice, actuality, aplication, state, tried_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())", [
             $id,
@@ -36,7 +37,7 @@ class ConclusionController extends Controller
             $data['actuality'] ?? '',
             $data['aplication'] ?? '',
             $data['state'] ?? '0',
-            $traceability->id
+            $triedId
         ]);
 
         return Conclusion::find($id);
@@ -46,7 +47,12 @@ class ConclusionController extends Controller
     {
         try {
             $userId = Auth::id();
-            $conclusion = Conclusion::getByUser($userId);
+            $traceability = \App\Models\Traceability::getCurrentRouteForUser($userId);
+            $triedId = $traceability ? $traceability->id : null;
+            
+            $conclusion = Conclusion::where('user_id', $userId)
+                ->where('tried_id', $triedId)
+                ->first();
 
             if (!$conclusion) {
                 
@@ -77,6 +83,8 @@ class ConclusionController extends Controller
     {
         try {
             $userId = Auth::id();
+            $traceability = \App\Models\Traceability::getCurrentRouteForUser($userId);
+            $triedId = $traceability ? $traceability->id : null;
             
             $validatedData = $request->validate([
                 'component_practice' => 'nullable|string',
@@ -85,7 +93,9 @@ class ConclusionController extends Controller
                 'state' => 'nullable|string|in:0,1'
             ]);
 
-            $conclusion = Conclusion::where('user_id', $userId)->first();
+            $conclusion = Conclusion::where('user_id', $userId)
+                ->where('tried_id', $triedId)
+                ->first();
 
             if (!$conclusion) {
                 
