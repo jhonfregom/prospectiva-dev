@@ -7,7 +7,13 @@
             <p>Cargando textos...</p>
         </div>
         
-        <div v-else class="conclusions-table">
+        <div v-else>
+            <!-- Letrero informativo -->
+            <info-banner-component
+                :description="textsStore.getText('conclusions_section.description')"
+            />
+            
+            <div class="conclusions-table">
             <div class="table-content">
                 <!-- Primera fila: Título -->
                 <div class="table-row title-row">
@@ -40,18 +46,14 @@
                         </div>
                     </div>
                     <div class="row-actions">
-                        <b-button 
-                            :type="isComponentPracticeEditing ? 'is-success' : 'is-info'"
-                            size="is-small"
-                            :icon-left="isComponentPracticeEditing ? 'save' : 'edit'"
+                        <edit-button-component
+                            :is-editing="isComponentPracticeEditing"
+                            :is-locked="!isComponentPracticeEditable"
+                            :edit-text="textsStore.getText('conclusions_section.table.edit')"
+                            :save-text="textsStore.getText('conclusions_section.table.save')"
+                            :locked-text="textsStore.getText('conclusions_section.table.locked')"
                             @click="handleComponentPracticeEditSave"
-                            outlined
-                            :disabled="!isComponentPracticeEditable">
-                            {{ isComponentPracticeEditing ? textsStore.getText('conclusions_section.table.save') : textsStore.getText('conclusions_section.table.edit') }}
-                        </b-button>
-                        <span v-if="!isComponentPracticeEditable" class="tag is-danger is-light">
-                            {{ textsStore.getText('conclusions_section.table.locked') }}
-                        </span>
+                        />
                     </div>
                 </div>
 
@@ -79,18 +81,14 @@
                         </div>
                     </div>
                     <div class="row-actions">
-                        <b-button 
-                            :type="isActualityEditing ? 'is-success' : 'is-info'"
-                            size="is-small"
-                            :icon-left="isActualityEditing ? 'save' : 'edit'"
+                        <edit-button-component
+                            :is-editing="isActualityEditing"
+                            :is-locked="!isActualityEditable"
+                            :edit-text="textsStore.getText('conclusions_section.table.edit')"
+                            :save-text="textsStore.getText('conclusions_section.table.save')"
+                            :locked-text="textsStore.getText('conclusions_section.table.locked')"
                             @click="handleActualityEditSave"
-                            outlined
-                            :disabled="!isActualityEditable">
-                            {{ isActualityEditing ? textsStore.getText('conclusions_section.table.save') : textsStore.getText('conclusions_section.table.edit') }}
-                        </b-button>
-                        <span v-if="!isActualityEditable" class="tag is-danger is-light">
-                            {{ textsStore.getText('conclusions_section.table.locked') }}
-                        </span>
+                        />
                     </div>
                 </div>
 
@@ -118,20 +116,17 @@
                         </div>
                     </div>
                     <div class="row-actions">
-                        <b-button 
-                            :type="isAplicationEditing ? 'is-success' : 'is-info'"
-                            size="is-small"
-                            :icon-left="isAplicationEditing ? 'save' : 'edit'"
+                        <edit-button-component
+                            :is-editing="isAplicationEditing"
+                            :is-locked="!isAplicationEditable"
+                            :edit-text="textsStore.getText('conclusions_section.table.edit')"
+                            :save-text="textsStore.getText('conclusions_section.table.save')"
+                            :locked-text="textsStore.getText('conclusions_section.table.locked')"
                             @click="handleAplicationEditSave"
-                            outlined
-                            :disabled="!isAplicationEditable">
-                            {{ isAplicationEditing ? textsStore.getText('conclusions_section.table.save') : textsStore.getText('conclusions_section.table.edit') }}
-                        </b-button>
-                        <span v-if="!isAplicationEditable" class="tag is-danger is-light">
-                            {{ textsStore.getText('conclusions_section.table.locked') }}
-                        </span>
+                        />
                     </div>
                 </div>
+            </div>
             </div>
         </div>
         <!-- Botón Cerrar -->
@@ -173,6 +168,8 @@ import { useSectionStore } from '../../../../stores/section';
 import { useTextsStore } from '../../../../stores/texts';
 import { useConclusionsStore } from '../../../../stores/conclusions';
 import { useSessionStore } from '../../../../stores/session';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
+import EditButtonComponent from '../../ui/EditButtonComponent.vue';
 import axios from 'axios';
 
 export default {
@@ -240,6 +237,8 @@ export default {
     },
 
     components: {
+        InfoBannerComponent,
+        EditButtonComponent
     },
 
     data() {

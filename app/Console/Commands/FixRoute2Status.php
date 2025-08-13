@@ -32,13 +32,14 @@ class FixRoute2Status extends Command
             $this->info("  - results: {$route->results}");
             $this->info("  - conclusions: {$route->conclusions}");
             
-            // Si tiene results = '1' pero conclusions = '0', corregir
-            if ($route->results === '1' && $route->conclusions === '0') {
-                $this->warn("  ❌ Ruta con estado incorrecto - corrigiendo...");
-                $route->results = '0';
+            // Para la ruta 2, results debe estar en '1' para permitir acceso, pero el estado "completado" 
+            // solo se marca cuando conclusions = '1'
+            if ($route->results === '0') {
+                $this->warn("  ❌ Ruta 2 con results = '0' - corrigiendo para permitir acceso...");
+                $route->results = '1';
                 $route->save();
                 $fixedCount++;
-                $this->info("  ✅ Corregida: results = '0'");
+                $this->info("  ✅ Corregida: results = '1' (habilitado para acceso)");
             } else {
                 $this->info("  ✅ Estado correcto");
             }

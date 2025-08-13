@@ -49,16 +49,14 @@
                 </div>
             </b-table-column>
             <b-table-column field="actions" label="Acciones" v-slot="props" centered>
-                <b-button 
-                    type="is-info"
-                    size="is-small"
-                    icon-left="edit"
+                <edit-button-component
+                    :is-editing="editingRow === props.row.key"
+                    :is-locked="props.row.state === '1'"
+                    edit-text="Editar"
+                    save-text="Guardar"
+                    locked-text="Bloqueado"
                     @click="handleEditSave(props.row)"
-                    outlined
-                    :disabled="props.row.state === '1'"
-                >
-                    {{ editingRow === props.row.key ? 'Guardar' : 'Editar' }}
-                </b-button>
+                />
             </b-table-column>
             <b-table-column field="score" label="PUNTAJE" v-slot="props" centered>
                 <span>{{ props.row.score }}</span>
@@ -113,6 +111,7 @@ import { storeToRefs } from 'pinia';
 import { debounce } from 'lodash';
 import { useTraceabilityStore } from '../../../../stores/traceability';
 import axios from 'axios';
+import EditButtonComponent from '../../ui/EditButtonComponent.vue';
 
 const CERRADO_KEY_PREFIX = 'analisis_cerrado_';
 
@@ -120,6 +119,7 @@ export default {
     name: 'AnalisisMapaVariablesMainComponent',
     
     components: {
+        EditButtonComponent
     },
 
     data() {

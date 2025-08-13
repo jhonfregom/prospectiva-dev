@@ -42,14 +42,13 @@ export const useSchwartzStore = defineStore('schwartz', {
         async saveScenario(index, numScenario, extra = {}) {
             const escenario = this.escenarios[index];
             const payload = {
-                titulo: escenario.texto,
+                titulo: escenario.texto || escenario.titulo,
                 edits: escenario.edits,
                 state: escenario.state,
                 num_scenario: numScenario,
                 ...extra 
             };
             try {
-                
                 const res = await axios.post('/scenarios', payload);
                 if (res.data && res.data.data) {
                     this.escenarios[index].id = res.data.data.id;
@@ -64,7 +63,6 @@ export const useSchwartzStore = defineStore('schwartz', {
             try {
                 const res = await axios.get('/scenarios');
                 if (res.data && res.data.data && Array.isArray(res.data.data)) {
-                    
                     this.escenarios.forEach(e => {
                         e.id = null;
                         e.texto = '';

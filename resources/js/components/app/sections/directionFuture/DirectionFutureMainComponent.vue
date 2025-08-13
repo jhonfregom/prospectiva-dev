@@ -56,17 +56,14 @@
                 </b-table-column>
                 <b-table-column field="actions" :label="textsStore.getText('hypothesis.table.actions')" v-slot="props" centered>
                     <div class="actions-column">
-                        <b-button
-                            type="is-info"
-                            size="is-small"
-                            icon-left="edit"
+                        <edit-button-component
+                            :is-editing="editingRow === props.row.variable_id"
+                            :is-locked="isLocked(props.row)"
+                            :edit-text="textsStore.getText('hypothesis.table.edit')"
+                            :save-text="textsStore.getText('hypothesis.table.save')"
+                            :locked-text="textsStore.getText('hypothesis.table.locked')"
                             @click="handleEditSave(props.row, props.index)"
-                            outlined
-                            :disabled="isLocked(props.row)"
-                        >
-                            {{ editingRow === props.row.variable_id ? textsStore.getText('hypothesis.table.save') : textsStore.getText('hypothesis.table.edit') }}
-                        </b-button>
-                        <span v-if="isLocked(props.row)" class="tag is-warning ml-2">{{ textsStore.getText('hypothesis.table.locked') }}</span>
+                        />
                     </div>
                 </b-table-column>
             </b-table>
@@ -119,11 +116,13 @@ import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
 import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
+import EditButtonComponent from '../../ui/EditButtonComponent.vue';
 
 export default {
     name: 'DirectionFutureMainComponent',
     components: {
         InfoBannerComponent,
+        EditButtonComponent,
     },
     setup() {
         

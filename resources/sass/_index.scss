@@ -5,6 +5,12 @@
 /* @use "bulma/bulma"; */
 @use "buefy/dist/buefy";
 
+// Import global fonts
+@use './fonts';
+
+// Import typography system
+@use './typography';
+
 @use './default_controls';
 @use './layouts/application';
 

@@ -364,13 +364,9 @@
           <div class="modal-section">
             <h4 class="modal-section-title">Hipótesis Asociadas</h4>
             <div v-if="selectedScenario?.hypotheses && selectedScenario.hypotheses.length > 0" class="modal-content">
-              <div v-for="hypothesis in selectedScenario.hypotheses" :key="hypothesis.id" class="hypothesis-item">
-                <div class="hypothesis-header">
-                  <span class="hypothesis-name">{{ hypothesis.name_hypothesis }}</span>
-                  <span class="hypothesis-variable">{{ hypothesis.variable_name }}</span>
-                </div>
+              <div v-for="(hypothesis, index) in selectedScenario.hypotheses" :key="index" class="hypothesis-item">
                 <div class="hypothesis-description">
-                  {{ hypothesis.description || 'Sin descripción disponible' }}
+                  <strong>Hipótesis {{ index + 1 }}:</strong> {{ hypothesis }}
                 </div>
               </div>
             </div>
@@ -2282,14 +2278,7 @@ export default {
                     await this.resultsStore.fetchUsers();
                 } else {
                     
-                    const currentRoute = this.traceabilityStore.getCurrentRoute;
-                    if (currentRoute && currentRoute.id) {
-                        
-                        await this.resultsStore.fetchUsersByRoute(currentRoute.id);
-                    } else {
-                        
-                        await this.resultsStore.fetchUsers();
-                    }
+                    await this.resultsStore.fetchUsers();
                 }
             } catch (error) {
                 console.error('Error al cargar resultados por ruta:', error);

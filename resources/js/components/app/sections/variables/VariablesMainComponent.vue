@@ -47,16 +47,14 @@
 
             <b-table-column :label="textsStore.getText('variables_section.table.actions')" v-slot="props" width="200" centered>
                 <div class="buttons is-centered">
-                    <b-button 
-                        :type="editingRow === props.row.id ? 'is-success' : 'is-info'"
-                        size="is-small"
-                        :icon-left="editingRow === props.row.id ? 'save' : 'edit'"
+                    <edit-button-component
+                        :is-editing="editingRow === props.row.id"
+                        :is-locked="props.row.edits_variable >= 3"
+                        :edit-text="textsStore.getText('variables_section.table.edit')"
+                        :save-text="textsStore.getText('variables_section.table.save')"
+                        :locked-text="textsStore.getText('variables_section.table.locked')"
                         @click="handleEditSave(props.row)"
-                        outlined
-                        :disabled="props.row.edits_variable >= 3"
-                    >
-                        {{ editingRow === props.row.id ? textsStore.getText('variables_section.table.save') : textsStore.getText('variables_section.table.edit') }}
-                    </b-button>
+                    />
 
                     <b-button 
                         v-if="isAdmin"
@@ -116,6 +114,7 @@ import { useTextsStore } from '../../../../stores/texts';
 import { useTraceabilityStore } from '../../../../stores/traceability';
 import VariableFormModal from './VariableFormModal.vue';
 import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
+import EditButtonComponent from '../../ui/EditButtonComponent.vue';
 import { debounce } from 'lodash';
 import { storeToRefs } from 'pinia';
 import { useSessionStore } from '../../../../stores/session';
@@ -128,6 +127,7 @@ export default {
     components: {
         VariableFormModal,
         InfoBannerComponent,
+        EditButtonComponent,
     },
 
     setup() {
