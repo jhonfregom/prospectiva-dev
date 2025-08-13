@@ -11,6 +11,9 @@
 // Import typography system
 @use './typography';
 
+// Import institutional colors
+@use './colors';
+
 @use './default_controls';
 @use './layouts/application';
 

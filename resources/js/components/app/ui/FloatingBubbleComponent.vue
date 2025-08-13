@@ -758,13 +758,13 @@ ${conversationHistory}Usuario: ${userText}`;
 .bubble-toggle {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #005883;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: grab;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 88, 131, 0.3);
   transition: all 0.3s ease;
   color: white;
   font-size: 24px;
@@ -782,7 +782,7 @@ ${conversationHistory}Usuario: ${userText}`;
 }
 
 .bubble-toggle.is-active {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  background: #004466;
 }
 
 .bubble-menu {
@@ -897,7 +897,7 @@ ${conversationHistory}Usuario: ${userText}`;
 }
 
 .modal-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #005883;
   color: white;
   padding: 20px 25px;
   border-radius: 20px 20px 0 0;
@@ -959,7 +959,7 @@ ${conversationHistory}Usuario: ${userText}`;
 
 .orienting-icon {
   font-size: 4rem;
-  color: #667eea;
+  color: #005883;
   margin-bottom: 20px;
 }
 

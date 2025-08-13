@@ -536,14 +536,14 @@ export default {
   z-index: 100;
 }
 .cerrar-btn {
-  background: #7c3aed;
+  background: #005883;
   color: white;
   border: none;
   border-radius: 6px;
   padding: 14px 32px;
   font-size: 1.2rem;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  box-shadow: 0 2px 8px rgba(0,88,131,0.2);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -575,5 +575,12 @@ export default {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+  background: #005883;
+  color: white;
+  transition: background 0.2s;
+}
+
+.modal-content button:hover {
+  background: #004466;
 }
 </style>

@@ -98,11 +98,11 @@
 </script>
 
 <style lang="scss" scoped>
-    @use '../../../../sass/variables' as var;
+    @use '../../../../sass/colors' as colors;
 
     .content-title{
-        background-color: var.$color-teal;
-        border: 1px solid var.$color-teal;
+        background-color: colors.$color-accent;
+        border: 1px solid colors.$color-accent;
         border-radius: 16px;
         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
         display: flex;
@@ -114,12 +114,12 @@
         .header{
             width: 100%;
             .title-group{
-                color: var.$color-white;
+                color: white;
             }
         }
 
         .title{
-            color: var.$color-white !important;
+            color: white !important;
             display: inline-block;
             font-size: 1rem;
             margin-bottom: 0;
@@ -130,7 +130,7 @@
             a,
             :deep( a.link ){
                 display: inline-block;
-                color: var.$color-white !important;
+                color: white !important;
                 font-weight: bolder;
             }
         }

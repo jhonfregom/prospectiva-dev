@@ -1,40 +1,58 @@
-@use './variables' as *;
+@use './colors' as colors;
 
 .button.is-primary{
-    background-color: $color-primary;
+    background-color: colors.$color-accent;
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
 }
 .button.is-link{
-    background-color: $color-link;
+    background-color: colors.$color-accent;
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
 }
 .button.is-info{
-    background-color: $color-info;
+    background-color: colors.$color-accent;
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
 }
 .button.is-success{
-    background-color: $color-success;
+    background-color: colors.$color-secondary;
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
 }
 .button.is-warning{
-    background-color: $color-warning;
+    background-color: colors.$color-secondary;
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
 }
 .button.is-danger{
-    background-color: $color-danger;
+    background-color: colors.$color-accent;
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
 }
 .has-text-primary{
-    color: $color-primary !important;
+    color: colors.$color-primary !important;
 }
 .has-text-link{
-    color: $color-link !important;
+    color: colors.$color-primary !important;
 }
 .has-text-info{
-    color: $color-info !important;
+    color: colors.$color-primary !important;
 }
 .has-text-success{
-    color: $color-success !important;
+    color: colors.$color-success !important;
 }
 .has-text-warning{
-    color: $color-warning !important;
+    color: colors.$color-secondary !important;
 }
 .has-text-danger{
-    color: $color-danger !important;
+    color: colors.$color-danger !important;
 }
 .select select:focus,
 .taginput .taginput-container.is-focusable:focus,
@@ -52,32 +70,33 @@
 .taginput .is-active.taginput-container.is-focusable,
 .is-active.textarea,
 .is-active.input {
-    border-color: $color-primary;
+    border-color: colors.$color-primary;
+    box-shadow: 0 0 0 2px colors.$color-shadow-primary;
 }
 .b-checkbox.checkbox input[type="checkbox"]:checked + .check {
-    background-color: $color-primary;
-    border-color: $color-primary;
+    background-color: colors.$color-primary;
+    border-color: colors.$color-primary;
 }
 .b-checkbox.checkbox:hover input[type="checkbox"]:not(:disabled) + .check {
-    border-color: $color-primary;
+    border-color: colors.$color-primary;
 }
 .b-tooltip.is-primary .tooltip-content{
-    background-color: $color-primary;
+    background-color: colors.$color-primary;
 }
 .b-tooltip.is-bottom .tooltip-content::before{
-    border-bottom-color: $color-primary !important;
+    border-bottom-color: colors.$color-primary !important;
 }
 .b-tooltip.is-top.is-primary .tooltip-content::before {
-    border-top-color: $color-primary !important;
+    border-top-color: colors.$color-primary !important;
 }
 .tag:not(body).is-primary {
-    background-color: $color-primary;
+    background-color: colors.$color-primary;
 }
 .datepicker{
     .datepicker-table{
         .datepicker-body{
             .datepicker-cell.is-selected{
-                background-color: $color-primary;
+                background-color: colors.$color-primary;
             }
         }
     }
@@ -85,33 +104,33 @@
 .Password{
     .Password__strength-meter{
         .Password__strength-meter--fill[data-score="3"]{
-            background-color: $color-blue-cyan;
+            background-color: colors.$color-secondary;
         }
         .Password__strength-meter--fill[data-score="4"]{
-            background-color: $color-dark-teal;
+            background-color: colors.$color-primary;
         }
     }
 }
 .switch input[type="checkbox"]:checked + .switch-background{
-    background-color: $color-primary;
+    background-color: colors.$color-primary;
 }
 
 .dialog {
     .modal-card-body,
     .modal-card-foot {
         color: white;
-        background-color: $color-dark-teal;
-        border-color: $color-dark-teal;
+        background-color: colors.$color-accent;
+        border-color: colors.$color-accent;
 
         button {
             color: white;
-            background-color: $color-dark-teal;
-            border-color: $color-light-teal;
+            background-color: colors.$color-accent;
+            border-color: colors.$color-accent;
         }
 
         .is-success {
-            background-color: $color-light-teal;
-            border-color: $color-light-teal;
+            background-color: colors.$color-secondary;
+            border-color: colors.$color-secondary;
         }
     }
 }

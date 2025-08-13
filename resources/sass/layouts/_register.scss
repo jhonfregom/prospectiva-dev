@@ -1,4 +1,4 @@
-@use '../variables' as var;
+@use '../colors' as colors;
 
 .register{
     .container{
@@ -15,7 +15,7 @@
                 }
             }
             .title{
-                color: var.$color-dark-teal;
+                color: colors.$color-primary;
             }
             .register-hr{
                 background-color: transparent;
@@ -34,7 +34,7 @@
                     }
                 }
                 p.info{
-                    color: var.$color-dark-teal;
+                    color: colors.$color-primary;
                     font-weight: 700;
                 }
                 input,
@@ -68,7 +68,7 @@
                 .control.has-icons-right{
                     .icon{
                         height: 2.7rem;
-                        color: var.$color-dark-teal !important;
+                        color: colors.$color-primary !important;
                     }
                 }
                 .control{
@@ -86,7 +86,7 @@
                     }
                 }
                 .subtitle{
-                    color: var.$color-light-teal;
+                    color: colors.$color-secondary;
                     font-size: 1.33333rem;
                 }
                 .sub-content{
@@ -94,7 +94,7 @@
                     a{
                         font-size: 1.2rem;
                         font-weight: 600;
-                        color: var.$color-teal;
+                        color: colors.$color-accent;
                         margin: 0rem 3rem;
                     }
                 }
@@ -118,7 +118,7 @@
                 margin-left: 5px;
             }
             button.is-info{
-                background-color: var.$color-dark-teal;
+                background-color: colors.$color-accent;
                 border-radius: 0.7rem;
                 font-size: 1.2rem;
                 font-weight: 600;
@@ -126,10 +126,14 @@
                 margin-left: auto;
                 margin-right: auto;
                 width: 40%;
+                border: none;
+                color: white;
+                transition: all 0.3s ease;
             }
             .button.is-info:hover{
-                background-color: var.$color-blue-cyan;
-                border-color: var.$color-blue-cyan;
+                background-color: colors.$color-secondary;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px colors.$color-shadow-secondary;
             }
         }
     }
@@ -138,16 +142,20 @@
         bottom: 5rem;
         right: 1.5rem;
         .btn-start-sesion{
-            background-color: var.$color-primary-dark;
-            color: #FFF;
+            background-color: colors.$color-accent;
+            color: white;
             border: none;
             font-size: 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
             .icon{
                 font-size: 1.5rem;
             }
         }
         .btn-start-sesion:hover{
-            color: var.$color-dark-gray;
+            background-color: colors.$color-secondary;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px colors.$color-shadow-secondary;
         }
     }
 }
@@ -177,12 +185,12 @@
             transition: all 0.2s ease;
             
             &:hover {
-                border-color: var.$color-dark-teal;
+                border-color: colors.$color-primary;
             }
             
             &.is-active {
-                border-color: var.$color-dark-teal;
-                box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+                border-color: colors.$color-primary;
+                box-shadow: 0 0 0 2px colors.$color-shadow-primary;
             }
             
             .placeholder {
@@ -191,7 +199,7 @@
             }
             
             i {
-                color: var.$color-dark-teal;
+                color: colors.$color-primary;
                 transition: transform 0.2s ease;
             }
             
@@ -229,8 +237,8 @@
                 }
                 
                 &.selected {
-                    background-color: var.$color-dark-teal;
-                    color: white;
+                    background: colors.$gradient-primary;
+                    color: colors.$color-text-light;
                 }
             }
         }
@@ -285,13 +293,13 @@
         }
         
         &:hover input ~ .checkmark {
-            border-color: var.$color-dark-teal;
-            background-color: #f8f9fa;
+            border-color: colors.$color-primary;
+            background-color: colors.$color-bg-secondary;
         }
         
         input:checked ~ .checkmark {
-            background-color: var.$color-dark-teal;
-            border-color: var.$color-dark-teal;
+            background-color: colors.$color-primary;
+            border-color: colors.$color-primary;
         }
         
         input:checked ~ .checkmark:after {

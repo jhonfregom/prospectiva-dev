@@ -324,6 +324,76 @@ canvas {
   max-width: 800px;
   max-height: 560px;
 }
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .graphics-container {
+    padding: 1.5rem;
+    min-width: 600px;
+  }
+  
+  canvas {
+    width: 600px !important;
+    height: 420px !important;
+    max-width: 600px;
+    max-height: 420px;
+  }
+}
+
+@media (max-width: 768px) {
+  .graphics-container {
+    padding: 1rem;
+    min-width: 400px;
+    min-height: 400px;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  canvas {
+    width: 400px !important;
+    height: 280px !important;
+    max-width: 400px;
+    max-height: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .graphics-container {
+    padding: 0.5rem;
+    min-width: 300px;
+    min-height: 300px;
+    border-radius: 8px;
+  }
+  
+  h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  canvas {
+    width: 300px !important;
+    height: 210px !important;
+    max-width: 300px;
+    max-height: 210px;
+  }
+}
+
+@media (max-width: 320px) {
+  .graphics-container {
+    min-width: 250px;
+    min-height: 250px;
+  }
+  
+  canvas {
+    width: 250px !important;
+    height: 175px !important;
+    max-width: 250px;
+    max-height: 175px;
+  }
+}
 </style>
 
 <!--

@@ -1,0 +1,72 @@
+// Colores institucionales de la universidad
+// Paleta de colores clave
+
+// Color principal - Azul institucional
+$color-primary: #005883;
+$color-primary-rgb: 0, 88, 131;
+$color-primary-cmyk: 100, 20, 0, 50;
+
+// Color secundario - Amarillo dorado
+$color-secondary: #F0B429;
+$color-secondary-rgb: 240, 180, 41;
+$color-secondary-cmyk: 5, 30, 95, 0;
+
+// Color acento - Naranja
+$color-accent: #F47920;
+$color-accent-rgb: 244, 121, 32;
+$color-accent-cmyk: 0, 65, 100, 0;
+
+// Variaciones de los colores principales
+$color-primary-light: lighten($color-primary, 10%);
+$color-primary-dark: darken($color-primary, 10%);
+$color-secondary-light: lighten($color-secondary, 10%);
+$color-secondary-dark: darken($color-secondary, 10%);
+$color-accent-light: lighten($color-accent, 10%);
+$color-accent-dark: darken($color-accent, 10%);
+
+// Colores de estado
+$color-success: #28a745;
+$color-warning: $color-secondary;
+$color-danger: #dc3545;
+$color-info: $color-primary;
+
+// Colores de texto
+$color-text-primary: #212529;
+$color-text-secondary: #6c757d;
+$color-text-muted: #6c757d;
+$color-text-light: #ffffff;
+
+// Colores de fondo
+$color-bg-primary: #ffffff;
+$color-bg-secondary: #f8f9fa;
+$color-bg-light: #ffffff;
+$color-bg-dark: $color-primary;
+
+// Colores de borde
+$color-border-primary: #dee2e6;
+$color-border-secondary: $color-primary;
+$color-border-accent: $color-accent;
+
+// Colores de sombra
+$color-shadow-primary: rgba(0, 88, 131, 0.15);
+$color-shadow-secondary: rgba(240, 180, 41, 0.15);
+$color-shadow-accent: rgba(244, 121, 32, 0.15);
+
+// Gradientes institucionales
+$gradient-primary: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+$gradient-secondary: linear-gradient(135deg, $color-secondary 0%, $color-accent 100%);
+$gradient-accent: linear-gradient(135deg, $color-accent 0%, $color-secondary 100%);
+
+// Variables para Bulma/Buefy
+$primary: $color-primary;
+$link: $color-primary;
+$info: $color-primary;
+$success: $color-success;
+$warning: $color-secondary;
+$danger: $color-danger;
+$dark: $color-primary;
+$text: $color-text-primary;
+$text-light: $color-text-secondary;
+$background: $color-bg-primary;
+$border: $color-border-primary;
+$border-hover: $color-border-secondary;

@@ -200,6 +200,7 @@ php artisan check:migration-seeder-order  # Verifica orden correcto de migracion
 php artisan diagnose:migration-issues     # Diagnóstico completo
 php artisan fix:test-data-seeder          # Soluciona problemas del TestDataSeeder
 php artisan execute:correct-order         # Ejecuta migraciones y seeders en orden correcto
+php artisan check:responsive-design       # Verifica implementación responsive
 php artisan setup:project                 # Configuración completa del proyecto
 ```
 
@@ -218,6 +219,60 @@ php artisan migrate:rollback          # Revierte última migración
 php artisan db:seed                   # Ejecuta todos los seeders
 php artisan db:seed --class=NombreSeeder # Ejecuta seeder específico
 ```
+
+### Colores Institucionales
+```bash
+php artisan check:institutional-colors   # Verifica colores institucionales
+```
+
+#### Paleta de colores clave:
+- **Color principal**: #005883 (Azul institucional)
+  - CMYK: C: 100, M: 20, Y: 0, K: 50
+  - RGB: R: 0, G: 88, B: 131
+- **Color secundario**: #F0B429 (Amarillo dorado)
+  - CMYK: C: 5, M: 30, Y: 95, K: 0
+  - RGB: R: 240, G: 180, B: 41
+- **Color acento**: #F47920 (Naranja)
+  - CMYK: C: 0, M: 65, Y: 100, K: 0
+  - RGB: R: 244, G: 121, B: 32
+
+#### Elementos actualizados:
+✅ **Páginas de login y registro** - Colores institucionales  
+✅ **Botones y controles** - Gradientes institucionales  
+✅ **Tablas y paginación** - Colores primarios  
+✅ **Footer** - Gradiente institucional  
+✅ **Matriz de análisis** - Colores institucionales  
+✅ **Efectos hover** - Transformaciones y sombras
+
+### Diseño Responsive
+```bash
+php artisan check:responsive-design   # Verifica implementación responsive
+npm run dev                          # Compila assets en modo desarrollo
+npm run build                        # Compila assets para producción
+```
+
+#### Breakpoints implementados:
+- **1920px** - Pantallas muy grandes
+- **1440px** - Pantallas grandes  
+- **1366px** - Laptops
+- **1024px** - Tablets
+- **768px** - Tablets pequeñas
+- **640px** - Móviles grandes
+- **576px** - Móviles medianos
+- **480px** - Móviles pequeños
+- **414px** - Móviles muy pequeños
+- **320px** - Móviles extra pequeños
+
+#### Componentes con responsive implementado:
+✅ **FloatingBubbleComponent** - Múltiples breakpoints  
+✅ **FloatingChatbotComponent** - Adaptación móvil  
+✅ **StepperPrincipal** - Redimensionamiento inteligente  
+✅ **EditButtonComponent** - Layout flexible  
+✅ **ConclusionsMainComponent** - Tabla responsive  
+✅ **ResultsMainComponent** - Filtros adaptativos  
+✅ **VariablesMainComponent** - Tabla responsive  
+✅ **GraphicsMainComponent** - Gráficas adaptativas  
+✅ **MatrizMainComponent** - Tabla responsive
 php artisan db:seed
 ```
 
@@ -329,3 +384,8 @@ npm install --production
 - `php artisan migrate:status` - Muestra estado de migraciones
 - `php artisan db:seed` - Ejecuta todos los seeders
 - `php artisan cache:clear` - Limpia cache de la aplicación
+- `php artisan check:montserrat-font` - Verificar aplicación de fuente Montserrat
+- `php artisan check:typography-system` - Verificar sistema tipográfico
+- `php artisan check:edit-buttons-standardization` - Verificar estandarización de botones de editar
+- `php artisan check:responsive-design` - Verificar diseño responsive
+- `php artisan check:institutional-colors` - Verificar colores institucionales

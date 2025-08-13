@@ -66,18 +66,18 @@
 </script>
 
 <style lang="scss" scoped>
-    @use '../../../../../sass/variables' as var;
+    @use '../../../../../sass/colors' as colors;
 
     .company-content{
         .name-entity{
-            color: var.$color-dark-teal;
+            color: colors.$color-primary;
             font-weight: 800;
         }
         .dropdown-account{
             .dropdown-trigger{
                 .button{
                     border: none;
-                    color: var.$color-warning;
+                    color: colors.$color-secondary;
                     top: -0.68rem;
                     .icon{
                         font-size: 1.7rem;

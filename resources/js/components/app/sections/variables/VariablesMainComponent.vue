@@ -489,14 +489,14 @@ export default {
   z-index: 100;
 }
 .cerrar-btn {
-  background: #7c3aed;
+  background: #005883;
   color: white;
   border: none;
   border-radius: 6px;
   padding: 14px 32px;
   font-size: 1.2rem;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  box-shadow: 0 2px 8px rgba(0,88,131,0.2);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -528,5 +528,116 @@ export default {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+  background: #005883;
+  color: white;
+  transition: background 0.2s;
+}
+
+.modal-content button:hover {
+  background: #004466;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .variables-container {
+    padding: 15px;
+  }
+  
+  .description-column {
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .variables-container {
+    padding: 10px;
+  }
+  
+  .description-column {
+    min-width: 200px;
+  }
+  
+  .cerrar-container {
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .cerrar-btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+  
+  .modal-content {
+    padding: 24px 32px;
+    margin: 20px;
+  }
+  
+  .modal-content button {
+    margin: 8px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+  
+  /* Tabla responsive */
+  :deep(.b-table) {
+    overflow-x: auto;
+  }
+  
+  :deep(.b-table .table) {
+    min-width: 600px;
+  }
+  
+  :deep(.b-table .table tbody td) {
+    height: 60px !important;
+    padding: 8px 4px !important;
+    font-size: 0.9rem;
+  }
+  
+  :deep(.b-table .table thead th) {
+    padding: 8px 4px !important;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .variables-container {
+    padding: 5px;
+  }
+  
+  .description-column {
+    min-width: 150px;
+  }
+  
+  .cerrar-container {
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .cerrar-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .modal-content {
+    padding: 20px 24px;
+    margin: 10px;
+  }
+  
+  .modal-content button {
+    margin: 4px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  :deep(.b-table .table tbody td) {
+    height: 50px !important;
+    padding: 6px 2px !important;
+    font-size: 0.8rem;
+  }
+  
+  :deep(.b-table .table thead th) {
+    padding: 6px 2px !important;
+    font-size: 0.8rem;
+  }
 }
 </style>

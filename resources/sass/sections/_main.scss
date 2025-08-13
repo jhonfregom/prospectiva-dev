@@ -1,4 +1,4 @@
-@use '../variables' as *;
+@use '../colors' as colors;
 
 .application{
     .action-main{
@@ -28,10 +28,10 @@
                         }
                     }
                     .card:hover{
-                        background-color: $color-yellow;
-                        box-shadow: 10px 10px 13px 0px rgba(0,0,0,0.75);
-                        -webkit-box-shadow: 10px 10px 13px 0px rgba(0,0,0,0.75);
-                        -moz-box-shadow: 10px 10px 13px 0px rgba(0,0,0,0.75);
+                        background: colors.$gradient-secondary;
+                        box-shadow: 0 8px 25px colors.$color-shadow-secondary;
+                        transform: translateY(-5px);
+                        transition: all 0.3s ease;
                     }
                 }
             }
@@ -58,46 +58,46 @@
   justify-content: center;
 }
 
-// Colores suaves para los valores
+// Colores institucionales para los valores de matriz
 .matriz-value-none-modern {
-  background: #f5f6fa !important;
-  color: #888 !important;
+  background: colors.$color-bg-secondary !important;
+  color: colors.$color-text-secondary !important;
   border-radius: 8px;
 }
 .matriz-value-weak-modern {
-  background: #b8e1ff !important;
-  color: #2563eb !important;
+  background: rgba(0, 88, 131, 0.1) !important;
+  color: colors.$color-primary !important;
   border-radius: 8px;
 }
 .matriz-value-medium-modern {
-  background: #ffe6b8 !important;
-  color: #b45309 !important;
+  background: rgba(240, 180, 41, 0.1) !important;
+  color: colors.$color-secondary !important;
   border-radius: 8px;
 }
 .matriz-value-strong-modern {
-  background: #ffd6e0 !important;
-  color: #be185d !important;
+  background: rgba(244, 121, 32, 0.1) !important;
+  color: colors.$color-accent !important;
   border-radius: 8px;
 }
 
 // Para los valores mostrados en la celda
 .matriz-value-none-modern {
-  background: #f5f6fa !important;
-  color: #888 !important;
+  background: colors.$color-bg-secondary !important;
+  color: colors.$color-text-secondary !important;
   border-radius: 8px;
   display: inline-block;
   min-width: 24px;
 }
 .matriz-value-weak-modern {
-  background: #e0f7fa !important;
-  color: #0288d1 !important;
+  background: rgba(0, 88, 131, 0.2) !important;
+  color: colors.$color-primary !important;
   border-radius: 8px;
   display: inline-block;
   min-width: 24px;
 }
 .matriz-value-medium-modern {
-  background: #fff9c4 !important;
-  color: #fbc02d !important;
+  background: rgba(240, 180, 41, 0.2) !important;
+  color: colors.$color-secondary !important;
   border-radius: 8px;
   display: inline-block;
   min-width: 24px;

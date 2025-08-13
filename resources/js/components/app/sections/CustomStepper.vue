@@ -217,7 +217,7 @@ function getTooltipText(stepLabel) {
 .stepper-bar-progress {
   position: absolute;
   top: 0; left: 0; bottom: 0;
-  background: #7c3aed;
+  background: #005883;
   border-radius: 4px;
   height: 11.2px;
   z-index: 2;
@@ -248,13 +248,13 @@ function getTooltipText(stepLabel) {
   z-index: 3;
 }
 .step.is-active {
-  color: #7c3aed;
+  color: #005883;
 }
 .step.is-completed {
-  color: #7c3aed;
+  color: #005883;
 }
 .step.is-enabled {
-  color: #7c3aed; 
+  color: #005883; 
 }
 .step.is-disabled {
   color: #d1d5db; 
@@ -283,12 +283,12 @@ function getTooltipText(stepLabel) {
   transition: border 0.2s, background 0.2s;
 }
 .step.is-active .step-circle {
-  border: 2px solid #7c3aed;
-  background: #ede9fe;
+  border: 2px solid #005883;
+  background: rgba(0, 88, 131, 0.1);
 }
 .step.is-completed .step-circle {
-  border: 2px solid #7c3aed;
-  background: #ede9fe;
+  border: 2px solid #005883;
+  background: rgba(0, 88, 131, 0.1);
 }
 .step-label {
   font-size: 1.4rem;
