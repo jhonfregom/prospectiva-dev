@@ -215,7 +215,12 @@ class UserController extends Controller
         $userData->route_id = $routeId;
         $userData->route_name = 'Ruta ' . $routeNumber;
 
-        $userData->status = $route->results === '1' ? 'Completado' : 'Sin terminar';
+        // Lógica especial para la ruta 2: solo se marca como completada si también tiene conclusions = '1'
+        if ($route->tried == '2') {
+            $userData->status = ($route->results === '1' && $route->conclusions === '1') ? 'Completado' : 'Sin terminar';
+        } else {
+            $userData->status = $route->results === '1' ? 'Completado' : 'Sin terminar';
+        }
 
         $variables = \App\Models\Variable::where('user_id', $userData->id)
             ->where('tried_id', $routeId)

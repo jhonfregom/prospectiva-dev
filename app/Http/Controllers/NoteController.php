@@ -15,13 +15,27 @@ class NoteController extends Controller
     {
         try {
             $user = Auth::user();
+            Log::info('Usuario autenticado para notas', [
+                'user_id' => $user ? $user->id : null,
+                'user_email' => $user ? $user->user : null,
+                'authenticated' => Auth::check()
+            ]);
             $perPage = $request->get('per_page', 10);
             $search = $request->get('search');
+            $paginated = $request->get('paginated', false);
             
             if ($search) {
                 $notes = Note::searchByUser($user->id, $search);
-            } else {
+            } else if ($paginated) {
                 $notes = Note::getByUserPaginated($user->id, $perPage);
+            } else {
+                // Para el componente de burbuja flotante, devolver todas las notas sin paginación
+                $notes = Note::getByUser($user->id);
+                Log::info('Notas cargadas para usuario', [
+                    'user_id' => $user->id,
+                    'notes_count' => $notes->count(),
+                    'notes_data' => $notes->toArray()
+                ]);
             }
             
             return response()->json([

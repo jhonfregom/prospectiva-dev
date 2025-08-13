@@ -1103,18 +1103,12 @@ export default {
               const bottomMargin = margin;
               const availableSpace = pageHeight - bottomMargin - currentY;
 
-              // Si el espacio requerido es mayor al disponible, crear nueva página
-              if (requiredSpace > availableSpace) {
+              // Solo crear nueva página si realmente no hay espacio suficiente
+              // Para tablas pequeñas, ser más permisivo
+              const safetyMargin = requiredSpace > 200 ? 20 : 50;
+              if (requiredSpace > availableSpace - safetyMargin) {
                 doc.addPage();
-                y = margin + 40;
-                
-                // Si hay título, agregarlo en la nueva página
-                if (title) {
-                  doc.setFontSize(12);
-                  doc.setFont(undefined, 'bold');
-                  doc.text(title, margin, y);
-                  y += 25;
-                }
+                y = margin + 20; // Reducir el margen superior
                 return true;
               }
               return false;
@@ -1123,24 +1117,32 @@ export default {
             const checkTablePageBreak = (tableData, title = '') => {
               if (!tableData || tableData.length === 0) return false;
               
-              const titleHeight = 25; 
-              const tableHeaderHeight = 25; 
-              const rowHeight = Math.min(18, Math.max(12, 600 / tableData.length)); // Altura dinámica basada en cantidad de filas
-              const tableFooterHeight = 25; 
-              const spacing = 20;
+              const titleHeight = 20; // Reducir altura del título
+              const tableHeaderHeight = 20; // Reducir altura del header
+              const rowHeight = Math.min(16, Math.max(10, 500 / tableData.length)); // Altura más compacta
+              const tableFooterHeight = 15; // Reducir altura del footer
+              const spacing = 10; // Reducir espaciado
               
               const estimatedTableHeight = titleHeight + tableHeaderHeight + (tableData.length * rowHeight) + tableFooterHeight + spacing;
               
-              return checkPageBreak(estimatedTableHeight, title);
+              // Solo crear nueva página si la tabla es muy grande
+              if (estimatedTableHeight > 300) {
+                return checkPageBreak(estimatedTableHeight, title);
+              }
+              return false;
             };
 
             const checkGraphicPageBreak = (graphicHeight, title = '') => {
-              const titleHeight = 25; 
-              const graphicSpacing = 30; 
+              const titleHeight = 20; // Reducir altura del título
+              const graphicSpacing = 15; // Reducir espaciado
               
               const totalHeight = titleHeight + graphicHeight + graphicSpacing;
               
-              return checkPageBreak(totalHeight, title);
+              // Solo crear nueva página si la gráfica es muy grande
+              if (totalHeight > 400) {
+                return checkPageBreak(totalHeight, title);
+              }
+              return false;
             };
 
             const optimizeTableLayout = (tableData, maxRowsPerPage = 15) => {
@@ -1345,12 +1347,12 @@ export default {
 
               if (createNewPage) {
                 doc.addPage();
-                y = margin + 40; 
+                y = margin + 20; 
               }
 
               doc.setFontSize(14);
               doc.setFont(undefined, 'bold');
-              doc.text(title, margin, y); y += 25;
+              doc.text(title, margin, y); y += 20;
 
               const pageWidth = doc.internal.pageSize.getWidth();
               const availableWidth = pageWidth - (2 * margin);
@@ -1373,14 +1375,14 @@ export default {
               const bottomMargin = margin;
               const availableSpace = pageHeight - bottomMargin - y;
               
-              if (finalHeight > availableSpace) {
+              if (finalHeight > availableSpace - 30) {
                 // Crear nueva página si no hay espacio suficiente
                 doc.addPage();
-                y = margin + 40;
+                y = margin + 20;
               }
               
               doc.addImage(imgData, 'PNG', xOffset, y, finalWidth, finalHeight);
-              y += finalHeight + 20; // Reducir espacio entre elementos
+              y += finalHeight + 10; // Reducir espacio entre elementos
               
               return y;
             } catch (error) {
@@ -1395,24 +1397,24 @@ export default {
           const titleWidth = doc.getTextWidth('REPORTE COMPLETO DE PROSPECTIVA');
           const titleX = (pageWidth - titleWidth) / 2;
           doc.text('REPORTE COMPLETO DE PROSPECTIVA', titleX, y);
-          y += 30;
+          y += 25;
           
           doc.setFontSize(14);
           doc.setFont(undefined, 'normal');
           doc.text('Análisis Prospectivo de Variables', margin, y);
-          y += 25;
+          y += 20;
 
           if (usuario.route_name) {
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
             doc.text(`Ruta: ${usuario.route_name}`, margin, y);
-            y += 20;
+            y += 15;
           }
 
-          checkPageBreak(30);
+          checkPageBreak(25);
           doc.setFontSize(12);
           doc.setFont(undefined, 'bold');
-          doc.text('INFORMACIÓN PERSONAL', margin, y); y += 20;
+          doc.text('INFORMACIÓN PERSONAL', margin, y); y += 15;
             doc.setFontSize(10);
             autoTable(doc, {
               startY: y,
@@ -1425,15 +1427,15 @@ export default {
               ],
               theme: 'grid',
               styles: { 
-                fontSize: 10, 
-                cellPadding: 4,
+                fontSize: 9, 
+                cellPadding: 3,
                 lineColor: [0, 0, 0],
                 lineWidth: 0.5
               },
               headStyles: {
                 fillColor: [52, 152, 219],
                 textColor: [255, 255, 255],
-                fontSize: 11,
+                fontSize: 10,
                 fontStyle: 'bold'
               },
               alternateRowStyles: {
@@ -1441,12 +1443,19 @@ export default {
               },
               margin: { left: margin, right: margin },
             });
-            y = doc.lastAutoTable.finalY + 25;
+            y = doc.lastAutoTable.finalY + 15;
 
-            checkTablePageBreak(usuario.variables_list || [], 'VARIABLES DEL SISTEMA');
+            // Solo verificar salto de página si hay muchas variables
+            if (usuario.variables_list && usuario.variables_list.length > 10) {
+              checkTablePageBreak(usuario.variables_list || [], 'VARIABLES DEL SISTEMA');
+            }
+            
+            // Agregar espacio antes del título
+            y += 10;
+            
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
-            doc.text('VARIABLES DEL SISTEMA', margin, y); y += 20;
+            doc.text('VARIABLES DEL SISTEMA', margin, y); y += 15;
             if (usuario.variables_list && usuario.variables_list.length > 0) {
               autoTable(doc, {
                 startY: y,
@@ -1458,15 +1467,15 @@ export default {
                 ]),
                 theme: 'grid',
                 styles: { 
-                  fontSize: 9, 
-                  cellPadding: 3,
+                  fontSize: 8, 
+                  cellPadding: 2,
                   lineColor: [0, 0, 0],
                   lineWidth: 0.5
                 },
                 headStyles: {
                   fillColor: [75, 0, 130],
                   textColor: [255, 255, 255],
-                  fontSize: 10,
+                  fontSize: 9,
                   fontStyle: 'bold'
                 },
                 alternateRowStyles: {
@@ -1474,26 +1483,31 @@ export default {
                 },
                 margin: { left: margin, right: margin },
               });
-              y = doc.lastAutoTable.finalY + 25;
+              y = doc.lastAutoTable.finalY + 15;
             } else {
               doc.setFontSize(10);
               doc.text('No hay variables registradas', margin, y);
-              y += 20;
+              y += 15;
             }
 
             // Verificar si hay espacio suficiente para la matriz completa
             const variables = usuario.matriz_cruzada ? [...new Set(usuario.matriz_cruzada.map(m => m.origen))].sort() : [];
-            const matrizEstimatedHeight = variables.length > 0 ? (variables.length + 2) * 20 + 100 : 0;
+            const matrizEstimatedHeight = variables.length > 0 ? (variables.length + 2) * 15 + 80 : 0;
             
             if (matrizEstimatedHeight > 0) {
-              checkPageBreak(matrizEstimatedHeight, 'MATRIZ DE ANÁLISIS ESTRUCTURAL');
+              checkPageBreak(matrizEstimatedHeight + 30, 'MATRIZ DE ANÁLISIS ESTRUCTURAL');
             } else {
-              checkPageBreak(30);
-              doc.setFontSize(12);
-              doc.setFont(undefined, 'bold');
-              doc.text('MATRIZ DE ANÁLISIS ESTRUCTURAL', margin, y); 
-              y += 20;
+              checkPageBreak(25);
             }
+            
+            // Agregar espacio antes del título
+            y += 10;
+            
+            // Siempre agregar el título
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('MATRIZ DE ANÁLISIS ESTRUCTURAL', margin, y); 
+            y += 15;
             
             if (usuario.matriz && usuario.matriz.length > 0 && usuario.matriz_cruzada && variables.length > 0) {
 
@@ -1550,8 +1564,8 @@ export default {
               matrizBody[matrizBody.length - 1][matrizBody[matrizBody.length - 1].length - 1] = totalGeneral;
 
               // Calcular tamaño de fuente dinámico basado en cantidad de variables
-              const dynamicFontSize = variables.length > 10 ? 7 : variables.length > 8 ? 8 : 9;
-              const dynamicCellPadding = variables.length > 10 ? 2 : variables.length > 8 ? 3 : 4;
+              const dynamicFontSize = variables.length > 10 ? 6 : variables.length > 8 ? 7 : 8;
+              const dynamicCellPadding = variables.length > 10 ? 1 : variables.length > 8 ? 2 : 3;
               
               autoTable(doc, {
                 startY: y,
@@ -1628,10 +1642,18 @@ export default {
                   data.cell.styles.valign = 'middle';
                 }
               });
-              y = doc.lastAutoTable.finalY + 20;
+              y = doc.lastAutoTable.finalY + 15;
 
               // Verificar espacio para el resumen
-              checkPageBreak(60, 'RESUMEN DE DEPENDENCIA E INFLUENCIA');
+              checkPageBreak(50, 'RESUMEN DE DEPENDENCIA E INFLUENCIA');
+              
+              // Agregar espacio antes del título
+              y += 10;
+              
+              // Agregar título del resumen
+              doc.setFontSize(12);
+              doc.setFont(undefined, 'bold');
+              doc.text('RESUMEN DE DEPENDENCIA E INFLUENCIA', margin, y); y += 15;
               
               const resumenHeaders = ['RESUMEN', ...variables];
               const resumenBody = [
@@ -1697,23 +1719,34 @@ export default {
                   data.cell.styles.valign = 'middle';
                 }
               });
-              y = doc.lastAutoTable.finalY + 25;
+              y = doc.lastAutoTable.finalY + 15;
             } else {
               doc.setFontSize(10);
               doc.text('No hay datos de matriz disponibles', margin, y);
-              y += 25;
+              y += 15;
             }
 
             // Verificar espacio para la gráfica de variables
-            checkGraphicPageBreak(400, 'GRÁFICA DE VARIABLES - MAPA DE ANÁLISIS');
-            y = await captureGraphic(`grafica-variables-${uniqueId}`, 'GRÁFICA DE VARIABLES - MAPA DE ANÁLISIS', y, true);
+            checkGraphicPageBreak(350, 'GRÁFICA DE VARIABLES - MAPA DE ANÁLISIS');
+            y = await captureGraphic(`grafica-variables-${uniqueId}`, 'GRÁFICA DE VARIABLES - MAPA DE ANÁLISIS', y, false);
             if (y) {
-              y += 20; // Espacio adicional después de la gráfica
+              y += 10; // Espacio adicional después de la gráfica
             } else {
-              y += 60; 
+              y += 30; 
             }
 
-            checkTablePageBreak(usuario.zone_analyses || [], 'ANÁLISIS MAPA DE VARIABLES');
+            // Solo verificar salto de página si hay muchos análisis de zonas
+            if (usuario.zone_analyses && usuario.zone_analyses.length > 5) {
+              checkTablePageBreak(usuario.zone_analyses || [], 'ANÁLISIS MAPA DE VARIABLES');
+            }
+            
+            // Agregar espacio antes del título
+            y += 10;
+            
+            // Agregar título
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('ANÁLISIS MAPA DE VARIABLES', margin, y); y += 15;
             
             if (usuario.zone_analyses && usuario.zone_analyses.length > 0) {
               autoTable(doc, {
@@ -1744,15 +1777,15 @@ export default {
                 }),
                 theme: 'grid',
                 styles: { 
-                  fontSize: 9, 
-                  cellPadding: 3,
+                  fontSize: 8, 
+                  cellPadding: 2,
                   lineColor: [0, 0, 0],
                   lineWidth: 0.5
                 },
                 headStyles: {
                   fillColor: [26, 188, 156],
                   textColor: [255, 255, 255],
-                  fontSize: 10,
+                  fontSize: 9,
                   fontStyle: 'bold'
                 },
                 alternateRowStyles: {
@@ -1766,14 +1799,25 @@ export default {
                   }
                 }
               });
-              y = doc.lastAutoTable.finalY + 25;
+              y = doc.lastAutoTable.finalY + 15;
             } else {
               doc.setFontSize(10);
               doc.text('No hay análisis de zonas disponibles', margin, y);
-              y += 25;
+              y += 15;
             }
 
-            checkTablePageBreak(usuario.future_drivers || [], 'DIRECCIONADORES DE FUTURO');
+            // Solo verificar salto de página si hay muchos direccionadores
+            if (usuario.future_drivers && usuario.future_drivers.length > 8) {
+              checkTablePageBreak(usuario.future_drivers || [], 'DIRECCIONADORES DE FUTURO');
+            }
+            
+            // Agregar espacio antes del título
+            y += 10;
+            
+            // Agregar título
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('DIRECCIONADORES DE FUTURO', margin, y); y += 15;
             
             if (usuario.future_drivers && usuario.future_drivers.length > 0) {
               autoTable(doc, {
@@ -1787,15 +1831,15 @@ export default {
                 ]),
                 theme: 'grid',
                 styles: { 
-                  fontSize: 9, 
-                  cellPadding: 3,
+                  fontSize: 8, 
+                  cellPadding: 2,
                   lineColor: [0, 0, 0],
                   lineWidth: 0.5
                 },
                 headStyles: {
                   fillColor: [52, 73, 94],
                   textColor: [255, 255, 255],
-                  fontSize: 10,
+                  fontSize: 9,
                   fontStyle: 'bold'
                 },
                 alternateRowStyles: {
@@ -1803,14 +1847,18 @@ export default {
                 },
                 margin: { left: margin, right: margin },
               });
-              y = doc.lastAutoTable.finalY + 25;
+              y = doc.lastAutoTable.finalY + 15;
             } else {
               doc.setFontSize(10);
               doc.text('No hay direccionadores de futuro registrados', margin, y);
-              y += 25;
+              y += 15;
             }
 
-            checkGraphicPageBreak(420, 'EJES DE PETER SCHWARTZ'); 
+            // Solo verificar salto de página si la gráfica es muy grande
+            const schwartzHeight = 380;
+            if (schwartzHeight > 400) {
+              checkGraphicPageBreak(schwartzHeight, 'EJES DE PETER SCHWARTZ');
+            }
             const tempDivSchwartz = document.createElement('div');
             tempDivSchwartz.style.position = 'fixed';
             tempDivSchwartz.style.left = '-9999px';
@@ -1844,7 +1892,7 @@ export default {
               doc.setFont(undefined, 'bold');
               const titleText = 'EJES DE PETER SCHWARTZ';
               doc.text(titleText, margin, y);
-              y += 40; 
+              y += 25; 
 
               const originalWidth = 560;
               const originalHeight = 420;
@@ -1857,16 +1905,32 @@ export default {
 
               const pageHeight = doc.internal.pageSize.getHeight();
               const bottomMargin = margin;
-              const maxY = pageHeight - finalHeight - bottomMargin;
-              const finalY = Math.min(y, maxY);
+              const availableSpace = pageHeight - bottomMargin - y;
               
-              doc.addImage(imgData, 'PNG', x, finalY, finalWidth, finalHeight);
-              y = finalY + finalHeight + 40; 
+              if (finalHeight > availableSpace - 30) {
+                // Crear nueva página si no hay espacio suficiente
+                doc.addPage();
+                y = margin + 20;
+              }
+              
+              doc.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
+              y = y + finalHeight + 15; 
             }
             appSchwartz.unmount();
             document.body.removeChild(tempDivSchwartz);
 
-            checkTablePageBreak(usuario.initial_conditions || [], 'CONDICIONES INICIALES');
+            // Solo verificar salto de página si hay muchas condiciones iniciales
+            if (usuario.initial_conditions && usuario.initial_conditions.length > 10) {
+              checkTablePageBreak(usuario.initial_conditions || [], 'CONDICIONES INICIALES');
+            }
+            
+            // Agregar espacio antes del título
+            y += 10;
+            
+            // Agregar título
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('CONDICIONES INICIALES', margin, y); y += 15;
             
             if (usuario.initial_conditions && usuario.initial_conditions.length > 0) {
               autoTable(doc, {
@@ -1879,15 +1943,15 @@ export default {
                 ]),
                 theme: 'grid',
                 styles: { 
-                  fontSize: 10, 
-                  cellPadding: 4,
+                  fontSize: 9, 
+                  cellPadding: 3,
                   lineColor: [0, 0, 0],
                   lineWidth: 0.5
                 },
                 headStyles: {
                   fillColor: [142, 68, 173],
                   textColor: [255, 255, 255],
-                  fontSize: 11,
+                  fontSize: 10,
                   fontStyle: 'bold'
                 },
                 alternateRowStyles: {
@@ -1895,14 +1959,25 @@ export default {
                 },
                 margin: { left: margin, right: margin },
               });
-              y = doc.lastAutoTable.finalY + 25;
+              y = doc.lastAutoTable.finalY + 15;
             } else {
               doc.setFontSize(10);
               doc.text('No hay condiciones iniciales registradas', margin, y);
-              y += 25;
+              y += 15;
             }
 
-            checkTablePageBreak(usuario.scenarios || [], 'ESCENARIOS');
+            // Solo verificar salto de página si hay muchos escenarios
+            if (usuario.scenarios && usuario.scenarios.length > 6) {
+              checkTablePageBreak(usuario.scenarios || [], 'ESCENARIOS');
+            }
+            
+            // Agregar espacio antes del título
+            y += 10;
+            
+            // Agregar título
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('ESCENARIOS', margin, y); y += 15;
             
             if (usuario.scenarios && usuario.scenarios.length > 0) {
               autoTable(doc, {
@@ -1918,27 +1993,38 @@ export default {
                 ]),
                 theme: 'grid',
                 styles: { 
-                  fontSize: 8, 
-                  cellPadding: 2,
+                  fontSize: 7, 
+                  cellPadding: 1,
                   lineColor: [0, 0, 0],
                   lineWidth: 0.5
                 },
                 headStyles: {
                   fillColor: [155, 89, 182],
                   textColor: [255, 255, 255],
-                  fontSize: 9,
+                  fontSize: 8,
                   fontStyle: 'bold'
                 },
                 margin: { left: margin, right: margin },
               });
-              y = doc.lastAutoTable.finalY + 25;
+              y = doc.lastAutoTable.finalY + 15;
             } else {
               doc.setFontSize(10);
               doc.text('No hay escenarios registrados', margin, y);
-              y += 25;
+              y += 15;
             }
 
-            checkTablePageBreak(usuario.conclusions || [], 'CONCLUSIONES DE APRENDIZAJE');
+            // Solo verificar salto de página si hay muchas conclusiones
+            if (usuario.conclusions && usuario.conclusions.length > 8) {
+              checkTablePageBreak(usuario.conclusions || [], 'CONCLUSIONES DE APRENDIZAJE');
+            }
+            
+            // Agregar espacio antes del título
+            y += 10;
+            
+            // Agregar título
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('CONCLUSIONES DE APRENDIZAJE', margin, y); y += 15;
             
             if (usuario.conclusions && usuario.conclusions.length > 0) {
               
@@ -1960,39 +2046,53 @@ export default {
                   startY: y,
                   head: [['Tipo de Conclusión', 'Descripción']],
                   body: conclusionesData,
-                  theme: 'grid',
-                  styles: { 
-                    fontSize: 10, 
-                    cellPadding: 4,
-                    lineColor: [0, 0, 0],
-                    lineWidth: 0.5
-                  },
-                  headStyles: {
-                    fillColor: [241, 196, 15],
-                    textColor: [0, 0, 0],
-                    fontSize: 11,
-                    fontStyle: 'bold'
-                  },
-                  alternateRowStyles: {
-                    fillColor: [255, 255, 224]
-                  },
-                  margin: { left: margin, right: margin },
+                                  theme: 'grid',
+                styles: { 
+                  fontSize: 9, 
+                  cellPadding: 3,
+                  lineColor: [0, 0, 0],
+                  lineWidth: 0.5
+                },
+                headStyles: {
+                  fillColor: [241, 196, 15],
+                  textColor: [0, 0, 0],
+                  fontSize: 10,
+                  fontStyle: 'bold'
+                },
+                alternateRowStyles: {
+                  fillColor: [255, 255, 224]
+                },
+                margin: { left: margin, right: margin },
                 });
-                y = doc.lastAutoTable.finalY + 25;
+                y = doc.lastAutoTable.finalY + 15;
                           } else {
               doc.setFontSize(10);
               doc.text('No hay conclusiones detalladas disponibles', margin, y);
-              y += 25;
+              y += 15;
             }
             } else {
               doc.setFontSize(10);
               doc.text('No hay conclusiones registradas', margin, y);
-              y += 25;
+              y += 15;
             }
 
+            // Verificar si hay espacio para el resumen ejecutivo
+            const resumenHeight = 100; // Altura estimada del resumen
+            const currentPageHeight = doc.internal.pageSize.getHeight();
+            const bottomMargin = margin;
+            const availableSpace = currentPageHeight - bottomMargin - y;
+            
+            if (resumenHeight > availableSpace - 30) {
+              doc.addPage();
+              y = margin + 20;
+            }
+            
+            // Agregar espacio antes del título
+            y += 10;
+            
             doc.setFontSize(12);
             doc.setFont(undefined, 'bold');
-            doc.text('RESUMEN EJECUTIVO', 40, y); y += 20;
+            doc.text('RESUMEN EJECUTIVO', 40, y); y += 15;
             
             const resumenData = [
               ['Total Variables Analizadas', usuario.variables_list ? usuario.variables_list.length : 0],
@@ -2008,14 +2108,14 @@ export default {
               head: [['Métrica', 'Cantidad']],
               body: resumenData,
               theme: 'grid',
-              styles: { fontSize: 10, cellPadding: 4 },
+              styles: { fontSize: 9, cellPadding: 3 },
               margin: { left: margin, right: margin },
             });
-            y = doc.lastAutoTable.finalY + 25;
+            y = doc.lastAutoTable.finalY + 15;
 
             doc.setFontSize(8);
             doc.text(`Reporte generado el ${new Date().toLocaleString('es-ES')}`, 40, y);
-            y += 15;
+            y += 8;
             doc.text('Sistema de Prospectiva - Análisis Estructural de Variables', 40, y);
 
             doc.save(`Reporte_Prospectiva_${usuario.first_name || ''}_${usuario.last_name || ''}_${new Date().toISOString().split('T')[0]}.pdf`);

@@ -351,7 +351,7 @@ class TraceabilityController extends Controller
                 'conditions' => '0',
                 'scenarios' => '0',
                 'conclusions' => '0',
-                'results' => '1', 
+                'results' => '0', 
                 'state' => '0'
             ]);
 

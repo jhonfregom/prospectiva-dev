@@ -82,7 +82,7 @@ class TestSecondRouteCreation extends Command
             'conditions' => '0',
             'scenarios' => '0',
             'conclusions' => '0',
-            'results' => '1',
+            'results' => '0',
             'state' => '0'
         ]);
 
@@ -108,7 +108,7 @@ class TestSecondRouteCreation extends Command
 
         $expectedValues = [
             'variables' => '1',
-            'results' => '1',
+            'results' => '0',
             'matriz' => '0',
             'maps' => '0',
             'hypothesis' => '0',

@@ -212,6 +212,12 @@ class Traceability extends Model
                 \Log::info('Siguiente sección habilitada: ' . $nextSection . ' (' . $nextField . ') en ruta tried=' . $this->tried);
             }
         }
+        
+        // Lógica especial para la ruta 2: cuando se completa conclusions, marcar results como completado
+        if ($this->tried == '2' && $completedSection === 'conclusions') {
+            $this->results = '1';
+            \Log::info('Ruta 2: Sección de conclusiones completada, marcando results como completado');
+        }
     }
 
     public function reverseSectionCompleted($section)
@@ -246,11 +252,6 @@ class Traceability extends Model
             for ($i = $startIndex + 1; $i < count($sectionOrder); $i++) {
                 $key = $sectionOrder[$i];
 
-                if ($this->tried == '2' && $key === 'results') {
-                    \Log::info('Segunda ruta: No se bloquea results');
-                    continue;
-                }
-
                 if ($key !== 'variables') {
                     $field = $sectionMap[$key] ?? null;
                     if ($field && isset($this->$field)) {
@@ -259,6 +260,13 @@ class Traceability extends Model
                     }
                 }
             }
+            
+            // Lógica especial para la ruta 2: cuando se revierte conclusions, también revertir results
+            if ($this->tried == '2' && $section === 'conclusions') {
+                $this->results = '0';
+                \Log::info('Ruta 2: Sección de conclusiones revertida, marcando results como no completado');
+            }
+            
             $this->save();
         } else {
             \Log::error('Sección no encontrada en el mapeo: ' . $section);

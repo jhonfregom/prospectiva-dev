@@ -68,7 +68,7 @@
              </div>
              <div class="notes-list">
                <div 
-                 v-for="(note, index) in notes.filter(n => n !== null && n !== undefined)" 
+                 v-for="(note, index) in (Array.isArray(notes) ? notes.filter(n => n !== null && n !== undefined) : [])" 
                  :key="index"
                  class="note-item"
                  @click="selectNote(index)"
@@ -250,7 +250,10 @@ export default {
    },
   mounted() {
     console.log('FloatingBubbleComponent mounted successfully!');
-    this.loadNotes();
+    
+    // Verificar si el usuario está autenticado antes de cargar notas
+    this.checkAuthAndLoadNotes();
+    
     this.initializeAIMessage();
     this.initializePosition();
 
@@ -343,19 +346,51 @@ export default {
        this.isMenuOpen = !this.isMenuOpen;
      },
 
-    openNotes() {
+    async openNotes() {
       this.isMenuOpen = false;
       this.isNotesOpen = true;
       this.isAIOpen = false;
+      
+      // Cargar notas si no se han cargado aún
+      if (!Array.isArray(this.notes) || this.notes.length === 0) {
+        console.log('📝 Cargando notas al abrir modal...');
+        await this.loadNotes();
+      }
     },
     
     closeNotes() {
       this.isNotesOpen = false;
     },
     
+    async checkAuthAndLoadNotes() {
+      try {
+        // Verificar si hay un token de autenticación o cookies de sesión
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const hasSessionCookie = document.cookie.includes('laravel_session') || document.cookie.includes('XSRF-TOKEN');
+        
+        if (token || hasSessionCookie) {
+          console.log('🔐 Autenticación encontrada, cargando notas...');
+          await this.loadNotes();
+        } else {
+          console.log('⚠️ No se encontró autenticación, esperando...');
+          // Intentar cargar notas después de un delay
+          setTimeout(() => {
+            this.checkAuthAndLoadNotes();
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('❌ Error verificando autenticación:', error);
+      }
+    },
+    
     async loadNotes() {
       try {
         console.log('📥 Cargando notas desde el servidor...');
+        console.log('📥 URL de la petición:', '/notes');
+        console.log('📥 Headers de la petición:', {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        });
         
         const response = await axios.get('/notes', {
           headers: {
@@ -365,9 +400,20 @@ export default {
         });
         
         if (response.data.success) {
-          this.notes = response.data.data || [];
-          this.notes = this.notes.filter(note => note !== null && note !== undefined);
+          // Asegurar que notes sea siempre un array
+          const notesData = response.data.data;
+          console.log('📥 Datos recibidos del servidor:', notesData);
+          console.log('📥 Tipo de datos:', typeof notesData);
+          console.log('📥 Es array:', Array.isArray(notesData));
+          
+          if (Array.isArray(notesData)) {
+            this.notes = notesData.filter(note => note !== null && note !== undefined);
+          } else {
+            console.warn('⚠️ Los datos recibidos no son un array:', notesData);
+            this.notes = [];
+          }
           console.log('✅ Notas cargadas:', this.notes.length);
+          console.log('✅ Notas finales:', this.notes);
         } else {
           console.error('❌ Error cargando notas:', response.data);
           this.notes = [];
@@ -387,7 +433,7 @@ export default {
     
     selectNote(index) {
       this.selectedNoteIndex = index;
-      const note = this.notes[index];
+      const note = Array.isArray(this.notes) ? this.notes[index] : null;
       if (note) {
         this.currentNote = { 
           title: note.title || '', 
@@ -413,7 +459,7 @@ export default {
         };
         
         let response;
-        if (this.selectedNoteIndex !== null && this.notes[this.selectedNoteIndex].id) {
+        if (this.selectedNoteIndex !== null && Array.isArray(this.notes) && this.notes[this.selectedNoteIndex] && this.notes[this.selectedNoteIndex].id) {
           
           const noteId = this.notes[this.selectedNoteIndex].id;
           console.log('🔄 Actualizando nota ID:', noteId);
@@ -443,7 +489,7 @@ export default {
     },
     
     async deleteNote(index) {
-      if (index === undefined || index < 0 || index >= this.notes.length) return;
+      if (!Array.isArray(this.notes) || index === undefined || index < 0 || index >= this.notes.length) return;
       
       const note = this.notes[index];
       if (!note || !note.id) {
