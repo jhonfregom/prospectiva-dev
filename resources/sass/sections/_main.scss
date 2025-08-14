@@ -113,7 +113,7 @@
 // Encabezados y totales
 .matriz-header-bg {
   background: #f3f6fd !important;
-  color: #6c63ff !important;
+  color: #000000 !important;
   font-weight: 600;
 }
 .matriz-total-bg {
@@ -151,22 +151,22 @@
   transition: background 0.2s, color 0.2s;
 }
 
-// Colores suaves para los valores (reutilizando los -modern)
+// Colores clave para los valores (reutilizando los -modern)
 .matriz-value-0-modern {
   background: #f5f6fa !important;
   color: #888 !important;
 }
 .matriz-value-1-modern {
-  background: #e0f7fa !important;
-  color: #0288d1 !important;
+  background: #005883 !important;
+  color: white !important;
 }
 .matriz-value-2-modern {
-  background: #fff9c4 !important;
-  color: #fbc02d !important;
+  background: #F0B429 !important;
+  color: white !important;
 }
 .matriz-value-3-modern {
-  background: #f8bbd0 !important;
-  color: #c2185b !important;
+  background: #F47920 !important;
+  color: white !important;
 }
 
 // Mejorar separación visual

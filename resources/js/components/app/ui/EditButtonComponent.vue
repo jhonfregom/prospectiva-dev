@@ -86,12 +86,12 @@ export default {
 
 /* Estilos para diferentes estados */
 .edit-button.is-info {
-  border-color: #3182ce !important;
-  color: #3182ce !important;
+  border-color: #005883 !important;
+  color: #005883 !important;
 }
 
 .edit-button.is-info:hover:not(:disabled) {
-  background-color: #3182ce !important;
+  background-color: #005883 !important;
   color: white !important;
 }
 

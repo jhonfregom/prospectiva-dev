@@ -348,7 +348,7 @@ export const useTextsStore = defineStore('texts', {
         register: {
             select_type_placeholder: 'Seleccione el tipo de registro',
             natural_person: 'Persona Natural',
-            company: 'Empresa'
+            company: 'Persona Jurídica'
         },
         
         // Steps/Navigation - Textos de navegación

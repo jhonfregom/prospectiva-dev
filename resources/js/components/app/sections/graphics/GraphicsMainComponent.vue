@@ -107,7 +107,7 @@ export default {
             {
               label: 'Variables',
               data: points,
-              backgroundColor: '#FF0000',
+              backgroundColor: '#F47920',
               pointRadius: 8,
               pointHoverRadius: 10
             }
@@ -129,7 +129,7 @@ export default {
                 
                 diagonal: {
                   type: 'line',
-                  borderColor: 'black',
+                  borderColor: '#005883',
                   borderWidth: 3,
                   xMin: minX,
                   xMax: maxX,
@@ -142,7 +142,7 @@ export default {
                 
                 crossVertical: {
                   type: 'line',
-                  borderColor: 'red',
+                  borderColor: '#F47920',
                   borderWidth: 2,
                   xMin: cross.x,
                   xMax: cross.x,
@@ -153,7 +153,7 @@ export default {
                 
                 crossHorizontal: {
                   type: 'line',
-                  borderColor: 'red',
+                  borderColor: '#F47920',
                   borderWidth: 2,
                   yMin: cross.y,
                   yMax: cross.y,
@@ -167,7 +167,7 @@ export default {
                   xValue: cross.x * 0.3,
                   yValue: cross.y * 1.7,
                   backgroundColor: 'rgba(0,0,0,0)',
-                  color: '#FAB800',
+                  color: '#F0B429',
                   font: {
                     size: 18,
                     weight: 'bold',
@@ -186,7 +186,7 @@ export default {
                   xValue: cross.x * 0.3,
                   yValue: cross.y * 0.3,
                   backgroundColor: 'rgba(0,0,0,0)',
-                  color: '#FAB800',
+                  color: '#F0B429',
                   font: {
                     size: 18,
                     weight: 'bold',
@@ -205,7 +205,7 @@ export default {
                   xValue: cross.x * 1.7,
                   yValue: cross.y * 1.7,
                   backgroundColor: 'rgba(0,0,0,0)',
-                  color: '#FAB800',
+                  color: '#F0B429',
                   font: {
                     size: 18,
                     weight: 'bold',
@@ -224,7 +224,7 @@ export default {
                   xValue: cross.x * 1.7,
                   yValue: cross.y * 0.3,
                   backgroundColor: 'rgba(0,0,0,0)',
-                  color: '#FAB800',
+                  color: '#F0B429',
                   font: {
                     size: 18,
                     weight: 'bold',

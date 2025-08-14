@@ -60,3 +60,4 @@ class CheckAIKeys extends Command
 }
 
 
+

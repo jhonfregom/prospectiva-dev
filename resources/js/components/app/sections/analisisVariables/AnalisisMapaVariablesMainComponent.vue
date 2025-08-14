@@ -583,4 +583,14 @@ export default {
 .modal-content button:hover {
   background: #004466;
 }
+
+/* Cambiar el color de los tags de variables por el azul oscuro clave */
+:deep(.tag.is-info) {
+  background-color: #005883 !important;
+  color: white !important;
+}
+
+:deep(.tag.is-info:hover) {
+  background-color: #004466 !important;
+}
 </style>

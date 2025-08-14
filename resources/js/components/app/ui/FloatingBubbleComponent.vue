@@ -836,17 +836,17 @@ ${conversationHistory}Usuario: ${userText}`;
 }
 
 .menu-option:first-child .option-icon {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  background: #005883;
   color: white;
 }
 
  .menu-option:nth-child(2) .option-icon {
-   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+   background: #F47920;
    color: white;
  }
  
  .menu-option:nth-child(3) .option-icon {
-   background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+   background: #F0B429;
    color: white;
  }
 

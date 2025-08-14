@@ -586,7 +586,7 @@ export default {
 }
 .cell-title {
     font-weight: 600;
-    color: #4F46E5;
+    color: #005883;
     font-size: 13px;
     margin-bottom: 8px;
     text-align: center;
@@ -631,7 +631,7 @@ export default {
 }
 .scenario-title {
     font-weight: 600;
-    color: #4F46E5;
+    color: #005883;
     margin-bottom: 6px;
     text-align: center;
     background: #EEF2FF;
@@ -701,7 +701,7 @@ export default {
     left: 50%;
     top: 50%;
     width: 4px;
-    height: 65%; 
+    height: 61%; 
     background: red;
     transform: translate(-50%, -50%);
 }

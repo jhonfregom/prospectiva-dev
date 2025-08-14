@@ -503,7 +503,7 @@ export default {
 
         .matriz-header-cell {
             background-color: #EEF2FF;
-            color: #4F46E5;
+            color: #000000;
             padding: 1rem;
             text-align: center;
             font-weight: 600;
@@ -517,7 +517,7 @@ export default {
 
         .matriz-row-header {
             background-color: #EEF2FF;
-            color: #4F46E5;
+            color: #000000;
             padding: 1rem;
             text-align: center;
             font-weight: 600;
@@ -651,7 +651,7 @@ export default {
 
         h3 {
             margin-bottom: 1rem;
-            color: #4F46E5;
+            color: #000000;
             font-size: 1.2rem;
             font-weight: 600;
             letter-spacing: 0.5px;
@@ -688,18 +688,18 @@ export default {
                 transition: all 0.2s ease;
 
                 &.legend-strong {
-                    background-color: #FEE2E2;
-                    color: #DC2626;
+                    background-color: #F47920;
+                    color: white;
                 }
 
                 &.legend-medium {
-                    background-color: #FFEDD5;
-                    color: #EA580C;
+                    background-color: #F0B429;
+                    color: white;
                 }
 
                 &.legend-weak {
-                    background-color: #FEF9C3;
-                    color: #CA8A04;
+                    background-color: #005883;
+                    color: white;
                 }
 
                 &.legend-none {
@@ -736,7 +736,7 @@ export default {
 
             th {
                 background-color: #EEF2FF;
-                color: #4F46E5;
+                color: #000000;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
@@ -746,7 +746,7 @@ export default {
 
             td:first-child {
                 background-color: #EEF2FF;
-                color: #4F46E5;
+                color: #000000;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
