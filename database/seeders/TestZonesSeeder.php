@@ -13,8 +13,13 @@ class TestZonesSeeder extends Seeder
     public function run(): void
     {
         
-        DB::statement('DELETE FROM zones WHERE id > 0');
-        DB::statement('ALTER TABLE zones AUTO_INCREMENT = 1');
+        // Verificar si ya existen zonas
+        if (DB::table('zones')->count() > 0) {
+            $this->command->info('Las zonas ya existen, saltando seeder...');
+            return;
+        }
+
+        $this->command->info('Creando zonas de prueba...');
 
    $Zona = [
     [
@@ -38,6 +43,8 @@ class TestZonesSeeder extends Seeder
 foreach ($Zona as $data) {
     Zones::create($data);
 }
+
+$this->command->info('Zonas creadas exitosamente: ' . count($Zona));
     
     }
 }

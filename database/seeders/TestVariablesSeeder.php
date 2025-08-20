@@ -14,8 +14,13 @@ class TestVariablesSeeder extends Seeder
     public function run(): void
     {
         
-        DB::statement('DELETE FROM variables WHERE id > 0');
-        DB::statement('ALTER TABLE variables AUTO_INCREMENT = 1');
+        // Verificar si ya existen variables de prueba
+        if (DB::table('variables')->where('user_id', 1)->count() > 0) {
+            $this->command->info('Las variables de prueba ya existen, saltando seeder...');
+            return;
+        }
+
+        $this->command->info('Creando variables de prueba...');
 
    $variables = [
     [
@@ -59,5 +64,7 @@ class TestVariablesSeeder extends Seeder
 foreach ($variables as $data) {
     Variable::create($data);
 }
+
+$this->command->info('Variables creadas exitosamente: ' . count($variables));
     }
 }
