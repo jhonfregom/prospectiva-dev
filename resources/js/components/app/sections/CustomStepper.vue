@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed, ref, watch, onMounted } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { useTraceabilityStore } from '../../../stores/traceability';
 import { useSessionStore } from '../../../stores/session';
 
@@ -261,9 +261,13 @@ function getTooltipText(stepLabel) {
   cursor: not-allowed;
 }
 .step.is-disabled .step-circle {
-  background: #f3f4f6;
+  background: #f3f4f6 !important;
+  background-color: #f3f4f6 !important;
   border-color: #d1d5db;
   color: #9ca3af;
+  position: relative;
+  z-index: 10;
+  opacity: 1;
 }
 .step.is-disabled .step-label {
   color: #9ca3af;
@@ -272,7 +276,8 @@ function getTooltipText(stepLabel) {
   width: 67.2px;
   height: 67.2px;
   border-radius: 50%;
-  background: #f5f5f5;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,14 +286,25 @@ function getTooltipText(stepLabel) {
   box-shadow: 0 2px 8px rgba(50,115,220,0.08);
   border: 2px solid transparent;
   transition: border 0.2s, background 0.2s;
+  position: relative;
+  z-index: 10;
+  opacity: 1;
 }
 .step.is-active .step-circle {
   border: 2px solid #005883;
-  background: rgba(0, 88, 131, 0.1);
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  position: relative;
+  z-index: 10;
+  opacity: 1;
 }
 .step.is-completed .step-circle {
   border: 2px solid #005883;
-  background: rgba(0, 88, 131, 0.1);
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  position: relative;
+  z-index: 10;
+  opacity: 1;
 }
 .step-label {
   font-size: 1.4rem;

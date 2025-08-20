@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // Colores institucionales de la universidad
 // Paleta de colores clave
 
@@ -17,12 +19,12 @@ $color-accent-rgb: 244, 121, 32;
 $color-accent-cmyk: 0, 65, 100, 0;
 
 // Variaciones de los colores principales
-$color-primary-light: lighten($color-primary, 10%);
-$color-primary-dark: darken($color-primary, 10%);
-$color-secondary-light: lighten($color-secondary, 10%);
-$color-secondary-dark: darken($color-secondary, 10%);
-$color-accent-light: lighten($color-accent, 10%);
-$color-accent-dark: darken($color-accent, 10%);
+$color-primary-light: color.adjust($color-primary, $lightness: 10%);
+$color-primary-dark: color.adjust($color-primary, $lightness: -10%);
+$color-secondary-light: color.adjust($color-secondary, $lightness: 10%);
+$color-secondary-dark: color.adjust($color-secondary, $lightness: -10%);
+$color-accent-light: color.adjust($color-accent, $lightness: 10%);
+$color-accent-dark: color.adjust($color-accent, $lightness: -10%);
 
 // Colores de estado
 $color-success: #28a745;

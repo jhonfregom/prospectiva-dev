@@ -897,8 +897,8 @@ ${conversationHistory}Usuario: ${userText}`;
 }
 
 .modal-header {
-  background: #005883;
-  color: white;
+  background: #005883 !important;
+  color: #ffffff !important;
   padding: 20px 25px;
   border-radius: 20px 20px 0 0;
   display: flex;
@@ -936,6 +936,7 @@ ${conversationHistory}Usuario: ${userText}`;
   margin: 0;
   font-size: 18px;
   font-weight: 600;
+  color: #ffffff !important;
 }
 
 .notes-modal {

@@ -8,6 +8,7 @@
       outlined
       :disabled="isLocked"
       class="edit-button"
+      :class="{ 'locked-button': isLocked }"
     >
       {{ isEditing ? saveText : editText }}
     </b-button>
@@ -103,6 +104,20 @@ export default {
 .edit-button.is-success:hover:not(:disabled) {
   background-color: #38a169 !important;
   color: white !important;
+}
+
+/* Botón bloqueado - mantiene color azul oscuro */
+.edit-button.locked-button {
+  border-color: #005883 !important;
+  color: #005883 !important;
+  background-color: transparent !important;
+  opacity: 0.6 !important;
+}
+
+.edit-button.locked-button:hover {
+  border-color: #005883 !important;
+  color: #005883 !important;
+  background-color: transparent !important;
 }
 
 /* Animación para el botón bloqueado */
