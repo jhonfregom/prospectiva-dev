@@ -2,14 +2,11 @@
     <section
         class="title-section">
         <div class="columns">
-            <div class="column is-11-desktop is-12-touch is-12-tablet is-offset-1-desktop content-title">
+            <div class="column is-12 content-title">
                 <template v-if="isMainSection && storeTexts.main_section">
                     <div class="columns header">
                         <div class="column">
                             <span class="title-group">{{ capitalizeWords(storeTexts.main_section?.modules_title || '') }}</span>
-                        </div>
-                        <div class="column">
-                            <span class="title-group">{{ capitalizeWords(storeTexts.main_section?.queries_title || '') }}</span>
                         </div>
                     </div>
                 </template>

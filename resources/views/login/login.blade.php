@@ -12,11 +12,11 @@
                         <article class="media">
                             <div class="media-left">
                                 <figure class="avatar">
-                                    <img class="image" src="{{ Vite::asset('resources/img/unad.png') }}" alt="Cloud Back">
+                                    <img class="image" src="{{ Vite::asset('resources/img/logo-128.png') }}" alt="Foresight Tool">
                                 </figure>
                             </div>
                             <div class="media-content">
-                                <h1 class="title">{!! __('login.title') !!}</h1>
+                                <center><h1 class="title">{!! __('login.title') !!}</h1></center>
                             </div>
                         </article>
                         <h2 class="subtitle">{!! __('login.subtitle') !!}</h2>

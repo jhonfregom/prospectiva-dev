@@ -19,7 +19,7 @@
                     class="is-primary"
                     v-on:click="logout"
                 >
-                    Logout
+                    Cerrar Sesión
                 </b-button>
             </div>
             <span class="icon"><i class="fas fa-bars"></i></span>

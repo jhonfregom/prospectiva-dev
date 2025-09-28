@@ -14,6 +14,6 @@ return [
     'need_help'         => '¿ayuda?',
     'sign_up'           => 'registrarse',
     'subtitle'          => 'UNAD - Universidad Nacional Abierta y a Distancia',
-    'title'             => 'Proyecto<br>Prospectiva',
+    'title'             => 'Foresight<br>Tool',
     'user_placeholder' =>  'Correo electrónico',
 ];
