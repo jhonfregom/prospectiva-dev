@@ -402,14 +402,12 @@ export const useTextsStore = defineStore('texts', {
                 const result = await response.json();
                 
                 if (result.status === 200) {
-                    console.log('🔍 Debug: loadTexts called with:', result.data);
-                    console.log('🔍 Debug: conclusions_section in result.data:', result.data.conclusions_section);
-                    
+                                       
                     for(const key in result.data) {
                         this[key] = result.data[key];
                     }
                     
-                    console.log('🔍 Debug: After loadTexts, this.conclusions_section:', this.conclusions_section);
+                    
                 }
             } catch (error) {
                 console.error('Error loading texts:', error);
@@ -418,15 +416,13 @@ export const useTextsStore = defineStore('texts', {
             }
         },
         setTexts(objTexts){
-            console.log('🔍 Debug: setTexts called with:', objTexts);
-            console.log('🔍 Debug: conclusions_section in objTexts:', objTexts.conclusions_section);
+            
             
             for(const key in objTexts)
             {
                 this[key] = objTexts[key];
             }
             
-            console.log('🔍 Debug: After setTexts, this.conclusions_section:', this.conclusions_section);
         },
         setLocale(locale){
             this.locale = locale;

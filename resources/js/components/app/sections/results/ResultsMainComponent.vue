@@ -128,7 +128,7 @@
         <span v-else class="has-text-grey-light">Sin matriz</span>
       </b-table-column>
       <b-table-column field="grafica" label="Gráfica" width="10%" centered v-slot="props">
-        <button class="button custom-blue-btn" @click="() => { console.log('Fila seleccionada:', props.row); showGraphicsDescription(props.row.matriz, props.row.first_name, props.row.last_name, props.row.matriz_cruzada); }">
+        <button class="button custom-blue-btn" @click="() => {showGraphicsDescription(props.row.matriz, props.row.first_name, props.row.last_name, props.row.matriz_cruzada); }">
           Ver Gráfica
         </button>
         </b-table-column>
@@ -883,7 +883,6 @@ export default {
           }
           selectedGraphicsData.value = graphicsData;
           selectedGraphicsUser.value = `${firstName} ${lastName}`;
-          console.log('Datos enviados a la gráfica:', selectedGraphicsData.value);
           showGraphicsModal.value = true;
         }
 
@@ -2159,9 +2158,6 @@ export default {
 
         const getResultsDescription = computed(() => {
             const description = textsStore.getText('results_section.description');
-            console.log('TextsStore disponible:', !!textsStore);
-            console.log('Results description:', description);
-            console.log('TextsStore completo:', textsStore);
             return description || 'Descripción de resultados no encontrada';
         });
 
@@ -2261,12 +2257,7 @@ export default {
 
         this.loadResultsByCurrentRoute();
 
-        this.$nextTick(() => {
-            console.log('Textos cargados:', {
-                variables_count: this.textsStore.getText('results_section.table.variables_count'),
-                variables_list: this.textsStore.getText('results_section.table.variables_list')
-            });
-        });
+        
 
         window.addEventListener('route-created', this.handleRouteCreated);
     },

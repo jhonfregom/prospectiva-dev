@@ -249,7 +249,7 @@ export default {
 
    },
   mounted() {
-    console.log('FloatingBubbleComponent mounted successfully!');
+    
     
     // Verificar si el usuario está autenticado antes de cargar notas
     this.checkAuthAndLoadNotes();
@@ -353,7 +353,7 @@ export default {
       
       // Cargar notas si no se han cargado aún
       if (!Array.isArray(this.notes) || this.notes.length === 0) {
-        console.log('📝 Cargando notas al abrir modal...');
+        
         await this.loadNotes();
       }
     },
@@ -369,11 +369,9 @@ export default {
         const hasSessionCookie = document.cookie.includes('laravel_session') || document.cookie.includes('XSRF-TOKEN');
         
         if (token || hasSessionCookie) {
-          console.log('🔐 Autenticación encontrada, cargando notas...');
+          
           await this.loadNotes();
         } else {
-          console.log('⚠️ No se encontró autenticación, esperando...');
-          // Intentar cargar notas después de un delay
           setTimeout(() => {
             this.checkAuthAndLoadNotes();
           }, 1000);
@@ -385,12 +383,7 @@ export default {
     
     async loadNotes() {
       try {
-        console.log('📥 Cargando notas desde el servidor...');
-        console.log('📥 URL de la petición:', '/notes');
-        console.log('📥 Headers de la petición:', {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        });
+        
         
         const response = await axios.get('/notes', {
           headers: {
@@ -402,9 +395,7 @@ export default {
         if (response.data.success) {
           // Asegurar que notes sea siempre un array
           const notesData = response.data.data;
-          console.log('📥 Datos recibidos del servidor:', notesData);
-          console.log('📥 Tipo de datos:', typeof notesData);
-          console.log('📥 Es array:', Array.isArray(notesData));
+          
           
           if (Array.isArray(notesData)) {
             this.notes = notesData.filter(note => note !== null && note !== undefined);
@@ -412,8 +403,7 @@ export default {
             console.warn('⚠️ Los datos recibidos no son un array:', notesData);
             this.notes = [];
           }
-          console.log('✅ Notas cargadas:', this.notes.length);
-          console.log('✅ Notas finales:', this.notes);
+          
         } else {
           console.error('❌ Error cargando notas:', response.data);
           this.notes = [];
@@ -428,7 +418,7 @@ export default {
     
     saveNotes() {
       
-      console.log('📝 Método saveNotes obsoleto - las notas se guardan en la BD');
+      
     },
     
     selectNote(index) {
@@ -446,13 +436,12 @@ export default {
     
     async saveNote() {
       if (!this.currentNote.title.trim() && !this.currentNote.content.trim()) {
-        console.log('📝 Contenido vacío, saltando guardado');
+        
         return;
       }
       
       try {
-        console.log('💾 Guardando nota en el servidor...');
-        
+               
         const noteData = {
           title: this.currentNote.title,
           content: this.currentNote.content
@@ -462,16 +451,16 @@ export default {
         if (this.selectedNoteIndex !== null && Array.isArray(this.notes) && this.notes[this.selectedNoteIndex] && this.notes[this.selectedNoteIndex].id) {
           
           const noteId = this.notes[this.selectedNoteIndex].id;
-          console.log('🔄 Actualizando nota ID:', noteId);
+          
           response = await axios.put(`/notes/${noteId}`, noteData);
         } else {
           
-          console.log('➕ Creando nueva nota...');
+          
           response = await axios.post('/notes', noteData);
         }
         
         if (response.data.success) {
-          console.log('✅ Nota guardada exitosamente');
+          
           
           await this.loadNotes();
           this.newNote();
@@ -492,18 +481,15 @@ export default {
       if (!Array.isArray(this.notes) || index === undefined || index < 0 || index >= this.notes.length) return;
       
       const note = this.notes[index];
-      if (!note || !note.id) {
-        console.log('❌ No se puede eliminar: nota sin ID');
-        return;
-      }
+      
       
       try {
-        console.log('🗑️ Eliminando nota ID:', note.id);
+        
         
         const response = await axios.delete(`/notes/${note.id}`);
         
         if (response.data.success) {
-          console.log('✅ Nota eliminada exitosamente');
+          
           
           await this.loadNotes();
 

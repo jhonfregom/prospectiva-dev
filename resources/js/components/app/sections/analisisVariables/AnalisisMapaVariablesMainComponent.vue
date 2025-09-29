@@ -240,10 +240,7 @@ export default {
                     row.variables = zoneVariables;
                 });
 
-                console.log('Variables por zona:', this.rows.map(row => ({
-                    zona: row.key,
-                    variables: row.variables.map(v => v.codigo)
-                })));
+                
             } catch (e) {
                 console.error('Error al cargar variables:', e);
             }

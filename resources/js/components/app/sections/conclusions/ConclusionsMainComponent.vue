@@ -187,7 +187,6 @@ export default {
             if (text.length > MAX_CHARACTERS) {
                 
                 conclusionsStore.conclusions[field] = text.substring(0, MAX_CHARACTERS);
-                console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
             }
         };
 
@@ -207,10 +206,7 @@ export default {
                 if (availableSpace > 0) {
                     const truncatedPastedText = pastedText.substring(0, availableSpace);
                     conclusionsStore.conclusions[field] = currentText + truncatedPastedText;
-                    console.log(`Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
-                } else {
-                    console.log(`No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
-                }
+                } 
             }
         };
 
@@ -220,7 +216,6 @@ export default {
                 
                 if (event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
                     event.preventDefault();
-                    console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
                 }
             }
         };
@@ -287,13 +282,10 @@ export default {
     },
 
     async mounted() {
-        console.log('🔍 Debug: textsStore state:', this.textsStore);
-        console.log('🔍 Debug: conclusions_section.title:', this.textsStore.getText('conclusions_section.title'));
-        console.log('🔍 Debug: conclusions_section.component_practice_subtitle:', this.textsStore.getText('conclusions_section.component_practice_subtitle'));
+        
         
         // Esperar a que los textos estén cargados
         if (this.textsStore.isLoading || !this.textsStore.conclusions_section) {
-            console.log('🔍 Debug: Esperando a que los textos se carguen...');
             await this.waitForTexts();
         }
         
@@ -340,10 +332,10 @@ export default {
             return new Promise((resolve) => {
                 const checkTexts = () => {
                     if (!this.textsStore.isLoading && this.textsStore.conclusions_section) {
-                        console.log('🔍 Debug: Textos cargados correctamente');
+                        
                         resolve();
                     } else {
-                        console.log('🔍 Debug: Textos aún no cargados, esperando...');
+                        
                         setTimeout(checkTexts, 100);
                     }
                 };

@@ -467,9 +467,7 @@ export default {
         const updateScenarioInServer = async (index, numScenario) => {
             try {
                 const result = await schwartzStore.saveScenario(index, numScenario);
-                if (result.success) {
-                    console.log(`Escenario ${numScenario} actualizado correctamente`);
-                }
+                
             } catch (error) {
                 console.error('Error al actualizar escenario:', error);
             }

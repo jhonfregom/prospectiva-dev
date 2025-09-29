@@ -213,14 +213,6 @@ export default {
             this.showModal = true;
         });
 
-        console.log('Debug textos botón cerrar:', {
-            close_button: this.textsStore.getText('variables_section.close_button'),
-            return_button: this.textsStore.getText('variables_section.return_button'),
-            close_confirm_message: this.textsStore.getText('variables_section.close_confirm_message'),
-            confirm_yes: this.textsStore.getText('variables_section.confirm_yes'),
-            confirm_no: this.textsStore.getText('variables_section.confirm_no')
-        });
-
         window.addEventListener('route-created', this.handleRouteCreated);
     },
 
@@ -234,7 +226,6 @@ export default {
     methods: {
         
         handleRouteCreated() {
-            console.log('handleRouteCreated ejecutado');
 
             this.$forceUpdate();
 
@@ -243,14 +234,6 @@ export default {
             this.sectionStore.clearDynamicButtons();
             this.sectionStore.addDynamicButton(this.textsStore.getText('variables_section.table.new'), () => {
                 this.showModal = true;
-            });
-
-            console.log('Debug textos después de route-created:', {
-                close_button: this.textsStore.getText('variables_section.close_button'),
-                return_button: this.textsStore.getText('variables_section.return_button'),
-                close_confirm_message: this.textsStore.getText('variables_section.close_confirm_message'),
-                confirm_yes: this.textsStore.getText('variables_section.confirm_yes'),
-                confirm_no: this.textsStore.getText('variables_section.confirm_no')
             });
         },
 

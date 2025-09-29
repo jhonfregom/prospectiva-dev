@@ -41,11 +41,6 @@ export default {
         const storeSession = useSessionStore();
         const traceabilityStore = useTraceabilityStore();
         
-        // Debug: verificar si los textos se cargan correctamente
-        console.log('StoreTexts:', storeTexts);
-        console.log('Variables section texts:', storeTexts.variables_section);
-        console.log('Title introduction:', storeTexts.variables_section?.title_introduction);
-        console.log('Content introduction:', storeTexts.variables_section?.content_introduction);
         const steps = [
             { label: 'Variables', icon: 'fa-list' },
             { label: 'Matriz', icon: 'fa-th' },
@@ -79,15 +74,6 @@ export default {
             const hasOneRoute = traceabilityStore.userRoutes && traceabilityStore.userRoutes.length === 1;
             const currentRouteCompleted = traceabilityStore.availableSections && 
                                          traceabilityStore.availableSections.results === true;
-            
-            // Debug: mostrar información en consola
-            console.log('Debug botón nueva ruta:', {
-                userRoutes: traceabilityStore.userRoutes,
-                routesCount: traceabilityStore.userRoutes ? traceabilityStore.userRoutes.length : 0,
-                hasOneRoute,
-                availableSections: traceabilityStore.availableSections,
-                currentRouteCompleted
-            });
             
             return hasOneRoute && currentRouteCompleted;
         });
