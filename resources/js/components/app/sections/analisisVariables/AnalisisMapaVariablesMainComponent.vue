@@ -49,16 +49,14 @@
                 </div>
             </b-table-column>
             <b-table-column field="actions" label="Acciones" v-slot="props" centered>
-                <b-button 
-                    type="is-info"
-                    size="is-small"
-                    icon-left="edit"
+                <edit-button-component
+                    :is-editing="editingRow === props.row.key"
+                    :is-locked="props.row.state === '1'"
+                    edit-text="Editar"
+                    save-text="Guardar"
+                    locked-text="Bloqueado"
                     @click="handleEditSave(props.row)"
-                    outlined
-                    :disabled="props.row.state === '1'"
-                >
-                    {{ editingRow === props.row.key ? 'Guardar' : 'Editar' }}
-                </b-button>
+                />
             </b-table-column>
             <b-table-column field="score" label="PUNTAJE" v-slot="props" centered>
                 <span>{{ props.row.score }}</span>
@@ -113,6 +111,7 @@ import { storeToRefs } from 'pinia';
 import { debounce } from 'lodash';
 import { useTraceabilityStore } from '../../../../stores/traceability';
 import axios from 'axios';
+import EditButtonComponent from '../../ui/EditButtonComponent.vue';
 
 const CERRADO_KEY_PREFIX = 'analisis_cerrado_';
 
@@ -120,6 +119,7 @@ export default {
     name: 'AnalisisMapaVariablesMainComponent',
     
     components: {
+        EditButtonComponent
     },
 
     data() {
@@ -240,10 +240,7 @@ export default {
                     row.variables = zoneVariables;
                 });
 
-                console.log('Variables por zona:', this.rows.map(row => ({
-                    zona: row.key,
-                    variables: row.variables.map(v => v.codigo)
-                })));
+                
             } catch (e) {
                 console.error('Error al cargar variables:', e);
             }
@@ -536,14 +533,14 @@ export default {
   z-index: 100;
 }
 .cerrar-btn {
-  background: #7c3aed;
+  background: #005883;
   color: white;
   border: none;
   border-radius: 6px;
   padding: 14px 32px;
   font-size: 1.2rem;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  box-shadow: 0 2px 8px rgba(0,88,131,0.2);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -575,5 +572,22 @@ export default {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+  background: #005883;
+  color: white;
+  transition: background 0.2s;
+}
+
+.modal-content button:hover {
+  background: #004466;
+}
+
+/* Cambiar el color de los tags de variables por el azul oscuro clave */
+:deep(.tag.is-info) {
+  background-color: #005883 !important;
+  color: white !important;
+}
+
+:deep(.tag.is-info:hover) {
+  background-color: #004466 !important;
 }
 </style>

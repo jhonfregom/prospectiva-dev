@@ -351,7 +351,7 @@ class TraceabilityController extends Controller
                 'conditions' => '0',
                 'scenarios' => '0',
                 'conclusions' => '0',
-                'results' => '0', 
+                'results' => '1', // Habilitado para que el usuario pueda ingresar
                 'state' => '0'
             ]);
 

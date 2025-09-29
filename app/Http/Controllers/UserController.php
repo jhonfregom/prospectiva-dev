@@ -176,29 +176,41 @@ class UserController extends Controller
             ]);
         }
 
-        $userRoutes = \App\Models\Traceability::where('user_id', $user->id)->get();
-        
-        if ($user->role == 1) {
-            
-            $users = \App\Models\User::select('id', 'first_name', 'last_name', 'document_id', 'user')->get();
-        } else {
-            
-            $users = \App\Models\User::select('id', 'first_name', 'last_name', 'document_id', 'user')
-                ->where('id', $user->id)
-                ->get();
+        // Verificar que la ruta existe y pertenece al usuario (o es admin)
+        $route = \App\Models\Traceability::find($routeId);
+        if (!$route) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Ruta no encontrada'
+            ]);
+        }
+
+        // Si no es admin, verificar que la ruta pertenece al usuario
+        if ($user->role != 1 && $route->user_id != $user->id) {
+            return response()->json([
+                'status' => 403,
+                'message' => 'No tienes permisos para ver esta ruta'
+            ]);
+        }
+
+        // Obtener el usuario propietario de la ruta
+        $routeUser = \App\Models\User::select('id', 'first_name', 'last_name', 'document_id', 'user')
+            ->where('id', $route->user_id)
+            ->first();
+
+        if (!$routeUser) {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Usuario de la ruta no encontrado'
+            ]);
         }
 
         $result = [];
 
-        foreach ($users as $userData) {
-            foreach ($userRoutes as $route) {
-                $userRow = clone $userData;
-
-                $this->addUserDataByRoute($userRow, $route->id);
-                
-                $result[] = $userRow;
-            }
-        }
+        // Crear un registro con los datos de la ruta específica
+        $userRow = clone $routeUser;
+        $this->addUserDataByRoute($userRow, $routeId);
+        $result[] = $userRow;
 
         return response()->json([
             'status' => 200,
@@ -208,7 +220,6 @@ class UserController extends Controller
 
     private function addUserDataByRoute($userData, $routeId)
     {
-        
         $route = \App\Models\Traceability::find($routeId);
         $routeNumber = $route ? $route->tried : $routeId;
 
@@ -222,6 +233,7 @@ class UserController extends Controller
             $userData->status = $route->results === '1' ? 'Completado' : 'Sin terminar';
         }
 
+        // Obtener variables básicas
         $variables = \App\Models\Variable::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
             ->orderByRaw('CAST(SUBSTRING(id_variable, 2) AS UNSIGNED) ASC')
@@ -237,6 +249,24 @@ class UserController extends Controller
             ];
         });
 
+        // Inicializar arrays vacíos para evitar errores
+        $userData->matriz = [];
+        $userData->matriz_cruzada = [];
+        $userData->zone_analyses = [];
+        $userData->future_drivers = [];
+        $userData->initial_conditions = [];
+        $userData->scenarios = [];
+        $userData->conclusions = [];
+
+        // Solo procesar datos complejos si hay variables
+        if ($variables->count() > 0) {
+            $this->addComplexData($userData, $routeId, $variables);
+        }
+    }
+
+    private function addComplexData($userData, $routeId, $variables)
+    {
+        // Procesar matriz
         $matriz = \App\Models\Matriz::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
             ->get();
@@ -255,6 +285,7 @@ class UserController extends Controller
         }
         $userData->matriz = $matrizData;
 
+        // Procesar matriz cruzada
         $matrizCruzada = [];
         foreach ($variables as $origen) {
             foreach ($variables as $destino) {
@@ -263,20 +294,30 @@ class UserController extends Controller
                 $matrizCruzada[] = [
                     'origen' => $origen->id_variable,
                     'destino' => $destino->id_variable,
-                    'valor' => $valor !== null ? intval($valor) : 0
+                    'valor' => $valor ?? 0
                 ];
             }
         }
         $userData->matriz_cruzada = $matrizCruzada;
 
+        // Procesar análisis de zonas (con verificación de arrays vacíos)
+        $this->addZoneAnalyses($userData, $routeId, $variables, $matriz);
+
+        // Procesar datos adicionales (con verificación de arrays vacíos)
+        $this->addAdditionalData($userData, $routeId, $variables, $matriz);
+    }
+
+    private function addZoneAnalyses($userData, $routeId, $variables, $matriz)
+    {
         $analyses = \App\Models\VariableMapAnalisys::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
             ->get();
-        
-        $userData->zone_analyses = $analyses->map(function($analysis) use ($userData, $matriz, $variables) {
+
+        $zoneAnalyses = $analyses->map(function($analysis) use ($variables, $matriz) {
             $zone = \App\Models\Zones::find($analysis->zone_id);
             $zoneName = $zone ? $zone->name_zones : 'Zona Desconocida';
 
+            // Calcular coordenadas de variables
             $variablesWithCoords = [];
             foreach ($variables as $variable) {
                 $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
@@ -289,8 +330,14 @@ class UserController extends Controller
                 ];
             }
 
-            $maxX = max(array_column($variablesWithCoords, 'dependencia')) ?: 10;
-            $maxY = max(array_column($variablesWithCoords, 'influencia')) ?: 12;
+            // Verificar que hay variables antes de calcular max/min
+            if (empty($variablesWithCoords)) {
+                $maxX = 10;
+                $maxY = 12;
+            } else {
+                $maxX = max(array_column($variablesWithCoords, 'dependencia')) ?: 10;
+                $maxY = max(array_column($variablesWithCoords, 'influencia')) ?: 12;
+            }
             $centroX = $maxX / 2;
             $centroY = $maxY / 2;
 
@@ -346,7 +393,12 @@ class UserController extends Controller
             ];
         });
 
-        // Usar la misma lógica del HypothesisController para seleccionar variables
+        $userData->zone_analyses = $zoneAnalyses;
+    }
+
+    private function addAdditionalData($userData, $routeId, $variables, $matriz)
+    {
+        // Calcular coordenadas de variables para selección
         $varCoords = [];
         foreach ($variables as $variable) {
             $dependencia = $matriz->where('id_variable', $variable->id)->sum('id_resp_influ');
@@ -360,8 +412,14 @@ class UserController extends Controller
             ];
         }
 
-        $maxInfluencia = max(array_column($varCoords, 'influencia'));
-        $minDependencia = min(array_column($varCoords, 'dependencia'));
+        // Verificar que hay coordenadas antes de calcular max/min
+        if (empty($varCoords)) {
+            $maxInfluencia = 0;
+            $minDependencia = 0;
+        } else {
+            $maxInfluencia = max(array_column($varCoords, 'influencia'));
+            $minDependencia = min(array_column($varCoords, 'dependencia'));
+        }
 
         $porEncimaDiagonal = array_filter($varCoords, function($var) {
             return $var['influencia'] > $var['dependencia'];
@@ -392,7 +450,7 @@ class UserController extends Controller
             $seleccionados = array_slice($varCoords, 0, 2);
         }
 
-        // Obtener solo las hipótesis de las variables seleccionadas
+        // Obtener hipótesis de las variables seleccionadas
         $selectedVariableIds = array_column($seleccionados, 'id');
         $hypotheses = \App\Models\Hypothesis::where('user_id', $userData->id)
             ->where('tried_id', $routeId)
@@ -456,110 +514,56 @@ class UserController extends Controller
                 
                 // Asignar hipótesis según el número de escenario
                 switch ($scenario->num_scenario) {
-                    case 1: // Escenario 1: H1+ y H2+
-                        if ($h1_var1) {
-                            $variable = \App\Models\Variable::find($h1_var1->id_variable);
-                            $scenarioHypotheses[] = [
-                                'id' => $h1_var1->id,
-                                'name_hypothesis' => 'Hipótesis 1+',
-                                'description' => $h1_var1->description,
-                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
-                                'state' => $h1_var1->state
-                            ];
-                        }
-                        if ($h1_var2) {
-                            $variable = \App\Models\Variable::find($h1_var2->id_variable);
-                            $scenarioHypotheses[] = [
-                                'id' => $h1_var2->id,
-                                'name_hypothesis' => 'Hipótesis 2+',
-                                'description' => $h1_var2->description,
-                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
-                                'state' => $h1_var2->state
-                            ];
-                        }
+                    case 1: // Escenario 1: H0-H0
+                        if ($h0_var1) $scenarioHypotheses[] = $h0_var1->description;
+                        if ($h0_var2) $scenarioHypotheses[] = $h0_var2->description;
                         break;
-                    case 2: // Escenario 2: H2+ y H1-
-                        if ($h1_var2) {
-                            $variable = \App\Models\Variable::find($h1_var2->id_variable);
-                            $scenarioHypotheses[] = [
-                                'id' => $h1_var2->id,
-                                'name_hypothesis' => 'Hipótesis 2+',
-                                'description' => $h1_var2->description,
-                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
-                                'state' => $h1_var2->state
-                            ];
-                        }
-                        if ($h0_var1) {
-                            $variable = \App\Models\Variable::find($h0_var1->id_variable);
-                            $scenarioHypotheses[] = [
-                                'id' => $h0_var1->id,
-                                'name_hypothesis' => 'Hipótesis 1-',
-                                'description' => $h0_var1->description,
-                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
-                                'state' => $h0_var1->state
-                            ];
-                        }
+                    case 2: // Escenario 2: H0-H1
+                        if ($h0_var1) $scenarioHypotheses[] = $h0_var1->description;
+                        if ($h1_var2) $scenarioHypotheses[] = $h1_var2->description;
                         break;
-                    case 3: // Escenario 3: H1- y H2-
-                        if ($h0_var1) {
-                            $variable = \App\Models\Variable::find($h0_var1->id_variable);
-                            $scenarioHypotheses[] = [
-                                'id' => $h0_var1->id,
-                                'name_hypothesis' => 'Hipótesis 1-',
-                                'description' => $h0_var1->description,
-                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
-                                'state' => $h0_var1->state
-                            ];
-                        }
-                        if ($h0_var2) {
-                            $variable = \App\Models\Variable::find($h0_var2->id_variable);
-                            $scenarioHypotheses[] = [
-                                'id' => $h0_var2->id,
-                                'name_hypothesis' => 'Hipótesis 2-',
-                                'description' => $h0_var2->description,
-                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
-                                'state' => $h0_var2->state
-                            ];
-                        }
+                    case 3: // Escenario 3: H1-H0
+                        if ($h1_var1) $scenarioHypotheses[] = $h1_var1->description;
+                        if ($h0_var2) $scenarioHypotheses[] = $h0_var2->description;
                         break;
-                    case 4: // Escenario 4: H2- y H1+
-                        if ($h0_var2) {
-                            $variable = \App\Models\Variable::find($h0_var2->id_variable);
-                            $scenarioHypotheses[] = [
-                                'id' => $h0_var2->id,
-                                'name_hypothesis' => 'Hipótesis 2-',
-                                'description' => $h0_var2->description,
-                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
-                                'state' => $h0_var2->state
-                            ];
-                        }
-                        if ($h1_var1) {
-                            $variable = \App\Models\Variable::find($h1_var1->id_variable);
-                            $scenarioHypotheses[] = [
-                                'id' => $h1_var1->id,
-                                'name_hypothesis' => 'Hipótesis 1+',
-                                'description' => $h1_var1->description,
-                                'variable_name' => $variable ? $variable->name_variable : 'Variable Desconocida',
-                                'state' => $h1_var1->state
-                            ];
-                        }
+                    case 4: // Escenario 4: H1-H1
+                        if ($h1_var1) $scenarioHypotheses[] = $h1_var1->description;
+                        if ($h1_var2) $scenarioHypotheses[] = $h1_var2->description;
                         break;
                 }
+            }
+            
+            // Preparar contenido por años
+            $yearsContent = [];
+            if (!empty($scenario->year1)) {
+                $yearsContent[] = [
+                    'year' => 'Año 1',
+                    'content' => $scenario->year1
+                ];
+            }
+            if (!empty($scenario->year2)) {
+                $yearsContent[] = [
+                    'year' => 'Año 2', 
+                    'content' => $scenario->year2
+                ];
+            }
+            if (!empty($scenario->year3)) {
+                $yearsContent[] = [
+                    'year' => 'Año 3',
+                    'content' => $scenario->year3
+                ];
             }
             
             return [
                 'id' => $scenario->id,
                 'num_scenario' => $scenario->num_scenario,
                 'titulo' => $scenario->titulo,
+                'hypotheses' => $scenarioHypotheses,
+                'years_content' => $yearsContent,
                 'year1' => $scenario->year1,
                 'year2' => $scenario->year2,
                 'year3' => $scenario->year3,
-                'edits' => $scenario->edits,
-                'edits_year1' => $scenario->edits_year1,
-                'edits_year2' => $scenario->edits_year2,
-                'edits_year3' => $scenario->edits_year3,
-                'state' => $scenario->state,
-                'hypotheses' => $scenarioHypotheses
+                'state' => $scenario->state
             ];
         });
 
@@ -568,12 +572,8 @@ class UserController extends Controller
             ->orderBy('id', 'asc')
             ->get();
         
-        $conclusionsArray = [];
-        
-        // Si hay conclusiones reales, usar solo la primera
-        if ($conclusions->count() > 0) {
-            $conclusion = $conclusions->first();
-            $conclusionsArray[] = [
+        $userData->conclusions = $conclusions->map(function($conclusion) {
+            return [
                 'id' => $conclusion->id,
                 'title' => 'Conclusiones',
                 'state' => $conclusion->state,
@@ -581,22 +581,7 @@ class UserController extends Controller
                 'actuality' => $conclusion->actuality,
                 'aplication' => $conclusion->aplication
             ];
-        } else {
-            // Si no hay conclusiones, crear una vacía
-            $conclusionsArray[] = [
-                'id' => 1,
-                'title' => 'Conclusiones',
-                'state' => '0',
-                'component_practice' => null,
-                'actuality' => null,
-                'aplication' => null
-            ];
-        }
-        
-        $userData->conclusions = $conclusionsArray;
-
-        $userData->route_id = $routeId; 
-        $userData->route_name = "Ruta " . $routeNumber; 
+        });
     }
 
     private function addUserData($userData)

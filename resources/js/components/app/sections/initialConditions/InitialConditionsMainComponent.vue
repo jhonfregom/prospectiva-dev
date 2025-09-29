@@ -27,17 +27,14 @@
                     </div>
                 </b-table-column>
                 <b-table-column field="actions" :label="textsStore.getText('initialConditions.table.actions')" v-slot="props" centered>
-                    <b-button
-                        type="is-info"
-                        size="is-small"
-                        icon-left="edit"
+                    <edit-button-component
+                        :is-editing="editingRow === props.row.id"
+                        :is-locked="(props.row.edits_now_condition || 0) >= 3"
+                        :edit-text="textsStore.getText('initialConditions.table.edit')"
+                        :save-text="textsStore.getText('initialConditions.table.save')"
+                        :locked-text="textsStore.getText('initialConditions.table.locked')"
                         @click="handleEditSave(props.row, props.index)"
-                        outlined
-                        :disabled="(props.row.edits_now_condition || 0) >= 3"
-                    >
-                        {{ editingRow === props.row.id ? textsStore.getText('initialConditions.table.save') : textsStore.getText('initialConditions.table.edit') }}
-                    </b-button>
-                    <span v-if="(props.row.edits_now_condition || 0) >= 3" class="tag is-warning ml-2">{{ textsStore.getText('initialConditions.table.locked') }}</span>
+                    />
                 </b-table-column>
             </b-table>
         </div>
@@ -82,11 +79,13 @@ import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
 import { useTraceabilityStore } from '../../../../stores/traceability';
 import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
+import EditButtonComponent from '../../ui/EditButtonComponent.vue';
 
 export default {
     name: 'InitialConditionsMainComponent',
     components: {
         InfoBannerComponent,
+        EditButtonComponent,
     },
     data() {
         return {
@@ -499,14 +498,14 @@ export default {
   z-index: 100;
 }
 .cerrar-btn {
-  background: #7c3aed;
+  background: #005883;
   color: white;
   border: none;
   border-radius: 6px;
   padding: 14px 32px;
   font-size: 1.2rem;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  box-shadow: 0 2px 8px rgba(0,88,131,0.2);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -538,5 +537,12 @@ export default {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+  background: #005883;
+  color: white;
+  transition: background 0.2s;
+}
+
+.modal-content button:hover {
+  background: #004466;
 }
 </style>

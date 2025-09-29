@@ -96,7 +96,193 @@ php artisan key:generate
 php artisan migrate
 ```
 
-### 7. Inicia los servidores de desarrollo
+### 7. Ejecuta los seeders para datos iniciales
+```bash
+php artisan db:seed
+```
+
+### 8. Verifica la instalación
+```bash
+php artisan check:migrations
+php artisan check:seeders
+```
+
+## Solución de problemas comunes
+
+### Error: Foreign key constraint fails en TestDataSeeder
+
+Si encuentras el error `SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails`, sigue estos pasos:
+
+#### Opción 1: Diagnóstico automático
+```bash
+php artisan diagnose:migration-issues
+```
+
+#### Opción 2: Solución específica del TestDataSeeder
+```bash
+php artisan fix:test-data-seeder
+```
+
+#### Opción 3: Instalación limpia (recomendado para nuevos desarrolladores)
+```bash
+php artisan migrate:fresh --seed
+```
+
+### Tabla de sectores económicos no se creó
+
+Si la tabla `economic_sectors` no se creó durante la migración:
+
+1. Verifica el estado de las migraciones:
+```bash
+php artisan migrate:status
+```
+
+2. Ejecuta las migraciones pendientes:
+```bash
+php artisan migrate
+```
+
+3. Ejecuta el seeder específico:
+```bash
+php artisan db:seed --class=EconomicSectorSeeder
+```
+
+### Orden correcto de migraciones y seeders
+
+Es **CRÍTICO** que las migraciones y seeders se ejecuten en el orden correcto para evitar errores de foreign key constraints.
+
+#### Orden de migraciones:
+1. `status_users` (debe crearse antes que `users`)
+2. `users` (depende de `status_users`)
+3. `economic_sectors` (debe crearse antes de la foreign key)
+4. Foreign key `users.economic_sector` (depende de `economic_sectors`)
+5. Resto de tablas
+
+#### Orden de seeders:
+1. `StateUserSeeder` - Datos de status_users
+2. `EconomicSectorSeeder` - Datos de economic_sectors  
+3. `AdminUserSeeder` - Usuario administrador
+4. `DatabaseSeeder` - Otros datos del sistema
+5. `TestDataSeeder` - Datos de prueba (opcional)
+
+#### Verificar orden correcto:
+```bash
+php artisan check:migration-seeder-order
+```
+
+#### Ejecutar en orden correcto automáticamente:
+```bash
+php artisan execute:correct-order        # Ejecutar migraciones y seeders
+php artisan execute:correct-order --fresh # Ejecutar migrate:fresh y seeders
+```
+
+### Verificación completa del proyecto
+
+Para verificar que todo esté funcionando correctamente:
+
+```bash
+php artisan setup:project
+```
+
+Este comando ejecutará automáticamente:
+- Migraciones en el orden correcto
+- Seeders en el orden correcto
+- Verificaciones de integridad
+- Configuraciones adicionales
+
+## Comandos útiles
+
+### Verificación y diagnóstico
+```bash
+php artisan check:migrations              # Verifica estado de migraciones
+php artisan check:seeders                 # Verifica seeders
+php artisan check:migration-seeder-order  # Verifica orden correcto de migraciones y seeders
+php artisan diagnose:migration-issues     # Diagnóstico completo
+php artisan fix:test-data-seeder          # Soluciona problemas del TestDataSeeder
+php artisan execute:correct-order         # Ejecuta migraciones y seeders en orden correcto
+php artisan check:responsive-design       # Verifica implementación responsive
+php artisan setup:project                 # Configuración completa del proyecto
+```
+
+### Desarrollo
+```bash
+php artisan serve                     # Inicia servidor de desarrollo
+npm run dev                          # Compila assets en modo desarrollo
+npm run build                        # Compila assets para producción
+```
+
+### Base de datos
+```bash
+php artisan migrate                   # Ejecuta migraciones pendientes
+php artisan migrate:fresh --seed      # Reinicia BD y ejecuta seeders
+php artisan migrate:rollback          # Revierte última migración
+php artisan db:seed                   # Ejecuta todos los seeders
+php artisan db:seed --class=NombreSeeder # Ejecuta seeder específico
+```
+
+### Colores Institucionales
+```bash
+php artisan check:institutional-colors   # Verifica colores institucionales
+```
+
+#### Paleta de colores clave:
+- **Color principal**: #005883 (Azul institucional)
+  - CMYK: C: 100, M: 20, Y: 0, K: 50
+  - RGB: R: 0, G: 88, B: 131
+- **Color secundario**: #F0B429 (Amarillo dorado)
+  - CMYK: C: 5, M: 30, Y: 95, K: 0
+  - RGB: R: 240, G: 180, B: 41
+- **Color acento**: #F47920 (Naranja)
+  - CMYK: C: 0, M: 65, Y: 100, K: 0
+  - RGB: R: 244, G: 121, B: 32
+
+#### Elementos actualizados:
+✅ **Páginas de login y registro** - Colores institucionales  
+✅ **Botones y controles** - Gradientes institucionales  
+✅ **Tablas y paginación** - Colores primarios  
+✅ **Footer** - Gradiente institucional  
+✅ **Matriz de análisis** - Colores institucionales  
+✅ **Efectos hover** - Transformaciones y sombras
+
+### Diseño Responsive
+```bash
+php artisan check:responsive-design   # Verifica implementación responsive
+npm run dev                          # Compila assets en modo desarrollo
+npm run build                        # Compila assets para producción
+```
+
+#### Breakpoints implementados:
+- **1920px** - Pantallas muy grandes
+- **1440px** - Pantallas grandes  
+- **1366px** - Laptops
+- **1024px** - Tablets
+- **768px** - Tablets pequeñas
+- **640px** - Móviles grandes
+- **576px** - Móviles medianos
+- **480px** - Móviles pequeños
+- **414px** - Móviles muy pequeños
+- **320px** - Móviles extra pequeños
+
+#### Componentes con responsive implementado:
+✅ **FloatingBubbleComponent** - Múltiples breakpoints  
+✅ **FloatingChatbotComponent** - Adaptación móvil  
+✅ **StepperPrincipal** - Redimensionamiento inteligente  
+✅ **EditButtonComponent** - Layout flexible  
+✅ **ConclusionsMainComponent** - Tabla responsive  
+✅ **ResultsMainComponent** - Filtros adaptativos  
+✅ **VariablesMainComponent** - Tabla responsive  
+✅ **GraphicsMainComponent** - Gráficas adaptativas  
+✅ **MatrizMainComponent** - Tabla responsive
+php artisan db:seed
+```
+
+### 8. Verifica la instalación
+```bash
+php artisan check:migrations
+php artisan check:seeders
+```
+
+### 9. Inicia los servidores de desarrollo
 En dos terminales diferentes:
 ```bash
 npm run dev
@@ -145,3 +331,61 @@ Estas dependencias ya están incluidas en `composer.json` y `package.json`.
 ---
 
 ¡Listo! El proyecto debería funcionar completamente, incluyendo PDF y gráficas, tras estos pasos.
+
+---
+
+## Troubleshooting
+
+### Problemas comunes y soluciones
+
+#### 1. Error "Table doesn't exist"
+Si encuentras errores de tablas que no existen:
+```bash
+php artisan migrate:fresh --seed
+```
+
+#### 2. Sectores económicos no aparecen
+Si los sectores económicos no se cargan:
+```bash
+php artisan db:seed --class=EconomicSectorSeeder
+```
+
+#### 3. Verificar estado de migraciones
+Para verificar que todas las migraciones estén ejecutadas:
+```bash
+php artisan check:migrations
+```
+
+#### 4. Verificar seeders
+Para verificar que todos los seeders funcionen:
+```bash
+php artisan check:seeders
+```
+
+#### 5. Limpiar cache
+Si hay problemas de cache:
+```bash
+php artisan cache:clear
+php artisan config:clear
+php artisan view:clear
+```
+
+#### 6. Problemas con dependencias
+Si hay problemas con las dependencias:
+```bash
+composer install --no-dev
+npm install --production
+```
+
+### Comandos útiles
+
+- `php artisan check:migrations` - Verifica estado de migraciones
+- `php artisan check:seeders` - Verifica estado de seeders
+- `php artisan migrate:status` - Muestra estado de migraciones
+- `php artisan db:seed` - Ejecuta todos los seeders
+- `php artisan cache:clear` - Limpia cache de la aplicación
+- `php artisan check:montserrat-font` - Verificar aplicación de fuente Montserrat
+- `php artisan check:typography-system` - Verificar sistema tipográfico
+- `php artisan check:edit-buttons-standardization` - Verificar estandarización de botones de editar
+- `php artisan check:responsive-design` - Verificar diseño responsive
+- `php artisan check:institutional-colors` - Verificar colores institucionales

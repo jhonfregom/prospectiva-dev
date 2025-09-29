@@ -37,18 +37,15 @@
                             @paste="handleTextPaste(3, $event)"
                             @keyup="handleTextKeyup(3, $event)" />
                         <div class="edit-btn-container">
-                            <b-button
-                                type="is-info"
-                                size="is-small"
-                                icon-left="edit"
+                            <edit-button-component
+                                :is-editing="editingScenario[3]"
+                                :is-locked="schwartzStore.isEditLocked(3)"
+                                :edit-text="textsStore.getText('schwartz.actions.edit')"
+                                :save-text="textsStore.getText('schwartz.actions.save')"
+                                :locked-text="textsStore.getText('schwartz.table.locked')"
                                 @click="handleEditSave(3, 4)"
-                                outlined
-                                :disabled="schwartzStore.isEditLocked(3)"
-                            >
-                                {{ editingScenario[3] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                            </b-button>
+                            />
                             <div v-if="editMessage[3]" class="edit-limit-message">{{ editMessage[3] }}</div>
-                            <span v-if="schwartzStore.isScenarioBlocked(3)" class="tag is-warning ml-2">{{ textsStore.getText('schwartz.table.locked') }}</span>
                         </div>
                     </div>
                 </div>
@@ -67,16 +64,14 @@
                             @paste="handleTextPaste(0, $event)"
                             @keyup="handleTextKeyup(0, $event)" />
                         <div class="edit-btn-container">
-                            <b-button
-                                type="is-info"
-                                size="is-small"
-                                icon-left="edit"
+                            <edit-button-component
+                                :is-editing="editingScenario[0]"
+                                :is-locked="schwartzStore.isEditLocked(0)"
+                                :edit-text="textsStore.getText('schwartz.actions.edit')"
+                                :save-text="textsStore.getText('schwartz.actions.save')"
+                                :locked-text="textsStore.getText('schwartz.table.locked')"
                                 @click="handleEditSave(0, 1)"
-                                outlined
-                                :disabled="schwartzStore.isEditLocked(0)"
-                            >
-                                {{ editingScenario[0] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                            </b-button>
+                            />
                             <div v-if="editMessage[0]" class="edit-limit-message">{{ editMessage[0] }}</div>
                         </div>
                     </div>
@@ -112,16 +107,14 @@
                             @paste="handleTextPaste(2, $event)"
                             @keyup="handleTextKeyup(2, $event)" />
                         <div class="edit-btn-container">
-                            <b-button
-                                type="is-info"
-                                size="is-small"
-                                icon-left="edit"
+                            <edit-button-component
+                                :is-editing="editingScenario[2]"
+                                :is-locked="schwartzStore.isEditLocked(2)"
+                                :edit-text="textsStore.getText('schwartz.actions.edit')"
+                                :save-text="textsStore.getText('schwartz.actions.save')"
+                                :locked-text="textsStore.getText('schwartz.table.locked')"
                                 @click="handleEditSave(2, 3)"
-                                outlined
-                                :disabled="schwartzStore.isEditLocked(2)"
-                            >
-                                {{ editingScenario[2] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                            </b-button>
+                            />
                             <div v-if="editMessage[2]" class="edit-limit-message">{{ editMessage[2] }}</div>
                         </div>
                     </div>
@@ -141,16 +134,14 @@
                             @paste="handleTextPaste(1, $event)"
                             @keyup="handleTextKeyup(1, $event)" />
                         <div class="edit-btn-container">
-                            <b-button
-                                type="is-info"
-                                size="is-small"
-                                icon-left="edit"
+                            <edit-button-component
+                                :is-editing="editingScenario[1]"
+                                :is-locked="schwartzStore.isEditLocked(1)"
+                                :edit-text="textsStore.getText('schwartz.actions.edit')"
+                                :save-text="textsStore.getText('schwartz.actions.save')"
+                                :locked-text="textsStore.getText('schwartz.table.locked')"
                                 @click="handleEditSave(1, 2)"
-                                outlined
-                                :disabled="schwartzStore.isEditLocked(1)"
-                            >
-                                {{ editingScenario[1] ? textsStore.getText('schwartz.actions.save') : textsStore.getText('schwartz.actions.edit') }}
-                            </b-button>
+                            />
                             <div v-if="editMessage[1]" class="edit-limit-message">{{ editMessage[1] }}</div>
                         </div>
                     </div>
@@ -211,6 +202,7 @@ import { useTraceabilityStore } from '../../../../stores/traceability';
 import { useSessionStore } from '../../../../stores/session';
 import axios from 'axios';
 import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
+import EditButtonComponent from '../../ui/EditButtonComponent.vue';
 
 export default {
     name: 'SchwartzMainComponent',
@@ -238,6 +230,7 @@ export default {
     },
     components: {
         InfoBannerComponent,
+        EditButtonComponent,
     },
     setup(props) {
         const sectionStore = useSectionStore();
@@ -474,9 +467,7 @@ export default {
         const updateScenarioInServer = async (index, numScenario) => {
             try {
                 const result = await schwartzStore.saveScenario(index, numScenario);
-                if (result.success) {
-                    console.log(`Escenario ${numScenario} actualizado correctamente`);
-                }
+                
             } catch (error) {
                 console.error('Error al actualizar escenario:', error);
             }
@@ -593,7 +584,7 @@ export default {
 }
 .cell-title {
     font-weight: 600;
-    color: #4F46E5;
+    color: #005883;
     font-size: 13px;
     margin-bottom: 8px;
     text-align: center;
@@ -638,7 +629,7 @@ export default {
 }
 .scenario-title {
     font-weight: 600;
-    color: #4F46E5;
+    color: #005883;
     margin-bottom: 6px;
     text-align: center;
     background: #EEF2FF;
@@ -708,7 +699,7 @@ export default {
     left: 50%;
     top: 50%;
     width: 4px;
-    height: 65%; 
+    height: 61%; 
     background: red;
     transform: translate(-50%, -50%);
 }
@@ -749,14 +740,14 @@ export default {
   z-index: 100;
 }
 .cerrar-btn {
-  background: #7c3aed;
+  background: #005883;
   color: white;
   border: none;
   border-radius: 6px;
   padding: 14px 32px;
   font-size: 1.2rem;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  box-shadow: 0 2px 8px rgba(0,88,131,0.2);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -788,6 +779,13 @@ export default {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+  background: #005883;
+  color: white;
+  transition: background 0.2s;
+}
+
+.modal-content button:hover {
+  background: #004466;
 }
 .cell.hypo.left {
     background: #FAFAFA;

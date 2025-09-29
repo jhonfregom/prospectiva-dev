@@ -13,8 +13,13 @@ class TestMatrizSeeder extends Seeder
     public function run(): void
     {
         
-        DB::statement('DELETE FROM matriz WHERE id > 0');
-        DB::statement('ALTER TABLE matriz AUTO_INCREMENT = 1');
+        // Verificar si ya existen matrices de prueba
+        if (DB::table('matriz')->where('user_id', 1)->count() > 0) {
+            $this->command->info('Las matrices de prueba ya existen, saltando seeder...');
+            return;
+        }
+
+        $this->command->info('Creando matrices de prueba...');
 
     $matriz = ([
         [
@@ -85,5 +90,7 @@ class TestMatrizSeeder extends Seeder
     foreach ($matriz as $data) {
         Matriz::create($data);
     }
+
+    $this->command->info('Matrices creadas exitosamente: ' . count($matriz));
     }
 }

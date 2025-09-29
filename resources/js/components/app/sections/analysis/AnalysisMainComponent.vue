@@ -46,16 +46,14 @@
         />
       </b-table-column>
       <b-table-column field="actions" label="Acciones" v-slot="props" centered>
-        <b-button 
-          type="is-info"
-          size="is-small"
-          icon-left="edit"
+        <edit-button-component
+          :is-editing="editingRow === props.row.key"
+          :is-locked="props.row.state === '1'"
+          edit-text="Editar"
+          save-text="Guardar"
+          locked-text="Bloqueado"
           @click="handleEditSave(props.row)"
-          outlined
-          :disabled="props.row.state === '1'"
-        >
-          {{ editingRow === props.row.key ? 'Guardar' : 'Editar' }}
-        </b-button>
+        />
       </b-table-column>
       <b-table-column field="score" label="PUNTAJE" v-slot="props" centered>
         <span>{{ props.row.score }}</span>
@@ -79,8 +77,12 @@ import { onMounted, watch, computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import axios from 'axios';
 import { debounce } from 'lodash';
+import EditButtonComponent from '../../ui/EditButtonComponent.vue';
 
 export default {
+  components: {
+    EditButtonComponent
+  },
   setup() {
     const analysisStore = useAnalysisStore();
     const textsStore = useTextsStore();

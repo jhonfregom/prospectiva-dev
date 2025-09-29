@@ -295,35 +295,51 @@ export default {
 }
 .stepper-step.disabled .stepper-circle {
   border-color: #ccc;
-  background: #f5f5f5;
+  background: #f5f5f5 !important;
+  background-color: #f5f5f5 !important;
   color: #999;
   cursor: not-allowed;
+  position: relative;
+  z-index: 3;
+  opacity: 1;
 }
 .stepper-step.disabled .stepper-label {
   color: #999;
 }
 .stepper-step.completed .stepper-circle {
   border-color: #b5b5b5;
-  background: #e0e0e0;
+  background: #e0e0e0 !important;
+  background-color: #e0e0e0 !important;
   color: #b5b5b5;
+  position: relative;
+  z-index: 3;
+  opacity: 1;
 }
 .stepper-step.active .stepper-circle {
   border: 3px solid #3273dc;
   color: #3273dc;
-  background: #fff;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  position: relative;
+  z-index: 3;
+  opacity: 1;
 }
 .stepper-step .stepper-circle {
   width: 120px;
   height: 120px;
   border-radius: 50%;
   border: 3px solid #b5b5b5;
-  background: #fff;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 4.2rem;
   margin-bottom: 8px;
   transition: border 0.6s, box-shadow 0.6s;
+  position: relative;
+  z-index: 3;
+  opacity: 1;
 }
 .stepper-step .stepper-label {
   font-size: 2.2rem;

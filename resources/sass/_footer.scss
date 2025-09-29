@@ -1,11 +1,16 @@
-@use './variables' as var;
+@use './colors' as colors;
 
 .footer{
-    background-color: var.$color-black !important;
-    color: var.$color-white;
+    background-color: colors.$color-accent !important;
+    color: white;
     font-size: 1rem !important;
     a{
-        color: var.$color-white;
+        color: white;
+        transition: color 0.3s ease;
+        
+        &:hover {
+            color: colors.$color-secondary;
+        }
     }
 }
 .footer.static{

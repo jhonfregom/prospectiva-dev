@@ -103,7 +103,7 @@
         </b-table-column>
         <b-table-column field="variables_count" :label="textsStore.getText('results_section.table.variables_count') || 'Total Variables'" width="7%" centered v-slot="props">
           <div class="centered-cell">
-            <b-tag type="is-info" size="is-medium">{{ props.row.variables_count || 0 }}</b-tag>
+            <b-tag class="custom-blue-tag" size="is-medium">{{ props.row.variables_count || 0 }}</b-tag>
           </div>
         </b-table-column>
         <b-table-column field="variables_list" :label="textsStore.getText('results_section.table.variables_list') || 'Variables Creadas'" width="18%" centered v-slot="props">
@@ -128,7 +128,7 @@
         <span v-else class="has-text-grey-light">Sin matriz</span>
       </b-table-column>
       <b-table-column field="grafica" label="Gráfica" width="10%" centered v-slot="props">
-        <button class="button is-info is-light" @click="() => { console.log('Fila seleccionada:', props.row); showGraphicsDescription(props.row.matriz, props.row.first_name, props.row.last_name, props.row.matriz_cruzada); }">
+        <button class="button custom-blue-btn" @click="() => {showGraphicsDescription(props.row.matriz, props.row.first_name, props.row.last_name, props.row.matriz_cruzada); }">
           Ver Gráfica
         </button>
         </b-table-column>
@@ -160,7 +160,7 @@
           <span v-else class="has-text-grey-light">Sin direccionadores</span>
         </b-table-column>
       <b-table-column field="schwartz_graph" label="Ejes Schwartz" width="10%" centered v-slot="props">
-        <button class="button is-warning is-light" @click="showSchwartzModal(props.row.scenarios, props.row.first_name, props.row.last_name, props.row.future_drivers)">
+        <button class="button custom-orange-btn" @click="showSchwartzModal(props.row.scenarios, props.row.first_name, props.row.last_name, props.row.future_drivers)">
           Ver Ejes Schwartz
         </button>
         </b-table-column>
@@ -188,7 +188,7 @@
         </b-table-column>
         <b-table-column field="conclusions" :label="textsStore.getText('results_section.table.conclusions') || 'Conclusiones'" width="18%" centered v-slot="props">
           <div v-if="props.row.conclusions && props.row.conclusions.length > 0" class="conclusions-container">
-            <button class="button is-info is-light" @click="showConclusionDescription(null, props.row.conclusions, props.row.first_name, props.row.last_name)">
+            <button class="button custom-blue-btn" @click="showConclusionDescription(null, props.row.conclusions, props.row.first_name, props.row.last_name)">
               Ver Conclusiones
             </button>
           </div>
@@ -364,13 +364,9 @@
           <div class="modal-section">
             <h4 class="modal-section-title">Hipótesis Asociadas</h4>
             <div v-if="selectedScenario?.hypotheses && selectedScenario.hypotheses.length > 0" class="modal-content">
-              <div v-for="hypothesis in selectedScenario.hypotheses" :key="hypothesis.id" class="hypothesis-item">
-                <div class="hypothesis-header">
-                  <span class="hypothesis-name">{{ hypothesis.name_hypothesis }}</span>
-                  <span class="hypothesis-variable">{{ hypothesis.variable_name }}</span>
-                </div>
+              <div v-for="(hypothesis, index) in selectedScenario.hypotheses" :key="index" class="hypothesis-item">
                 <div class="hypothesis-description">
-                  {{ hypothesis.description || 'Sin descripción disponible' }}
+                  <strong>Hipótesis {{ index + 1 }}:</strong> {{ hypothesis }}
                 </div>
               </div>
             </div>
@@ -887,7 +883,6 @@ export default {
           }
           selectedGraphicsData.value = graphicsData;
           selectedGraphicsUser.value = `${firstName} ${lastName}`;
-          console.log('Datos enviados a la gráfica:', selectedGraphicsData.value);
           showGraphicsModal.value = true;
         }
 
@@ -2163,9 +2158,6 @@ export default {
 
         const getResultsDescription = computed(() => {
             const description = textsStore.getText('results_section.description');
-            console.log('TextsStore disponible:', !!textsStore);
-            console.log('Results description:', description);
-            console.log('TextsStore completo:', textsStore);
             return description || 'Descripción de resultados no encontrada';
         });
 
@@ -2265,12 +2257,7 @@ export default {
 
         this.loadResultsByCurrentRoute();
 
-        this.$nextTick(() => {
-            console.log('Textos cargados:', {
-                variables_count: this.textsStore.getText('results_section.table.variables_count'),
-                variables_list: this.textsStore.getText('results_section.table.variables_list')
-            });
-        });
+        
 
         window.addEventListener('route-created', this.handleRouteCreated);
     },
@@ -2282,14 +2269,7 @@ export default {
                     await this.resultsStore.fetchUsers();
                 } else {
                     
-                    const currentRoute = this.traceabilityStore.getCurrentRoute;
-                    if (currentRoute && currentRoute.id) {
-                        
-                        await this.resultsStore.fetchUsersByRoute(currentRoute.id);
-                    } else {
-                        
-                        await this.resultsStore.fetchUsers();
-                    }
+                    await this.resultsStore.fetchUsers();
                 }
             } catch (error) {
                 console.error('Error al cargar resultados por ruta:', error);
@@ -2471,13 +2451,13 @@ export default {
   padding: 4px 8px;
   border-radius: 4px;
   background-color: #f8f9fa;
-  border-left: 3px solid #3273dc;
+  border-left: 3px solid #005883;
   transition: all 0.2s ease;
 }
 
 .variable-item:hover {
   background-color: #e3f2fd;
-  border-left-color: #1976d2;
+  border-left-color: #004466;
 }
 
 .variable-item:last-child {
@@ -2496,7 +2476,7 @@ export default {
 
 .variable-link:hover {
   background-color: #e3f2fd;
-  color: #1976d2;
+  color: #005883;
 }
 
 .variable-link strong {
@@ -3544,15 +3524,15 @@ canvas {
 
 .clickable-zone:hover {
   background-color: #f0f8ff;
-  border-color: #3273dc;
+  border-color: #005883;
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(50, 115, 220, 0.1);
-  color: #1976d2;
+  box-shadow: 0 2px 4px rgba(0, 88, 131, 0.1);
+  color: #005883;
 }
 
 .clickable-zone:active {
   transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(50, 115, 220, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 88, 131, 0.2);
 }
 
 .clickable-zone strong {
@@ -3565,12 +3545,12 @@ canvas {
 }
 
 .clickable-zone .zone-variable-code {
-  color: #3273dc;
+  color: #005883;
   font-weight: 500;
 }
 
 .clickable-zone:hover .zone-variable-code {
-  color: #1976d2;
+  color: #004466;
 }
 </style>
 
@@ -3634,3 +3614,36 @@ canvas {
   font-style: italic;
 }
 
+/* Botones personalizados con colores clave */
+.custom-blue-btn {
+  background-color: #005883 !important;
+  border-color: #005883 !important;
+  color: white !important;
+  transition: all 0.2s ease;
+}
+
+.custom-blue-btn:hover {
+  background-color: #004466 !important;
+  border-color: #004466 !important;
+  color: white !important;
+}
+
+.custom-orange-btn {
+  background-color: #F47920 !important;
+  border-color: #F47920 !important;
+  color: white !important;
+  transition: all 0.2s ease;
+}
+
+.custom-orange-btn:hover {
+  background-color: #E0651A !important;
+  border-color: #E0651A !important;
+  color: white !important;
+}
+
+/* Etiquetas personalizadas con colores clave */
+.custom-blue-tag {
+  background-color: #005883 !important;
+  color: white !important;
+  border-color: #005883 !important;
+}

@@ -1,0 +1,407 @@
+// ========================================
+// SISTEMA TIPOGRÁFICO ESTANDARIZADO
+// ========================================
+
+// Variables de tamaños de fuente
+$font-size-xs: 0.75rem;    // 12px
+$font-size-sm: 0.875rem;   // 14px
+$font-size-base: 1rem;     // 16px
+$font-size-lg: 1.125rem;   // 18px
+$font-size-xl: 1.25rem;    // 20px
+$font-size-2xl: 1.5rem;    // 24px
+$font-size-3xl: 1.875rem;  // 30px
+$font-size-4xl: 2.25rem;   // 36px
+
+// Variables de pesos de fuente
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+$font-weight-extrabold: 800;
+
+// Variables de altura de línea
+$line-height-tight: 1.25;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.75;
+
+// ========================================
+// JERARQUÍA TIPOGRÁFICA
+// ========================================
+
+// Títulos principales (H1)
+.title-main,
+h1,
+.main-title {
+    font-size: $font-size-4xl !important;
+    font-weight: $font-weight-bold !important;
+    line-height: $line-height-tight !important;
+    color: #2d3748 !important;
+    margin-bottom: 1rem !important;
+    text-transform: none !important;
+    letter-spacing: -0.025em !important;
+}
+
+// Títulos de sección (H2)
+.title-section,
+h2,
+.section-title {
+    font-size: $font-size-3xl !important;
+    font-weight: $font-weight-semibold !important;
+    line-height: $line-height-tight !important;
+    color: #2d3748 !important;
+    margin-bottom: 0.75rem !important;
+    text-transform: none !important;
+    letter-spacing: -0.025em !important;
+}
+
+// Subtítulos (H3)
+.subtitle,
+h3,
+.subtitle-text {
+    font-size: $font-size-2xl !important;
+    font-weight: $font-weight-semibold !important;
+    line-height: $line-height-tight !important;
+    color: #4a5568 !important;
+    margin-bottom: 0.5rem !important;
+    text-transform: none !important;
+}
+
+// Títulos de módulos (H4)
+.title-module,
+h4,
+.module-title {
+    font-size: $font-size-xl !important;
+    font-weight: $font-weight-semibold !important;
+    line-height: $line-height-normal !important;
+    color: #2d3748 !important;
+    margin-bottom: 0.5rem !important;
+    text-transform: none !important;
+}
+
+// Títulos de componentes (H5)
+.title-component,
+h5,
+.component-title {
+    font-size: $font-size-lg !important;
+    font-weight: $font-weight-medium !important;
+    line-height: $line-height-normal !important;
+    color: #4a5568 !important;
+    margin-bottom: 0.5rem !important;
+    text-transform: none !important;
+}
+
+// Títulos pequeños (H6)
+.title-small,
+h6,
+.small-title {
+    font-size: $font-size-base !important;
+    font-weight: $font-weight-medium !important;
+    line-height: $line-height-normal !important;
+    color: #4a5568 !important;
+    margin-bottom: 0.25rem !important;
+    text-transform: none !important;
+}
+
+// ========================================
+// TEXTOS DESCRIPTIVOS
+// ========================================
+
+// Textos descriptivos principales
+.description-main,
+.main-description {
+    font-size: $font-size-base !important;
+    font-weight: $font-weight-normal !important;
+    line-height: $line-height-relaxed !important;
+    color: #4a5568 !important;
+    margin-bottom: 1rem !important;
+}
+
+// Textos descriptivos secundarios
+.description-secondary,
+.secondary-description {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-normal !important;
+    line-height: $line-height-relaxed !important;
+    color: #718096 !important;
+    margin-bottom: 0.75rem !important;
+}
+
+// Textos informativos
+.info-text {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-normal !important;
+    line-height: $line-height-normal !important;
+    color: #718096 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+// ========================================
+// TEXTOS DE TABLAS
+// ========================================
+
+// Encabezados de tabla
+.table-header,
+th,
+.table-title {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-semibold !important;
+    line-height: $line-height-normal !important;
+    color: #2d3748 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+// Contenido de tabla
+.table-content,
+td,
+.table-cell {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-normal !important;
+    line-height: $line-height-normal !important;
+    color: #4a5568 !important;
+}
+
+// Textos de acciones en tabla
+.table-action {
+    font-size: $font-size-xs !important;
+    font-weight: $font-weight-medium !important;
+    line-height: $line-height-normal !important;
+    color: #3182ce !important;
+}
+
+// ========================================
+// BOTONES Y ELEMENTOS INTERACTIVOS
+// ========================================
+
+// Botones principales
+.button-primary,
+.button.is-primary {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-medium !important;
+    line-height: $line-height-normal !important;
+    text-transform: none !important;
+    letter-spacing: 0.025em !important;
+}
+
+// Botones secundarios
+.button-secondary,
+.button.is-secondary {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-medium !important;
+    line-height: $line-height-normal !important;
+    text-transform: none !important;
+    letter-spacing: 0.025em !important;
+}
+
+// Enlaces
+a,
+.link {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-medium !important;
+    line-height: $line-height-normal !important;
+    text-decoration: none !important;
+}
+
+// ========================================
+// FORMULARIOS
+// ========================================
+
+// Labels de formulario
+.form-label,
+label,
+.label {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-medium !important;
+    line-height: $line-height-normal !important;
+    color: #2d3748 !important;
+    margin-bottom: 0.25rem !important;
+}
+
+// Inputs y textareas
+.form-input,
+input,
+textarea,
+.input,
+.textarea {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-normal !important;
+    line-height: $line-height-normal !important;
+    color: #2d3748 !important;
+}
+
+// Placeholders
+::placeholder {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-normal !important;
+    color: #a0aec0 !important;
+}
+
+// ========================================
+// NAVEGACIÓN Y MENÚS
+// ========================================
+
+// Elementos de navegación
+.nav-item,
+.navbar-item,
+.menu-item {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-medium !important;
+    line-height: $line-height-normal !important;
+    color: #4a5568 !important;
+}
+
+// Títulos de menú
+.menu-title,
+.menu-label {
+    font-size: $font-size-xs !important;
+    font-weight: $font-weight-semibold !important;
+    line-height: $line-height-normal !important;
+    color: #2d3748 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+// ========================================
+// NOTIFICACIONES Y MENSAJES
+// ========================================
+
+// Títulos de notificaciones
+.notification-title,
+.message-title {
+    font-size: $font-size-base !important;
+    font-weight: $font-weight-semibold !important;
+    line-height: $line-height-normal !important;
+    color: #2d3748 !important;
+}
+
+// Contenido de notificaciones
+.notification-content,
+.message-content {
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-normal !important;
+    line-height: $line-height-relaxed !important;
+    color: #4a5568 !important;
+}
+
+// ========================================
+// TAGS Y BADGES
+// ========================================
+
+// Tags
+.tag,
+.badge {
+    font-size: $font-size-xs !important;
+    font-weight: $font-weight-medium !important;
+    line-height: $line-height-normal !important;
+    text-transform: none !important;
+}
+
+// ========================================
+// PÁGINAS ESPECÍFICAS
+// ========================================
+
+// Títulos de página de login/registro
+.auth-title {
+    font-size: $font-size-3xl !important;
+    font-weight: $font-weight-bold !important;
+    line-height: $line-height-tight !important;
+    color: #2d3748 !important;
+    text-align: center !important;
+    margin-bottom: 1.5rem !important;
+}
+
+// Textos de activación
+.activation-title {
+    font-size: $font-size-2xl !important;
+    font-weight: $font-weight-semibold !important;
+    line-height: $line-height-tight !important;
+    color: #2d3748 !important;
+    text-align: center !important;
+    margin-bottom: 1rem !important;
+}
+
+// ========================================
+// COMPONENTES VUE ESPECÍFICOS
+// ========================================
+
+// Títulos de componentes Vue
+.vue-title {
+    font-size: $font-size-2xl !important;
+    font-weight: $font-weight-semibold !important;
+    line-height: $line-height-tight !important;
+    color: #2d3748 !important;
+    margin-bottom: 1rem !important;
+}
+
+// Descripciones de componentes Vue
+.vue-description {
+    font-size: $font-size-base !important;
+    font-weight: $font-weight-normal !important;
+    line-height: $line-height-relaxed !important;
+    color: #4a5568 !important;
+    margin-bottom: 1rem !important;
+}
+
+// ========================================
+// UTILIDADES TIPOGRÁFICAS
+// ========================================
+
+// Texto centrado
+.text-center {
+    text-align: center !important;
+}
+
+// Texto justificado
+.text-justify {
+    text-align: justify !important;
+}
+
+// Texto en mayúsculas
+.text-uppercase {
+    text-transform: uppercase !important;
+}
+
+// Texto en minúsculas
+.text-lowercase {
+    text-transform: lowercase !important;
+}
+
+// Primera letra mayúscula
+.text-capitalize {
+    text-transform: capitalize !important;
+}
+
+// Sin transformación de texto
+.text-normal {
+    text-transform: none !important;
+}
+
+// ========================================
+// RESPONSIVE TIPOGRAPHY
+// ========================================
+
+@media (max-width: 768px) {
+    .title-main,
+    h1,
+    .main-title {
+        font-size: $font-size-3xl !important;
+    }
+    
+    .title-section,
+    h2,
+    .section-title {
+        font-size: $font-size-2xl !important;
+    }
+    
+    .subtitle,
+    h3,
+    .subtitle-text {
+        font-size: $font-size-xl !important;
+    }
+    
+    .description-main,
+    .main-description {
+        font-size: $font-size-sm !important;
+    }
+}

@@ -10,7 +10,8 @@ export const useTextsStore = defineStore('texts', {
         locale: null, //Current language to translations
         isLoading: false, //Loading state for texts
         graphics: {
-            title: 'Gráfica Variables',
+            title: 'Gráfica de Variables',
+            description: 'En esta sección visualizarás el resultado de la matriz de relaciones mediante un gráfico de influencia (Y) vs dependencia (X). Este gráfico te ayudará a interpretar de forma clara y rápida el papel que juega cada variable dentro del sistema, clasificando las variables en:<br><br>• Zona de Poder – Cuadrante superior izquierdo<br>• Zona de Indiferencia – Cuadrante inferior izquierdo<br>• Zona de Conflicto – Cuadrante superior derecho<br>• Zona de Salida – Cuadrante inferior derecho<br><br>Con esta vista podrás distinguir qué factores son clave para la transformación del futuro y cuáles son más reactivos.<br><br>',
             zone_power: 'Zona de Poder',
             zone_indifference: 'Zona de Indiferencia',
             zone_conflict: 'Zona de Conflicto',
@@ -99,16 +100,16 @@ export const useTextsStore = defineStore('texts', {
             title: 'Ejes de Peter Schwartz',
             subtitle: 'Define los escenarios según los ejes de Peter Schwartz',
             hypothesis: {
-                h1_plus: 'H1+',
-                h1_minus: 'H1-',
-                h2_plus: 'H2+',
-                h2_minus: 'H2-'
+                h1_plus: 'Hipótesis 1+',
+                h1_minus: 'Hipótesis 1-',
+                h2_plus: 'Hipótesis 2+',
+                h2_minus: 'Hipótesis 2-'
             },
             scenarios: {
-                scenario_1: 'ESCENARIO 1',
-                scenario_2: 'ESCENARIO 2',
-                scenario_3: 'ESCENARIO 3',
-                scenario_4: 'ESCENARIO 4'
+                scenario_1: 'Escenario 1',
+                scenario_2: 'Escenario 2',
+                scenario_3: 'Escenario 3',
+                scenario_4: 'Escenario 4'
             },
             actions: {
                 edit: 'Editar',
@@ -123,13 +124,13 @@ export const useTextsStore = defineStore('texts', {
         strategic: {
             main_title: 'Escenarios Estratégicos',
             scenario_label: 'Escenario:',
-            plan_label: 'PLAN',
-            name: 'NOMBRE',
-            hypothesis1: 'Hipótesis 1',
-            hypothesis2: 'Hipótesis 2',
-            year1: 'AÑO 1',
-            year2: 'AÑO 2',
-            year3: 'AÑO 3',
+            plan_label: 'Plan',
+            name: 'Nombre',
+            hypothesis1: 'Hipótesis 1+',
+            hypothesis2: 'Hipótesis 2+',
+            year1: 'Año 1',
+            year2: 'Año 2',
+            year3: 'Año 3',
             edit: 'Editar',
             save: 'Guardar',
             edit_limit: 'Has alcanzado el límite de ediciones para este año.',
@@ -145,7 +146,7 @@ export const useTextsStore = defineStore('texts', {
             update_error: 'Error al actualizar'
         },
         hypothesis: {
-            title: 'Direccionadores de futuro',
+            title: 'Direccionadores de Futuro',
             subtitle: 'En esta sección se generan las hipótesis para las dos variables más cercanas a la zona de poder.',
             table: {
                 h: 'H',
@@ -284,6 +285,7 @@ export const useTextsStore = defineStore('texts', {
         // Conclusions Section - Textos para botones y confirmaciones
         conclusions_section: {
             title: 'Conclusiones de aprendizaje',
+            description: 'En esta sección analizarás lo aprendido del proceso prospectivo. Reflexionarás sobre los hallazgos clave, las tendencias detectadas, las alertas tempranas y las estrategias que deberían considerarse. Las conclusiones permiten traducir los escenarios en acciones, aprendizajes y decisiones para el presente. Para cumplir con este apartado, responde las siguientes preguntas:<br><br>Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
             component_practice_subtitle: 'DESDE EL COMPONENTE PRÁCTICO (Análisis del proceso, practicidad, comprensible, se adapta al proceso de aprendizaje y al objetivo del curso)',
             actuality_subtitle: 'Actualidad (Consideraciones del proceso para que sea implementado en las organizaciones, ¿deben las empresas hacer ejercicios de este tipo?)',
             aplication_subtitle: 'APLICACIÓN (Qué tanto se adapta a la organización para la que trabajas, o para tu emprendimiento, o para tu vida personal y profesional)',
@@ -346,7 +348,7 @@ export const useTextsStore = defineStore('texts', {
         register: {
             select_type_placeholder: 'Seleccione el tipo de registro',
             natural_person: 'Persona Natural',
-            company: 'Empresa'
+            company: 'Persona Jurídica'
         },
         
         // Steps/Navigation - Textos de navegación
@@ -400,14 +402,12 @@ export const useTextsStore = defineStore('texts', {
                 const result = await response.json();
                 
                 if (result.status === 200) {
-                    console.log('🔍 Debug: loadTexts called with:', result.data);
-                    console.log('🔍 Debug: conclusions_section in result.data:', result.data.conclusions_section);
-                    
+                                       
                     for(const key in result.data) {
                         this[key] = result.data[key];
                     }
                     
-                    console.log('🔍 Debug: After loadTexts, this.conclusions_section:', this.conclusions_section);
+                    
                 }
             } catch (error) {
                 console.error('Error loading texts:', error);
@@ -416,15 +416,13 @@ export const useTextsStore = defineStore('texts', {
             }
         },
         setTexts(objTexts){
-            console.log('🔍 Debug: setTexts called with:', objTexts);
-            console.log('🔍 Debug: conclusions_section in objTexts:', objTexts.conclusions_section);
+            
             
             for(const key in objTexts)
             {
                 this[key] = objTexts[key];
             }
             
-            console.log('🔍 Debug: After setTexts, this.conclusions_section:', this.conclusions_section);
         },
         setLocale(locale){
             this.locale = locale;

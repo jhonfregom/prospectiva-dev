@@ -81,9 +81,9 @@ class TestSecondRouteCreation extends Command
             'shwartz' => '0',
             'conditions' => '0',
             'scenarios' => '0',
-            'conclusions' => '0',
-            'results' => '0',
-            'state' => '0'
+                            'conclusions' => '0',
+                'results' => '1', // Habilitado para que el usuario pueda ingresar
+                'state' => '0'
         ]);
 
         $this->info("Segunda ruta creada exitosamente con ID: {$newTraceability->id}");
@@ -108,7 +108,7 @@ class TestSecondRouteCreation extends Command
 
         $expectedValues = [
             'variables' => '1',
-            'results' => '0',
+            'results' => '1', // Habilitado para que el usuario pueda ingresar
             'matriz' => '0',
             'maps' => '0',
             'hypothesis' => '0',
