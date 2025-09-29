@@ -14,10 +14,10 @@
 </script>
 
 <style lang="scss" scoped>
-    @use '../../../../../sass/variables' as var;
+    @use '../../../../../sass/colors' as colors;
 
     .notify-content{
-        color: var.$color-warning;
+        color: colors.$color-secondary;
         position: relative;
         top: -0.3rem;
     }

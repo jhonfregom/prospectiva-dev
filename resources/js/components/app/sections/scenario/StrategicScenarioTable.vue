@@ -987,7 +987,7 @@ export default {
 }
 .hypo-title {
   font-weight: 600;
-  color: #4F46E5;
+  color: #F47920;
   font-size: 13px;
 }
 .hypo-content {
@@ -1038,6 +1038,26 @@ export default {
   max-width: 100px;
   font-size: 12px;
   padding: 2px 10px;
+  border-color: #005883 !important;
+  color: #005883 !important;
+  background-color: transparent !important;
+}
+
+.edit-btn:hover:not(:disabled) {
+  background-color: #005883 !important;
+  color: white !important;
+  border-color: #005883 !important;
+}
+
+/* Cambiar el color de los botones de editar por el azul clave */
+:deep(.edit-button-component .edit-button.is-info) {
+  border-color: #005883 !important;
+  color: #005883 !important;
+}
+
+:deep(.edit-button-component .edit-button.is-info:hover:not(:disabled)) {
+  background-color: #005883 !important;
+  color: white !important;
 }
 .edit-limit-message {
   color: #e53e3e;
@@ -1104,14 +1124,14 @@ export default {
   z-index: 100;
 }
 .cerrar-btn {
-  background: #7c3aed;
+  background: #005883;
   color: white;
   border: none;
   border-radius: 6px;
   padding: 14px 32px;
   font-size: 1.2rem;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  box-shadow: 0 2px 8px rgba(0,88,131,0.2);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -1143,6 +1163,13 @@ export default {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+  background: #005883;
+  color: white;
+  transition: background 0.2s;
+}
+
+.modal-content button:hover {
+  background: #004466;
 }
 </style>
 

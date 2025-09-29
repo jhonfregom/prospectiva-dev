@@ -98,8 +98,7 @@ export default {
     }
   },
   mounted() {
-    console.log('FloatingChatbotComponent mounted successfully!');
-    
+        
     this.addMessage({
       type: 'bot',
       text: '¡Hola! Soy ProspecIA, tu asistente de prospectiva. Puedo ayudarte a corregir y analizar textos. Envía tu texto y te daré feedback detallado.',

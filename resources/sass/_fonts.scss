@@ -1,0 +1,137 @@
+// Global font styles - Montserrat
+* {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
+}
+
+// Exclude FontAwesome icons from Montserrat font
+.fas,
+.far,
+.fal,
+.fab,
+.fa,
+[class*="fa-"],
+[class*="fas-"],
+[class*="far-"],
+[class*="fal-"],
+[class*="fab-"],
+i[class*="fa"],
+i[class*="fas"],
+i[class*="far"],
+i[class*="fal"],
+i[class*="fab"] {
+    font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands", "Font Awesome 5 Pro", "FontAwesome" !important;
+}
+
+// Apply Montserrat to specific elements to ensure coverage
+body,
+html,
+input,
+textarea,
+select,
+button,
+label,
+span,
+div,
+p,
+h1, h2, h3, h4, h5, h6,
+a,
+li,
+td,
+th,
+.bulma,
+.buefy,
+.modal,
+.notification,
+.message,
+.card,
+.box,
+.button,
+.input,
+.textarea,
+.select,
+.label,
+.help,
+.title,
+.subtitle,
+.content,
+.table,
+.navbar,
+.menu,
+.panel,
+.tabs,
+.breadcrumb,
+.pagination,
+.progress,
+.tag,
+.notification,
+.message,
+.card,
+.box,
+.button,
+.input,
+.textarea,
+.select,
+.label,
+.help,
+.title,
+.subtitle,
+.content,
+.table,
+.navbar,
+.menu,
+.panel,
+.tabs,
+.breadcrumb,
+.pagination,
+.progress,
+.tag {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
+}
+
+// Ensure Vue components also inherit the font
+.vue-component,
+.vue-app,
+#app,
+.app {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
+}
+
+// Apply to specific text elements that might need different weights
+.title,
+.subtitle,
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600 !important;
+}
+
+.button,
+.navbar-item,
+.menu-label,
+.tag {
+    font-weight: 500 !important;
+}
+
+.content p,
+.content li,
+.content td,
+.content th {
+    font-weight: 400 !important;
+}
+
+// Ensure form elements maintain readability
+input,
+textarea,
+select {
+    font-weight: 400 !important;
+}
+
+// Apply to specific application sections
+.application,
+.main-content,
+.section-content,
+.auth-container,
+.results-container,
+.graphics-container,
+.scenery-container,
+.conclusions-container {
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
+}

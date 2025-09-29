@@ -62,8 +62,8 @@
 
     //Texts graphics section
     $text_graphics = [
-        'title' => 'Gráfica Variables',
-        'description' => 'En esta sección visualizarás el resultado de la matriz de relaciones mediante un gráfico de influencia (Y) vs dependencia (X). Este gráfico te ayudará a interpretar de forma clara y rápida el papel que juega cada variable dentro del sistema, clasificando las variables en:<br><br>Zona de poder – Cuadrante superior izquierdo<br>Zona de indiferencia – Cuadrante inferior izquierdo<br>Zona de conflicto – Cuadrante superior derecho<br>Zona de salida - Cuadrante inferior derecho<br><br>Con esta vista podrás distinguir qué factores son clave para la transformación del futuro y cuáles son más reactivos.<br><br>',
+        'title' => 'Gráfica de Variables',
+        'description' => 'En esta sección visualizarás el resultado de la matriz de relaciones mediante un gráfico de influencia (Y) vs dependencia (X). Este gráfico te ayudará a interpretar de forma clara y rápida el papel que juega cada variable dentro del sistema, clasificando las variables en:<br><br>• Zona de Poder – Cuadrante superior izquierdo<br>• Zona de Indiferencia – Cuadrante inferior izquierdo<br>• Zona de Conflicto – Cuadrante superior derecho<br>• Zona de Salida – Cuadrante inferior derecho<br><br>Con esta vista podrás distinguir qué factores son clave para la transformación del futuro y cuáles son más reactivos.<br><br>',
         'zone_power' => 'Zona de Poder',
         'zone_indifference' => 'Zona de Indiferencia',
         'zone_conflict' => 'Zona de Conflicto',
@@ -77,16 +77,16 @@
         'title' => 'Ejes de Peter Schwartz',
         'description' => 'En esta sección podrás construir escenarios prospectivos utilizando el método de Schwartz, basado en el cruce de dos variables estratégicas con alto nivel de incertidumbre. A partir de las hipótesis que definas para cada variable, el sistema generará una matriz 2x2 con cuatro escenarios posibles. Cada cuadrante representa una combinación distinta de futuros, lo que te permitirá explorar realidades alternativas, anticipar riesgos y visualizar oportunidades. Edita y describe cada escenario para dar forma a narrativas coherentes y útiles para la toma de decisiones estratégicas.',
         'hypothesis' => [
-            'h1_plus' => 'HIPÓTESIS 1+',
-            'h1_minus' => 'HIPÓTESIS 1-',
-            'h2_plus' => 'HIPÓTESIS 2+',
-            'h2_minus' => 'HIPÓTESIS 2-',
+            'h1_plus' => 'Hipótesis 1+',
+            'h1_minus' => 'Hipótesis 1-',
+            'h2_plus' => 'Hipótesis 2+',
+            'h2_minus' => 'Hipótesis 2-',
         ],
         'scenarios' => [
-            'scenario_1' => 'ESCENARIO 1',
-            'scenario_2' => 'ESCENARIO 2',
-            'scenario_3' => 'ESCENARIO 3',
-            'scenario_4' => 'ESCENARIO 4',
+            'scenario_1' => 'Escenario 1',
+            'scenario_2' => 'Escenario 2',
+            'scenario_3' => 'Escenario 3',
+            'scenario_4' => 'Escenario 4',
         ],
         'actions' => [
             'edit' => 'Editar',
@@ -103,7 +103,7 @@
     $text_variables_section = [
         'title' => 'Variables',
         'subtitle' => 'Gestiona las variables del proyecto',
-        'description' => 'En esta sección identificarás podrás incluir las variables clave que influyen o son influenciadas por el sistema que estás analizando. Pueden ser factores políticos, económicos, sociales, tecnológicos, ambientales, legales o de otra índole que, por su impacto o sensibilidad, deben ser observados de cerca. Este paso es esencial: define el punto de partida del análisis prospectivo. Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
+        'description' => 'En esta sección podrás identificar e incluir las variables clave que influyen o son influenciadas por el sistema que estás analizando. Pueden ser factores políticos, económicos, sociales, tecnológicos, ambientales, legales o de otra índole que, por su impacto o sensibilidad, deben ser observados de cerca. Este paso es esencial: define el punto de partida del análisis prospectivo. Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
         'title_introduction' => __('app.variables.title_introduction'),
         'content_introduction' => __('app.variables.content_introduction'),
         'table' => [
@@ -142,10 +142,11 @@
 
     //Texts conclusions section
     $text_conclusions = [
-        'title' => 'Conclusiones de aprendizaje',
-        'component_practice_subtitle' => 'DESDE EL COMPONENTE PRÁCTICO (Análisis del proceso, practicidad, comprensible, se adapta al proceso de aprendizaje y al objetivo del curso)',
+        'title' => 'Conclusiones de Aprendizaje',
+        'description' => 'En esta sección analizarás lo aprendido del proceso prospectivo. Reflexionarás sobre los hallazgos clave, las tendencias detectadas, las alertas tempranas y las estrategias que deberían considerarse. Las conclusiones permiten traducir los escenarios en acciones, aprendizajes y decisiones para el presente. Para cumplir con este apartado, responde las siguientes preguntas:<br><br>Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
+        'component_practice_subtitle' => 'Desde el Componente Práctico (Análisis del proceso, practicidad, comprensible, se adapta al proceso de aprendizaje y al objetivo del curso)',
         'actuality_subtitle' => 'Actualidad (Consideraciones del proceso para que sea implementado en las organizaciones, ¿deben las empresas hacer ejercicios de este tipo?)',
-        'aplication_subtitle' => 'APLICACIÓN (Qué tanto se adapta a la organización para la que trabajas, o para tu emprendimiento, o para tu vida personal y profesional)',
+        'aplication_subtitle' => 'Aplicación (Qué tanto se adapta a la organización para la que trabajas, o para tu emprendimiento, o para tu vida personal y profesional)',
         'table' => [
             'edit' => 'Editar',
             'save' => 'Guardar',
@@ -195,7 +196,7 @@
 
     //Texts hypothesis section
     $text_hypothesis = [
-        'title' => 'Direccionadores de futuro',
+        'title' => 'Direccionadores de Futuro',
         'subtitle' => 'En esta sección se generan las hipótesis para las dos variables más cercanas a la zona de poder.',
         'description' => 'En este espacio defines los grandes ejes estratégicos o vectores de cambio que orientarán la construcción de escenarios. Los direccionadores son como brújulas: te ayudan a no perder de vista lo verdaderamente importante. Surgen del análisis de las variables críticas y te permitirán trazar futuros posibles con sentido estratégico.<br><br>Puedes editar cada campo hasta dos veces. De forma posterior, esta opción no podrá ser editada.',
         'table' => [
@@ -214,8 +215,8 @@
     //Texts results section
     $text_results_section = [
         'title' => 'Resultados',
-        'subtitle' => 'Listado de usuarios y sus datos',
-        'description' => 'Aquí encontrarás una síntesis del proceso realizado: las variables prioritarias, los escenarios formulados, los direccionadores clave y las recomendaciones estratégicas. Esta sección te permite exportar o comunicar los resultados de forma clara y estructurada. Es la puerta de salida del análisis... y la entrada a la toma de decisiones.',
+        'subtitle' => 'Listado de Usuarios y sus Datos',
+        'description' => 'Aquí encontrarás una síntesis del proceso realizado: las variables prioritarias, los escenarios formulados, los direccionadores clave y las recomendaciones estratégicas. Esta sección te permite exportar o comunicar los resultados de forma clara y estructurada. Es la puerta de salida del análisis y la entrada a la toma de decisiones.',
         'filters' => [
             'id' => 'ID',
             'first_name' => 'Nombre',
@@ -243,15 +244,15 @@
 
     // Textos para la sección estratégica (StrategicScenarioTable.vue)
     $text_strategic = [
-        'main_title' => 'PROSPECTIVA ESTRATÉGICA PARA LA GENERACIÓN DE COMPETITIVIDAD EMPRESARIAL',
-        'scenario_label' => 'escenario:',
-        'plan_label' => 'PLAN PROSPECTIVO CONSTRUCCIÓN DE ESCENARIOS',
-        'name' => 'NOMBRE',
+        'main_title' => 'Prospectiva Estratégica para la Generación de Competitividad Empresarial',
+        'scenario_label' => 'Escenario:',
+        'plan_label' => 'Plan Prospectivo Construcción de Escenarios',
+        'name' => 'Nombre',
         'hypothesis1' => 'Hipótesis 1+',
         'hypothesis2' => 'Hipótesis 2+',
-        'year1' => 'AÑO 1',
-        'year2' => 'AÑO 2',
-        'year3' => 'AÑO 3',
+        'year1' => 'Año 1',
+        'year2' => 'Año 2',
+        'year3' => 'Año 3',
         'save' => 'Guardar',
         'edit' => 'Editar',
         'edit_limit' => 'Este campo ya no se puede editar más.',

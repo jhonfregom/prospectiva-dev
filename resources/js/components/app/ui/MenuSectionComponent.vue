@@ -55,25 +55,25 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-    @use '../../../../sass/variables' as var;
+    @use '../../../../sass/colors' as colors;
 
     .listMenu {
         text-align: center;
 
         li {
-            border: 1px solid var.$color-purple;
+            border: 1px solid colors.$color-accent;
             border-radius: 15px;
             margin-bottom: 5px;
             padding: 2px;
 
             a {
-                color: var.$color-purple;
+                color: colors.$color-accent;
             }
         }
     }
 
     .listMenuActive {
-        background-color: var.$color-purple;
+        background-color: colors.$color-accent;
 
         a {
             color: white !important;

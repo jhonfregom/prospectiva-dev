@@ -7,7 +7,13 @@
             <p>Cargando textos...</p>
         </div>
         
-        <div v-else class="conclusions-table">
+        <div v-else>
+            <!-- Letrero informativo -->
+            <info-banner-component
+                :description="textsStore.getText('conclusions_section.description')"
+            />
+            
+            <div class="conclusions-table">
             <div class="table-content">
                 <!-- Primera fila: Título -->
                 <div class="table-row title-row">
@@ -40,18 +46,14 @@
                         </div>
                     </div>
                     <div class="row-actions">
-                        <b-button 
-                            :type="isComponentPracticeEditing ? 'is-success' : 'is-info'"
-                            size="is-small"
-                            :icon-left="isComponentPracticeEditing ? 'save' : 'edit'"
+                        <edit-button-component
+                            :is-editing="isComponentPracticeEditing"
+                            :is-locked="!isComponentPracticeEditable"
+                            :edit-text="textsStore.getText('conclusions_section.table.edit')"
+                            :save-text="textsStore.getText('conclusions_section.table.save')"
+                            :locked-text="textsStore.getText('conclusions_section.table.locked')"
                             @click="handleComponentPracticeEditSave"
-                            outlined
-                            :disabled="!isComponentPracticeEditable">
-                            {{ isComponentPracticeEditing ? textsStore.getText('conclusions_section.table.save') : textsStore.getText('conclusions_section.table.edit') }}
-                        </b-button>
-                        <span v-if="!isComponentPracticeEditable" class="tag is-danger is-light">
-                            {{ textsStore.getText('conclusions_section.table.locked') }}
-                        </span>
+                        />
                     </div>
                 </div>
 
@@ -79,18 +81,14 @@
                         </div>
                     </div>
                     <div class="row-actions">
-                        <b-button 
-                            :type="isActualityEditing ? 'is-success' : 'is-info'"
-                            size="is-small"
-                            :icon-left="isActualityEditing ? 'save' : 'edit'"
+                        <edit-button-component
+                            :is-editing="isActualityEditing"
+                            :is-locked="!isActualityEditable"
+                            :edit-text="textsStore.getText('conclusions_section.table.edit')"
+                            :save-text="textsStore.getText('conclusions_section.table.save')"
+                            :locked-text="textsStore.getText('conclusions_section.table.locked')"
                             @click="handleActualityEditSave"
-                            outlined
-                            :disabled="!isActualityEditable">
-                            {{ isActualityEditing ? textsStore.getText('conclusions_section.table.save') : textsStore.getText('conclusions_section.table.edit') }}
-                        </b-button>
-                        <span v-if="!isActualityEditable" class="tag is-danger is-light">
-                            {{ textsStore.getText('conclusions_section.table.locked') }}
-                        </span>
+                        />
                     </div>
                 </div>
 
@@ -118,20 +116,17 @@
                         </div>
                     </div>
                     <div class="row-actions">
-                        <b-button 
-                            :type="isAplicationEditing ? 'is-success' : 'is-info'"
-                            size="is-small"
-                            :icon-left="isAplicationEditing ? 'save' : 'edit'"
+                        <edit-button-component
+                            :is-editing="isAplicationEditing"
+                            :is-locked="!isAplicationEditable"
+                            :edit-text="textsStore.getText('conclusions_section.table.edit')"
+                            :save-text="textsStore.getText('conclusions_section.table.save')"
+                            :locked-text="textsStore.getText('conclusions_section.table.locked')"
                             @click="handleAplicationEditSave"
-                            outlined
-                            :disabled="!isAplicationEditable">
-                            {{ isAplicationEditing ? textsStore.getText('conclusions_section.table.save') : textsStore.getText('conclusions_section.table.edit') }}
-                        </b-button>
-                        <span v-if="!isAplicationEditable" class="tag is-danger is-light">
-                            {{ textsStore.getText('conclusions_section.table.locked') }}
-                        </span>
+                        />
                     </div>
                 </div>
+            </div>
             </div>
         </div>
         <!-- Botón Cerrar -->
@@ -173,6 +168,8 @@ import { useSectionStore } from '../../../../stores/section';
 import { useTextsStore } from '../../../../stores/texts';
 import { useConclusionsStore } from '../../../../stores/conclusions';
 import { useSessionStore } from '../../../../stores/session';
+import InfoBannerComponent from '../../ui/InfoBannerComponent.vue';
+import EditButtonComponent from '../../ui/EditButtonComponent.vue';
 import axios from 'axios';
 
 export default {
@@ -190,7 +187,6 @@ export default {
             if (text.length > MAX_CHARACTERS) {
                 
                 conclusionsStore.conclusions[field] = text.substring(0, MAX_CHARACTERS);
-                console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
             }
         };
 
@@ -210,10 +206,7 @@ export default {
                 if (availableSpace > 0) {
                     const truncatedPastedText = pastedText.substring(0, availableSpace);
                     conclusionsStore.conclusions[field] = currentText + truncatedPastedText;
-                    console.log(`Texto pegado truncado. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
-                } else {
-                    console.log(`No se puede pegar más texto. Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
-                }
+                } 
             }
         };
 
@@ -223,7 +216,6 @@ export default {
                 
                 if (event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'Tab') {
                     event.preventDefault();
-                    console.log(`Límite de ${MAX_CHARACTERS} caracteres alcanzado`);
                 }
             }
         };
@@ -240,6 +232,8 @@ export default {
     },
 
     components: {
+        InfoBannerComponent,
+        EditButtonComponent
     },
 
     data() {
@@ -288,13 +282,10 @@ export default {
     },
 
     async mounted() {
-        console.log('🔍 Debug: textsStore state:', this.textsStore);
-        console.log('🔍 Debug: conclusions_section.title:', this.textsStore.getText('conclusions_section.title'));
-        console.log('🔍 Debug: conclusions_section.component_practice_subtitle:', this.textsStore.getText('conclusions_section.component_practice_subtitle'));
+        
         
         // Esperar a que los textos estén cargados
         if (this.textsStore.isLoading || !this.textsStore.conclusions_section) {
-            console.log('🔍 Debug: Esperando a que los textos se carguen...');
             await this.waitForTexts();
         }
         
@@ -341,10 +332,10 @@ export default {
             return new Promise((resolve) => {
                 const checkTexts = () => {
                     if (!this.textsStore.isLoading && this.textsStore.conclusions_section) {
-                        console.log('🔍 Debug: Textos cargados correctamente');
+                        
                         resolve();
                     } else {
-                        console.log('🔍 Debug: Textos aún no cargados, esperando...');
+                        
                         setTimeout(checkTexts, 100);
                     }
                 };
@@ -725,14 +716,14 @@ export default {
   z-index: 100;
 }
 .cerrar-btn {
-  background: #7c3aed;
+  background: #005883;
   color: white;
   border: none;
   border-radius: 6px;
   padding: 14px 32px;
   font-size: 1.2rem;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  box-shadow: 0 2px 8px rgba(0,88,131,0.2);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -764,6 +755,13 @@ export default {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+  background: #005883;
+  color: white;
+  transition: background 0.2s;
+}
+
+.modal-content button:hover {
+  background: #004466;
 }
 
 @media (max-width: 700px) {

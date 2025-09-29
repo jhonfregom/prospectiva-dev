@@ -473,6 +473,18 @@ export default {
         display: flex;
         justify-content: flex-end;
         margin-bottom: 2rem;
+        
+        .button.is-primary {
+            background-color: #005883 !important;
+            border-color: #005883 !important;
+            color: white !important;
+            transition: background-color 0.2s;
+            
+            &:hover {
+                background-color: #004466 !important;
+                border-color: #004466 !important;
+            }
+        }
     }
 
     .matriz-table-container {
@@ -491,7 +503,7 @@ export default {
 
         .matriz-header-cell {
             background-color: #EEF2FF;
-            color: #4F46E5;
+            color: #000000;
             padding: 1rem;
             text-align: center;
             font-weight: 600;
@@ -505,7 +517,7 @@ export default {
 
         .matriz-row-header {
             background-color: #EEF2FF;
-            color: #4F46E5;
+            color: #000000;
             padding: 1rem;
             text-align: center;
             font-weight: 600;
@@ -639,7 +651,7 @@ export default {
 
         h3 {
             margin-bottom: 1rem;
-            color: #4F46E5;
+            color: #000000;
             font-size: 1.2rem;
             font-weight: 600;
             letter-spacing: 0.5px;
@@ -676,18 +688,18 @@ export default {
                 transition: all 0.2s ease;
 
                 &.legend-strong {
-                    background-color: #FEE2E2;
-                    color: #DC2626;
+                    background-color: #F47920;
+                    color: white;
                 }
 
                 &.legend-medium {
-                    background-color: #FFEDD5;
-                    color: #EA580C;
+                    background-color: #F0B429;
+                    color: white;
                 }
 
                 &.legend-weak {
-                    background-color: #FEF9C3;
-                    color: #CA8A04;
+                    background-color: #005883;
+                    color: white;
                 }
 
                 &.legend-none {
@@ -724,7 +736,7 @@ export default {
 
             th {
                 background-color: #EEF2FF;
-                color: #4F46E5;
+                color: #000000;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
@@ -734,7 +746,7 @@ export default {
 
             td:first-child {
                 background-color: #EEF2FF;
-                color: #4F46E5;
+                color: #000000;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
@@ -766,14 +778,14 @@ export default {
   z-index: 100;
 }
 .cerrar-btn {
-  background: #7c3aed;
+  background: #005883;
   color: white;
   border: none;
   border-radius: 6px;
   padding: 14px 32px;
   font-size: 1.2rem;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(50,115,220,0.08);
+  box-shadow: 0 2px 8px rgba(0,88,131,0.2);
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -805,6 +817,13 @@ export default {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
+  background: #005883;
+  color: white;
+  transition: background 0.2s;
+}
+
+.modal-content button:hover {
+  background: #004466;
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -815,5 +834,143 @@ input[type="number"]::-webkit-outer-spin-button {
 
 input[type="number"] {
     -moz-appearance: textfield;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .matriz-container {
+    padding: 15px;
+  }
+  
+  .matriz-table {
+    font-size: 12px;
+  }
+  
+  .matriz-table th,
+  .matriz-table td {
+    padding: 8px 4px;
+  }
+}
+
+@media (max-width: 768px) {
+  .matriz-container {
+    padding: 10px;
+  }
+  
+  .cerrar-container {
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .cerrar-btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+  
+  .modal-content {
+    padding: 24px 32px;
+    margin: 20px;
+  }
+  
+  .modal-content button {
+    margin: 8px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+  
+  /* Tabla responsive */
+  .matriz-table-container {
+    overflow-x: auto;
+    border-radius: 8px;
+  }
+  
+  .matriz-table {
+    min-width: 600px;
+    font-size: 11px;
+  }
+  
+  .matriz-table th,
+  .matriz-table td {
+    padding: 6px 3px;
+  }
+  
+  .matriz-header-cell,
+  .matriz-total-cell,
+  .matriz-cell-center,
+  .matriz-col-align {
+    min-width: 40px;
+    max-width: 40px;
+    width: 40px;
+  }
+  
+  .matriz-codigo-cell {
+    min-width: 60px !important;
+    max-width: 60px !important;
+    width: 60px !important;
+  }
+  
+  .matriz-nombre-cell {
+    min-width: 120px !important;
+    max-width: 120px !important;
+    width: 120px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .matriz-container {
+    padding: 5px;
+  }
+  
+  .cerrar-container {
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .cerrar-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .modal-content {
+    padding: 20px 24px;
+    margin: 10px;
+  }
+  
+  .modal-content button {
+    margin: 4px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .matriz-table {
+    min-width: 400px;
+    font-size: 10px;
+  }
+  
+  .matriz-table th,
+  .matriz-table td {
+    padding: 4px 2px;
+  }
+  
+  .matriz-header-cell,
+  .matriz-total-cell,
+  .matriz-cell-center,
+  .matriz-col-align {
+    min-width: 30px;
+    max-width: 30px;
+    width: 30px;
+  }
+  
+  .matriz-codigo-cell {
+    min-width: 50px !important;
+    max-width: 50px !important;
+    width: 50px !important;
+  }
+  
+  .matriz-nombre-cell {
+    min-width: 100px !important;
+    max-width: 100px !important;
+    width: 100px !important;
+  }
 }
 </style>

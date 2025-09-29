@@ -1,4 +1,4 @@
-@use '../variables' as var;
+@use '../colors' as colors;
 
 .application{
     .action-main{
@@ -9,7 +9,7 @@
 
         //Table
         .table-container {
-            border: 2px solid var.$color-purple;
+            border: 2px solid colors.$color-primary;
             border-radius: 15px;
             padding: 10px;
 
@@ -21,28 +21,28 @@
         .table {
             th {
                 cursor: pointer;
-                color: var.$color-purple;
+                color: colors.$color-primary;
             }
 
             .b-checkbox.checkbox {
                 input[type=checkbox]:checked+.check.is-success {
-                    background-color: var.$color-light-teal !important;
+                    background-color: colors.$color-secondary !important;
                 }
                 .check {
-                    border-color: var.$color-light-teal !important;
+                    border-color: colors.$color-secondary !important;
 
                     &.is-success:checked {
-                        background-color: var.$color-light-teal !important;
+                        background-color: colors.$color-secondary !important;
                     }
                 }
             }
 
             &.is-striped tbody tr:not(.is-selected):nth-child(even) {
-                background-color: var.$color-dark-striped !important;
+                background-color: colors.$color-bg-secondary !important;
             }
 
             .are-small .is-white {
-                border: 1px solid var.$color-dark-striped;
+                border: 1px solid colors.$color-border-primary;
             }
             .requiredInput {
                 color: #f14668;
@@ -59,18 +59,18 @@
 
             &-list {
                 .is-current {
-                    background-color: var.$color-teal;
-                    border-color: var.$color-teal;
-                    color: #fff;
+                    background: colors.$gradient-primary;
+                    border-color: colors.$color-primary;
+                    color: colors.$color-text-light;
                 }
 
                 a {
-                    border-color: var.$color-teal;
+                    border-color: colors.$color-primary;
                 }
             }
 
             &-link {
-                border-color: var.$color-teal;
+                border-color: colors.$color-primary;
             }
 
             ul.pagination-list{

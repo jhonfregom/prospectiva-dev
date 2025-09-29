@@ -20,6 +20,7 @@
             </button>
         </div>
     </div>
+    
 
 </template>
 
@@ -39,11 +40,7 @@ export default {
         const storeTexts = useTextsStore();
         const storeSession = useSessionStore();
         const traceabilityStore = useTraceabilityStore();
-
-        console.log('StoreTexts:', storeTexts);
-        console.log('Variables section texts:', storeTexts.variables_section);
-        console.log('Title introduction:', storeTexts.variables_section?.title_introduction);
-        console.log('Content introduction:', storeTexts.variables_section?.content_introduction);
+        
         const steps = [
             { label: 'Variables', icon: 'fa-list' },
             { label: 'Matriz', icon: 'fa-th' },
@@ -68,24 +65,20 @@ export default {
             'conclusions',
             'results'
         ];
+        
 
+
+        // Computed para mostrar el botón de nueva ruta
         const showNewRouteButton = computed(() => {
-            
+            // Solo mostrar si tiene exactamente 1 ruta y la ruta actual está completada
             const hasOneRoute = traceabilityStore.userRoutes && traceabilityStore.userRoutes.length === 1;
             const currentRouteCompleted = traceabilityStore.availableSections && 
                                          traceabilityStore.availableSections.results === true;
-
-            console.log('Debug botón nueva ruta:', {
-                userRoutes: traceabilityStore.userRoutes,
-                routesCount: traceabilityStore.userRoutes ? traceabilityStore.userRoutes.length : 0,
-                hasOneRoute,
-                availableSections: traceabilityStore.availableSections,
-                currentRouteCompleted
-            });
             
             return hasOneRoute && currentRouteCompleted;
         });
-
+        
+        // Función para crear nueva ruta
         const createNewRoute = async () => {
             try {
                 const response = await fetch('/traceability/create-new-route', {
@@ -99,24 +92,15 @@ export default {
                 const data = await response.json();
                 
                 if (data.success) {
-                    
+                    // Recargar las secciones disponibles y rutas del usuario
                     await traceabilityStore.loadAvailableSections();
                     await traceabilityStore.loadUserRoutes();
-
-                    alert('Segunda ruta creada exitosamente. En esta nueva ruta solo tienes acceso a los módulos de Variables y Resultados.');
-
-                    await traceabilityStore.forceReloadSections();
-
-                    if (window.updateStepper) {
-                        window.updateStepper();
-                    }
-
-                    setTimeout(() => {
-                        
-                        window.dispatchEvent(new CustomEvent('route-created'));
-
-                        traceabilityStore.forceReloadSections();
-                    }, 500);
+                    
+                    // Mostrar mensaje de éxito
+                    alert('Segunda ruta creada exitosamente. Ahora tienes 2 rutas disponibles.');
+                    
+                    // Recargar la página para aplicar los cambios
+                    window.location.reload();
                 } else {
                     alert('Error al crear nueva ruta: ' + data.message);
                 }
@@ -125,16 +109,18 @@ export default {
                 alert('Error al crear nueva ruta');
             }
         };
-
+        
+        // Elimina activeStep y los watchers relacionados
+        // Función para el stepper custom: cambia el módulo cuando el usuario hace clic
         function onStepperInput(idx) {
             const section = sectionKeys[idx];
             if (section) {
                 storeSession.setActiveContent(section);
             }
         }
-        
+        // --- NUEVO: Forzar recarga de secciones al montar el main ---
         onMounted(async () => {
-            
+            // Cargar las rutas del usuario para el botón de nueva ruta
             await traceabilityStore.loadUserRoutes();
             
             const accion = JSON.parse(localStorage.getItem('accion_pendiente'));
@@ -164,7 +150,7 @@ export default {
                         } else {
                             await traceabilityStore.forceReloadSections();
                         }
-                        
+                        // Eliminar claves de cerrado de este módulo y todos los posteriores
                         const idx = sectionOrder.indexOf(accion.modulo);
                         for (let i = idx; i < sectionOrder.length; i++) {
                             const key = cerradoPrefixes[sectionOrder[i]] + (user.id || 'anon');
@@ -175,14 +161,14 @@ export default {
                     setTimeout(() => {
                         traceabilityStore.forceReloadSections();
                     }, 100);
-                }, 1000); 
+                }, 1000); // Espera 1 segundo antes de ejecutar la acción pendiente
             } else {
                 setTimeout(() => {
                     traceabilityStore.forceReloadSections();
                 }, 100);
             }
         });
-        
+        // --- FIN NUEVO ---
         return { 
             storeTexts, 
             storeSession, 
@@ -212,6 +198,14 @@ export default {
     font-weight: bold;
     text-align: center;
     margin-bottom: 15px;
+    color: white !important;
+}
+
+/* Asegurar que el título sea blanco con selector más específico */
+.intro-section h2,
+.intro-section .title,
+.intro-section h2.title {
+    color: white !important;
 }
 
 .intro-section div {
@@ -221,7 +215,7 @@ export default {
 }
 
 .new-route-section {
-    
+    /* Eliminado: ya no se usa el contenedor */
     display: none;
 }
 
