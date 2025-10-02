@@ -1,43 +1,32 @@
-import { defineConfig } from 'vite';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import laravel from 'laravel-vite-plugin';
-import vue from '@vitejs/plugin-vue';
-import path from 'path';
+import { defineConfig, loadEnv } from 'vite'
+import laravel from 'laravel-vite-plugin'
+import vue from '@vitejs/plugin-vue'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
-export default defineConfig({
-    base: '/',
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  // Lee prefijo desde el entorno. En prod será "/app"
+  let base = env.ASSET_URL || env.VITE_BASE || '/'
+  if (!base.endsWith('/')) base += '/'
+
+  return {
+    base,
     plugins: [
-        laravel({
-                input: [
-                    'resources/js/app.js',
-                ],
-                refresh: true
-        }),
-        vue(),
-        nodePolyfills(),//NodeJs process, Fix to error "Uncaught ReferenceError: process is not defined"
+      laravel({ input: ['resources/js/app.js'], refresh: true }),
+      vue(),
+      nodePolyfills(),
     ],
-    css:{
-        preprocessorOptions: {
-            scss: {
-                // Add global scss variables, This will be available in all vue components
-                // additionalData: '@import "@/../sass/variables.scss";',
-            },
-        },
-    },
     resolve: {
-        alias: {
-           //'@': path.resolve(__dirname, 'resources/js'),
-            'vue': 'vue/dist/vue.esm-bundler.js',
-        },
+      alias: {
+        'vue': 'vue/dist/vue.esm-bundler.js',
+      },
     },
-    //Development server (Local)
+    // Para local, evita forzar 'prospectiva.com' salvo que lo tengas en hosts
     server: {
-        // For open in broser defined,
-        // Require in .env BROWSER="firefox-developer-edition" at linux and;
-        // BROWSER="Firefox Developer Edition" at MacOs
-        host: 'prospectiva.com',
-        open: true, //Auto open in browser
-        port: 5173,
-
-    }
-});
+      host: true,            // o '127.0.0.1'
+      port: 5173,
+      strictPort: true,
+      hmr: { host: 'localhost', port: 5173 }, // ajusta si usas otro host local
+    },
+  }
+})
