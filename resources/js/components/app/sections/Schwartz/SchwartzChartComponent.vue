@@ -224,4 +224,60 @@ canvas {
   max-height: 100%;
   border: 1px solid #ddd;
 }
+
+/* Responsive styles for Schwartz chart */
+@media (max-width: 1024px) {
+  .schwartz-chart-container {
+    padding: 1rem;
+  }
+  
+  canvas {
+    max-width: 700px;
+    max-height: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .schwartz-chart-container {
+    padding: 0.75rem;
+  }
+  
+  canvas {
+    max-width: 600px;
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 640px) {
+  .schwartz-chart-container {
+    padding: 0.5rem;
+  }
+  
+  canvas {
+    max-width: 500px;
+    max-height: 350px;
+  }
+}
+
+@media (max-width: 480px) {
+  .schwartz-chart-container {
+    padding: 0.25rem;
+  }
+  
+  canvas {
+    max-width: 400px;
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 320px) {
+  .schwartz-chart-container {
+    padding: 0.1rem;
+  }
+  
+  canvas {
+    max-width: 300px;
+    max-height: 250px;
+  }
+}
 </style>

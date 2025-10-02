@@ -1635,6 +1635,17 @@ ${conversationHistory}Usuario: ${userText}`;
 }
 
 @media (max-width: 480px) {
+  .floating-bubble {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+  }
+  
+  .bubble-icon {
+    font-size: 1.5rem;
+  }
+  
   .modal-header {
     padding: 15px 20px;
   }
@@ -1645,6 +1656,50 @@ ${conversationHistory}Usuario: ${userText}`;
   
   .message-text {
     max-width: 230px;
+  }
+  
+  .bubble-menu {
+    min-width: 150px;
+    right: 10px;
+    bottom: 80px;
+  }
+  
+  .notes-modal {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .ai-modal {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 320px) {
+  .floating-bubble {
+    bottom: 15px;
+    right: 15px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .bubble-icon {
+    font-size: 1.2rem;
+  }
+  
+  .bubble-menu {
+    min-width: 120px;
+    right: 5px;
+    bottom: 70px;
+  }
+  
+  .message-text {
+    max-width: 200px;
+    font-size: 0.9rem;
   }
 }
 </style>

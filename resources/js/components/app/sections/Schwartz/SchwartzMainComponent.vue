@@ -839,4 +839,95 @@ export default {
     text-align: right;
     width: 100%;
 }
+
+/* Responsive styles for Schwartz matrix */
+@media (max-width: 1024px) {
+    .schwartz-matrix {
+        width: 90% !important;
+    }
+    
+    .cell-title {
+        font-size: 0.9rem !important;
+    }
+    
+    .cell-content {
+        font-size: 0.8rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .schwartz-matrix {
+        width: 95% !important;
+    }
+    
+    .cell-title {
+        font-size: 0.8rem !important;
+    }
+    
+    .cell-content {
+        font-size: 0.7rem !important;
+    }
+    
+    .edit-btn-container .b-button {
+        font-size: 10px !important;
+        padding: 1px 8px !important;
+        min-width: 60px !important;
+        max-width: 80px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .schwartz-matrix {
+        width: 100% !important;
+    }
+    
+    .cell-title {
+        font-size: 0.7rem !important;
+    }
+    
+    .cell-content {
+        font-size: 0.6rem !important;
+    }
+    
+    .edit-btn-container .b-button {
+        font-size: 9px !important;
+        padding: 1px 6px !important;
+        min-width: 50px !important;
+        max-width: 70px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .cell-title {
+        font-size: 0.6rem !important;
+    }
+    
+    .cell-content {
+        font-size: 0.5rem !important;
+    }
+    
+    .edit-btn-container .b-button {
+        font-size: 8px !important;
+        padding: 1px 4px !important;
+        min-width: 40px !important;
+        max-width: 60px !important;
+    }
+}
+
+@media (max-width: 320px) {
+    .cell-title {
+        font-size: 0.5rem !important;
+    }
+    
+    .cell-content {
+        font-size: 0.4rem !important;
+    }
+    
+    .edit-btn-container .b-button {
+        font-size: 7px !important;
+        padding: 1px 3px !important;
+        min-width: 35px !important;
+        max-width: 50px !important;
+    }
+}
 </style>

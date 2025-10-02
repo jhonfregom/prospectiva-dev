@@ -590,4 +590,130 @@ export default {
 :deep(.tag.is-info:hover) {
   background-color: #004466 !important;
 }
+
+/* Responsive styles for analysis variables */
+@media (max-width: 1024px) {
+  .analisis-mapa-variables-container {
+    padding: 1rem;
+  }
+  
+  .b-table {
+    font-size: 0.9rem !important;
+  }
+  
+  .b-table th {
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.3rem !important;
+  }
+  
+  .b-table td {
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.3rem !important;
+  }
+  
+  .b-tag {
+    font-size: 0.8rem !important;
+    padding: 0.3rem 0.5rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .analisis-mapa-variables-container {
+    padding: 0.75rem;
+  }
+  
+  .b-table {
+    font-size: 0.8rem !important;
+  }
+  
+  .b-table th {
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.2rem !important;
+  }
+  
+  .b-table td {
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.2rem !important;
+  }
+  
+  .b-tag {
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.4rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .analisis-mapa-variables-container {
+    padding: 0.5rem;
+  }
+  
+  .b-table {
+    font-size: 0.7rem !important;
+  }
+  
+  .b-table th {
+    font-size: 0.65rem !important;
+    padding: 0.2rem 0.1rem !important;
+  }
+  
+  .b-table td {
+    font-size: 0.65rem !important;
+    padding: 0.2rem 0.1rem !important;
+  }
+  
+  .b-tag {
+    font-size: 0.6rem !important;
+    padding: 0.15rem 0.3rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .analisis-mapa-variables-container {
+    padding: 0.25rem;
+  }
+  
+  .b-table {
+    font-size: 0.6rem !important;
+  }
+  
+  .b-table th {
+    font-size: 0.55rem !important;
+    padding: 0.15rem 0.05rem !important;
+  }
+  
+  .b-table td {
+    font-size: 0.55rem !important;
+    padding: 0.15rem 0.05rem !important;
+  }
+  
+  .b-tag {
+    font-size: 0.5rem !important;
+    padding: 0.1rem 0.2rem !important;
+  }
+}
+
+@media (max-width: 320px) {
+  .analisis-mapa-variables-container {
+    padding: 0.1rem;
+  }
+  
+  .b-table {
+    font-size: 0.5rem !important;
+  }
+  
+  .b-table th {
+    font-size: 0.45rem !important;
+    padding: 0.1rem 0.02rem !important;
+  }
+  
+  .b-table td {
+    font-size: 0.45rem !important;
+    padding: 0.1rem 0.02rem !important;
+  }
+  
+  .b-tag {
+    font-size: 0.4rem !important;
+    padding: 0.05rem 0.1rem !important;
+  }
+}
 </style>

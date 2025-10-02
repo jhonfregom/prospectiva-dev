@@ -596,4 +596,181 @@ th.hypothesis-header {
 .modal-content button:hover {
   background: #004466;
 }
+
+/* Responsive styles for Direction Future table */
+@media (max-width: 1024px) {
+  .variables-container {
+    padding: 15px;
+  }
+  
+  .b-table {
+    font-size: 13px;
+  }
+  
+  .b-table th {
+    font-size: 12px;
+    padding: 8px 6px !important;
+  }
+  
+  .b-table td {
+    font-size: 12px;
+    padding: 8px 6px !important;
+  }
+  
+  .textarea-container .b-input {
+    min-width: 150px !important;
+    max-width: 280px !important;
+  }
+  
+  .word-counter {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 768px) {
+  .variables-container {
+    padding: 10px;
+  }
+  
+  .b-table {
+    font-size: 12px;
+    overflow-x: auto;
+  }
+  
+  .b-table th {
+    font-size: 11px;
+    padding: 6px 4px !important;
+    min-height: 50px;
+  }
+  
+  .b-table td {
+    font-size: 11px;
+    padding: 6px 4px !important;
+    height: 80px !important;
+  }
+  
+  .textarea-container .b-input {
+    min-width: 120px !important;
+    max-width: 200px !important;
+    font-size: 11px;
+  }
+  
+  .word-counter {
+    font-size: 10px;
+  }
+  
+  .edit-area {
+    padding: 4px;
+  }
+}
+
+@media (max-width: 640px) {
+  .variables-container {
+    padding: 8px;
+  }
+  
+  .b-table {
+    font-size: 11px;
+    min-width: 600px; /* Force horizontal scroll */
+  }
+  
+  .b-table th {
+    font-size: 10px;
+    padding: 4px 2px !important;
+    min-height: 45px;
+  }
+  
+  .b-table td {
+    font-size: 10px;
+    padding: 4px 2px !important;
+    height: 70px !important;
+  }
+  
+  .textarea-container .b-input {
+    min-width: 100px !important;
+    max-width: 150px !important;
+    font-size: 10px;
+    rows: 2;
+  }
+  
+  .word-counter {
+    font-size: 9px;
+  }
+  
+  .edit-area {
+    padding: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .variables-container {
+    padding: 5px;
+  }
+  
+  .b-table {
+    font-size: 10px;
+    min-width: 500px;
+  }
+  
+  .b-table th {
+    font-size: 9px;
+    padding: 3px 1px !important;
+    min-height: 40px;
+  }
+  
+  .b-table td {
+    font-size: 9px;
+    padding: 3px 1px !important;
+    height: 60px !important;
+  }
+  
+  .textarea-container .b-input {
+    min-width: 80px !important;
+    max-width: 120px !important;
+    font-size: 9px;
+    rows: 2;
+  }
+  
+  .word-counter {
+    font-size: 8px;
+  }
+  
+  .edit-area {
+    padding: 1px;
+  }
+}
+
+@media (max-width: 320px) {
+  .variables-container {
+    padding: 3px;
+  }
+  
+  .b-table {
+    font-size: 9px;
+    min-width: 450px;
+  }
+  
+  .b-table th {
+    font-size: 8px;
+    padding: 2px 1px !important;
+    min-height: 35px;
+  }
+  
+  .b-table td {
+    font-size: 8px;
+    padding: 2px 1px !important;
+    height: 50px !important;
+  }
+  
+  .textarea-container .b-input {
+    min-width: 70px !important;
+    max-width: 100px !important;
+    font-size: 8px;
+    rows: 1;
+  }
+  
+  .word-counter {
+    font-size: 7px;
+  }
+}
 </style>

@@ -22,15 +22,15 @@ class NewUserRegistrationMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct(User $newUser)
+    public function __construct(User $newUser, string $activationToken = null, string $activationUrl = null)
     {
         $this->newUser = $newUser;
-        
-        // Solo generar token si no se ha proporcionado uno desde el listener
-        if (!$this->activationToken) {
-            $this->activationToken = Str::random(64);
-            $this->activationUrl = 'http://localhost:8000/user-activation/' . $newUser->id . '/' . $this->activationToken;
-        }
+        // Usar los valores proporcionados por el listener para mantener consistencia
+        $this->activationToken = $activationToken ?? Str::random(64);
+        $this->activationUrl = $activationUrl ?? route('user.activation.show', [
+            'userId' => $newUser->id,
+            'token' => $this->activationToken,
+        ]);
     }
 
     /**

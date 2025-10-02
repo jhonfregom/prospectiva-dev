@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Traceability;
 use Illuminate\Support\Facades\Auth;
 use App\Events\UserRegistered;
+use Illuminate\Validation\ValidationException;
 
 class RegisterController extends Controller
 {
@@ -146,10 +147,17 @@ class RegisterController extends Controller
                 'password' => 'required|string|min:8|max:255',
                 'confirm_password' => 'required|string|min:8|same:password',
             ], [
+                'registration_type.required' => 'Debe seleccionar el tipo de registro.',
+                'registration_type.in' => 'El tipo de registro no es válido.',
+                'user.required' => 'El correo es obligatorio.',
+                'user.email' => 'El correo no es válido.',
+                'user.max' => 'El correo no puede exceder los 255 caracteres.',
+                'user.unique' => 'El correo ya está registrado.',
                 'password.required' => 'La contraseña es obligatoria.',
                 'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
                 'password.max' => 'La contraseña no puede exceder los 255 caracteres.',
                 'confirm_password.required' => 'La confirmación de contraseña es obligatoria.',
+                'confirm_password.min' => 'La confirmación debe tener al menos 8 caracteres.',
                 'confirm_password.same' => 'La confirmación de contraseña no coincide.',
             ]);
 
@@ -185,13 +193,19 @@ class RegisterController extends Controller
                 $request->validate([
                     'first_name' => 'required|string|max:255',
                     'last_name' => 'required|string|max:100',
-                    'document_id' => 'required|string|size:10|unique:users,document_id|regex:/^\d+$/',
+                    'document_id' => 'required|string|min:6|max:10|unique:users,document_id|regex:/^\d+$/',
                     'city' => 'nullable|string|max:255',
                 ], [
+                    'first_name.required' => 'El nombre es obligatorio.',
+                    'first_name.max' => 'El nombre no puede exceder 255 caracteres.',
+                    'last_name.required' => 'El apellido es obligatorio.',
+                    'last_name.max' => 'El apellido no puede exceder 100 caracteres.',
                     'document_id.required' => 'El documento de identidad es obligatorio.',
-                    'document_id.size' => 'La cédula debe tener exactamente 10 dígitos.',
+                    'document_id.min' => 'La cédula debe tener al menos 6 dígitos.',
+                    'document_id.max' => 'La cédula no puede exceder 10 dígitos.',
                     'document_id.regex' => 'La cédula solo debe contener números.',
                     'document_id.unique' => 'Esta cédula ya está registrada en el sistema.',
+                    'city.max' => 'La ciudad no puede exceder 255 caracteres.',
                 ]);
             } else {
                 $request->validate([
@@ -200,11 +214,16 @@ class RegisterController extends Controller
                     'economic_sector' => 'required|integer|between:1,30',
                     'company_city' => 'nullable|string|max:255',
                 ], [
+                    'company_name.required' => 'El nombre de la empresa es obligatorio.',
+                    'company_name.max' => 'El nombre de la empresa no puede exceder 255 caracteres.',
                     'nit.required' => 'El NIT es obligatorio.',
                     'nit.size' => 'El NIT debe tener exactamente 9 dígitos.',
                     'nit.regex' => 'El NIT solo debe contener números.',
                     'nit.unique' => 'Este NIT ya está registrado en el sistema.',
+                    'economic_sector.required' => 'El sector económico es obligatorio.',
+                    'economic_sector.integer' => 'El sector económico no es válido.',
                     'economic_sector.between' => 'El sector económico debe estar entre 1 y 30.',
+                    'company_city.max' => 'La ciudad no puede exceder 255 caracteres.',
                 ]);
             }
 
@@ -255,6 +274,17 @@ class RegisterController extends Controller
                 'redirect' => route('login')
             ]);
             
+        } catch (ValidationException $e) {
+            // Devolver errores de validación con 422 en lugar de 500
+            \Log::warning('Errores de validación en registro', [
+                'messages' => $e->errors(),
+            ]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Errores de validación',
+                'errors' => $e->errors(),
+            ], 422);
+
         } catch (\Exception $e) {
             \Log::error('Error en registro: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());

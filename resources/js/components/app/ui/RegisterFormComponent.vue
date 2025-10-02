@@ -470,20 +470,20 @@ export default {
             let maxLength = 0;
             
             if (fieldName === 'document_id') {
-                // Cédula: máximo 10 dígitos
+                // Cédula: mínimo 6, máximo 10 dígitos
                 maxLength = 10;
                 limitedValue = numericValue.slice(0, maxLength);
                 
-                // Validar y mostrar mensajes de error
+                // Validar y mostrar mensajes de error (entre 6 y 10)
                 if (numericValue.length > maxLength) {
                     this.fields.document_id.error = true;
-                    this.fields.document_id.msg = 'La cédula debe tener exactamente 10 dígitos';
-                } else if (numericValue.length === maxLength) {
+                    this.fields.document_id.msg = 'La cédula no puede exceder 10 dígitos';
+                } else if (numericValue.length === 0) {
                     this.fields.document_id.error = false;
                     this.fields.document_id.msg = '';
-                } else if (numericValue.length > 0) {
+                } else if (numericValue.length < 6) {
                     this.fields.document_id.error = true;
-                    this.fields.document_id.msg = `La cédula debe tener 10 dígitos (actual: ${numericValue.length})`;
+                    this.fields.document_id.msg = `La cédula debe tener entre 6 y 10 dígitos (actual: ${numericValue.length})`;
                 } else {
                     this.fields.document_id.error = false;
                     this.fields.document_id.msg = '';
@@ -558,13 +558,13 @@ export default {
                 this.fields.last_name.error = this.last_name === '';
                 this.fields.last_name.msg = this.last_name === '' ? 'Este campo es requerido' : '';
 
-                // Validar cédula (10 dígitos)
+                // Validar cédula (entre 6 y 10 dígitos)
                 if (this.document_id === '') {
                     this.fields.document_id.error = true;
                     this.fields.document_id.msg = 'La cédula es obligatoria';
-                } else if (this.document_id.length !== 10) {
+                } else if (this.document_id.length < 6 || this.document_id.length > 10) {
                     this.fields.document_id.error = true;
-                    this.fields.document_id.msg = `La cédula debe tener exactamente 10 dígitos (actual: ${this.document_id.length})`;
+                    this.fields.document_id.msg = `La cédula debe tener entre 6 y 10 dígitos (actual: ${this.document_id.length})`;
                 } else {
                     this.fields.document_id.error = false;
                     this.fields.document_id.msg = '';

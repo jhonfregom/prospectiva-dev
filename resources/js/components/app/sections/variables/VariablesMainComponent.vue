@@ -7,15 +7,16 @@
         />
         
         <!-- MiniStepper eliminado -->
-        <b-table
-            :data="variables"
-            :loading="isLoading"
-            :striped="true"
-            :hoverable="true"
-            default-sort="id"
-            default-sort-direction="asc"
-            :sort-icon="false"
-            icon-pack="fas">
+        <div class="table-container">
+            <b-table
+                :data="variables"
+                :loading="isLoading"
+                :striped="true"
+                :hoverable="true"
+                default-sort="id"
+                default-sort-direction="asc"
+                :sort-icon="false"
+                icon-pack="fas">
 
             <b-table-column field="id" :label="textsStore.getText('variables_section.table.variable')" v-slot="props" width="100" centered>
                 {{ props.row.id_variable }}
@@ -68,6 +69,7 @@
                 </div>
             </b-table-column>
         </b-table>
+        </div>
 
         <variable-form-modal
             v-if="showModal"
@@ -418,6 +420,337 @@ export default {
     padding: 20px;
 }
 
+.table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    position: relative;
+}
+
+/* Force table to be responsive with dynamic sizing */
+.table-container .b-table {
+    width: max-content;
+    min-width: 100%;
+}
+
+/* Dynamic responsive table */
+.table-container .b-table .table {
+    display: table;
+    width: 100%;
+    table-layout: auto;
+}
+
+/* Universal responsive behavior */
+.table-container .b-table .table {
+    min-width: 750px; /* Minimum width for table to function */
+}
+
+/* Responsive behavior for any screen size */
+@media (max-width: 750px) {
+  .table-container .b-table .table {
+    min-width: 700px;
+  }
+}
+
+@media (max-width: 700px) {
+  .table-container .b-table .table {
+    min-width: 650px;
+  }
+}
+
+@media (max-width: 650px) {
+  .table-container .b-table .table {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 600px) {
+  .table-container .b-table .table {
+    min-width: 550px;
+  }
+}
+
+@media (max-width: 550px) {
+  .table-container .b-table .table {
+    min-width: 500px;
+  }
+}
+
+@media (max-width: 500px) {
+  .table-container .b-table .table {
+    min-width: 450px;
+  }
+}
+
+@media (max-width: 450px) {
+  .table-container .b-table .table {
+    min-width: 400px;
+  }
+}
+
+@media (max-width: 400px) {
+  .table-container .b-table .table {
+    min-width: 350px;
+  }
+}
+
+@media (max-width: 350px) {
+  .table-container .b-table .table {
+    min-width: 300px;
+  }
+}
+
+@media (max-width: 300px) {
+  .table-container .b-table .table {
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 250px) {
+  .table-container .b-table .table {
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 200px) {
+  .table-container .b-table .table {
+    min-width: 150px;
+  }
+}
+
+/* Ultra-compact styles for very small screens */
+@media (max-width: 500px) {
+  .variables-container {
+    padding: 4px;
+  }
+  
+  .table-container .b-table {
+    font-size: 0.6rem !important;
+  }
+  
+  .table-container .b-table th {
+    font-size: 0.55rem !important;
+    padding: 0.1rem 0.05rem !important;
+  }
+  
+  .table-container .b-table td {
+    font-size: 0.55rem !important;
+    padding: 0.1rem 0.05rem !important;
+    height: 35px !important;
+  }
+  
+  .description-column {
+    min-width: 100px;
+  }
+  
+  .buttons .button {
+    font-size: 0.5rem !important;
+    padding: 0.1rem 0.2rem !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .variables-container {
+    padding: 3px;
+  }
+  
+  .table-container .b-table {
+    font-size: 0.55rem !important;
+  }
+  
+  .table-container .b-table th {
+    font-size: 0.5rem !important;
+    padding: 0.08rem 0.03rem !important;
+  }
+  
+  .table-container .b-table td {
+    font-size: 0.5rem !important;
+    padding: 0.08rem 0.03rem !important;
+    height: 30px !important;
+  }
+  
+  .description-column {
+    min-width: 80px;
+  }
+  
+  .buttons .button {
+    font-size: 0.45rem !important;
+    padding: 0.08rem 0.15rem !important;
+  }
+}
+
+@media (max-width: 350px) {
+  .variables-container {
+    padding: 2px;
+  }
+  
+  .table-container .b-table {
+    font-size: 0.5rem !important;
+  }
+  
+  .table-container .b-table th {
+    font-size: 0.45rem !important;
+    padding: 0.05rem 0.02rem !important;
+  }
+  
+  .table-container .b-table td {
+    font-size: 0.45rem !important;
+    padding: 0.05rem 0.02rem !important;
+    height: 25px !important;
+  }
+  
+  .description-column {
+    min-width: 60px;
+  }
+  
+  .buttons .button {
+    font-size: 0.4rem !important;
+    padding: 0.05rem 0.1rem !important;
+  }
+}
+
+@media (max-width: 300px) {
+  .variables-container {
+    padding: 1px;
+  }
+  
+  .table-container .b-table {
+    font-size: 0.45rem !important;
+  }
+  
+  .table-container .b-table th {
+    font-size: 0.4rem !important;
+    padding: 0.03rem 0.01rem !important;
+  }
+  
+  .table-container .b-table td {
+    font-size: 0.4rem !important;
+    padding: 0.03rem 0.01rem !important;
+    height: 20px !important;
+  }
+  
+  .description-column {
+    min-width: 40px;
+  }
+  
+  .buttons .button {
+    font-size: 0.35rem !important;
+    padding: 0.03rem 0.05rem !important;
+  }
+}
+
+@media (max-width: 250px) {
+  .variables-container {
+    padding: 0.5px;
+  }
+  
+  .table-container .b-table {
+    font-size: 0.4rem !important;
+  }
+  
+  .table-container .b-table th {
+    font-size: 0.35rem !important;
+    padding: 0.02rem 0.005rem !important;
+  }
+  
+  .table-container .b-table td {
+    font-size: 0.35rem !important;
+    padding: 0.02rem 0.005rem !important;
+    height: 18px !important;
+  }
+  
+  .description-column {
+    min-width: 30px;
+  }
+  
+  .buttons .button {
+    font-size: 0.3rem !important;
+    padding: 0.02rem 0.03rem !important;
+  }
+}
+
+@media (max-width: 200px) {
+  .variables-container {
+    padding: 0.25px;
+  }
+  
+  .table-container .b-table {
+    font-size: 0.35rem !important;
+  }
+  
+  .table-container .b-table th {
+    font-size: 0.3rem !important;
+    padding: 0.01rem 0.002rem !important;
+  }
+  
+  .table-container .b-table td {
+    font-size: 0.3rem !important;
+    padding: 0.01rem 0.002rem !important;
+    height: 15px !important;
+  }
+  
+  .description-column {
+    min-width: 20px;
+  }
+  
+  .buttons .button {
+    font-size: 0.25rem !important;
+    padding: 0.01rem 0.02rem !important;
+  }
+}
+
+/* Responsive table cells */
+.table-container .b-table .table th,
+.table-container .b-table .table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+/* Specific column widths for better responsive behavior */
+.table-container .b-table .table th:nth-child(1),
+.table-container .b-table .table td:nth-child(1) {
+    width: 80px;
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.table-container .b-table .table th:nth-child(2),
+.table-container .b-table .table td:nth-child(2) {
+    width: 120px;
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.table-container .b-table .table th:nth-child(3),
+.table-container .b-table .table td:nth-child(3) {
+    width: 200px;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.table-container .b-table .table th:nth-child(4),
+.table-container .b-table .table td:nth-child(4) {
+    width: 80px;
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.table-container .b-table .table th:nth-child(5),
+.table-container .b-table .table td:nth-child(5) {
+    width: 120px;
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.table-container .b-table .table th:nth-child(6),
+.table-container .b-table .table td:nth-child(6) {
+    width: 150px;
+    min-width: 150px;
+    max-width: 200px;
+}
+
 .description-banner {
     text-align: justify !important;
     line-height: 1.6;
@@ -520,14 +853,106 @@ export default {
   background: #004466;
 }
 
-/* Responsive Design */
+/* Responsive styles for Variables table */
 @media (max-width: 1024px) {
   .variables-container {
     padding: 15px;
   }
   
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .b-table {
+    font-size: 0.9rem !important;
+  }
+  
+  .b-table th {
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.3rem !important;
+  }
+  
+  .b-table td {
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.3rem !important;
+    height: 70px !important;
+  }
+  
   .description-column {
     min-width: 250px;
+  }
+}
+
+/* Dynamic responsive behavior for all screen sizes */
+@media (max-width: 800px) {
+  .variables-container {
+    padding: 12px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .b-table {
+    font-size: 0.85rem !important;
+  }
+  
+  .b-table th {
+    font-size: 0.8rem !important;
+    padding: 0.35rem 0.25rem !important;
+  }
+  
+  .b-table td {
+    font-size: 0.8rem !important;
+    padding: 0.35rem 0.25rem !important;
+    height: 65px !important;
+  }
+  
+  .description-column {
+    min-width: 220px;
+  }
+}
+
+/* Optimized for 746x520 and similar resolutions */
+@media (max-width: 780px) {
+  .variables-container {
+    padding: 8px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .b-table {
+    font-size: 0.75rem !important;
+  }
+  
+  .b-table th {
+    font-size: 0.7rem !important;
+    padding: 0.25rem 0.15rem !important;
+  }
+  
+  .b-table td {
+    font-size: 0.7rem !important;
+    padding: 0.25rem 0.15rem !important;
+    height: 55px !important;
+  }
+  
+  .description-column {
+    min-width: 180px;
+  }
+  
+  .buttons {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  
+  .buttons .button {
+    font-size: 0.65rem !important;
+    padding: 0.25rem 0.4rem !important;
   }
 }
 
@@ -536,10 +961,246 @@ export default {
     padding: 10px;
   }
   
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .b-table {
+    font-size: 0.8rem !important;
+    min-width: 800px; /* Force horizontal scroll */
+    width: 100%;
+  }
+  
+  .b-table th {
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.2rem !important;
+    white-space: nowrap;
+  }
+  
+  .b-table td {
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.2rem !important;
+    height: 60px !important;
+    white-space: nowrap;
+  }
+  
   .description-column {
     min-width: 200px;
   }
   
+  .buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .buttons .button {
+    font-size: 0.7rem !important;
+    padding: 0.3rem 0.5rem !important;
+  }
+}
+
+/* Specific breakpoint for very small resolutions like 746x520 */
+@media (max-width: 640px) {
+  .variables-container {
+    padding: 8px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .b-table {
+    font-size: 0.7rem !important;
+    min-width: 700px;
+    width: 100%;
+  }
+  
+  .b-table th {
+    font-size: 0.65rem !important;
+    padding: 0.2rem 0.1rem !important;
+    white-space: nowrap;
+  }
+  
+  .b-table td {
+    font-size: 0.65rem !important;
+    padding: 0.2rem 0.1rem !important;
+    height: 50px !important;
+    white-space: nowrap;
+  }
+  
+  .description-column {
+    min-width: 150px;
+  }
+  
+  .buttons .button {
+    font-size: 0.6rem !important;
+    padding: 0.2rem 0.4rem !important;
+  }
+}
+
+/* Ultra-specific breakpoint for 746x520 and similar */
+@media (max-width: 600px) {
+  .variables-container {
+    padding: 6px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .b-table {
+    font-size: 0.65rem !important;
+    min-width: 650px;
+    width: 100%;
+  }
+  
+  .b-table th {
+    font-size: 0.6rem !important;
+    padding: 0.15rem 0.08rem !important;
+    white-space: nowrap;
+  }
+  
+  .b-table td {
+    font-size: 0.6rem !important;
+    padding: 0.15rem 0.08rem !important;
+    height: 45px !important;
+    white-space: nowrap;
+  }
+  
+  .description-column {
+    min-width: 130px;
+  }
+  
+  .buttons .button {
+    font-size: 0.55rem !important;
+    padding: 0.15rem 0.3rem !important;
+  }
+}
+
+/* Specific breakpoint for small height resolutions like 746x520 */
+@media (max-width: 480px) {
+  .variables-container {
+    padding: 5px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .b-table {
+    font-size: 0.6rem !important;
+    min-width: 600px;
+    width: 100%;
+  }
+  
+  .b-table th {
+    font-size: 0.55rem !important;
+    padding: 0.15rem 0.05rem !important;
+    white-space: nowrap;
+  }
+  
+  .b-table td {
+    font-size: 0.55rem !important;
+    padding: 0.15rem 0.05rem !important;
+    height: 40px !important;
+    white-space: nowrap;
+  }
+  
+  .description-column {
+    min-width: 120px;
+  }
+  
+  .buttons .button {
+    font-size: 0.5rem !important;
+    padding: 0.15rem 0.3rem !important;
+  }
+}
+
+/* Ultra-compact breakpoint for very small resolutions */
+@media (max-width: 400px) {
+  .variables-container {
+    padding: 3px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .b-table {
+    font-size: 0.55rem !important;
+    min-width: 550px;
+    width: 100%;
+  }
+  
+  .b-table th {
+    font-size: 0.5rem !important;
+    padding: 0.1rem 0.03rem !important;
+    white-space: nowrap;
+  }
+  
+  .b-table td {
+    font-size: 0.5rem !important;
+    padding: 0.1rem 0.03rem !important;
+    height: 35px !important;
+    white-space: nowrap;
+  }
+  
+  .description-column {
+    min-width: 100px;
+  }
+  
+  .buttons .button {
+    font-size: 0.45rem !important;
+    padding: 0.1rem 0.2rem !important;
+  }
+}
+
+@media (max-width: 320px) {
+  .variables-container {
+    padding: 3px;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .b-table {
+    font-size: 0.5rem !important;
+    min-width: 500px;
+    width: 100%;
+  }
+  
+  .b-table th {
+    font-size: 0.45rem !important;
+    padding: 0.1rem 0.02rem !important;
+    white-space: nowrap;
+  }
+  
+  .b-table td {
+    font-size: 0.45rem !important;
+    padding: 0.1rem 0.02rem !important;
+    height: 35px !important;
+    white-space: nowrap;
+  }
+  
+  .description-column {
+    min-width: 100px;
+  }
+  
+  .buttons .button {
+    font-size: 0.4rem !important;
+    padding: 0.1rem 0.2rem !important;
+  }
+}
+
+/* Additional responsive styles for buttons and modals */
+@media (max-width: 768px) {
   .cerrar-container {
     bottom: 20px;
     right: 20px;
@@ -561,36 +1222,9 @@ export default {
     font-size: 0.9rem;
   }
   
-  /* Tabla responsive */
-  :deep(.b-table) {
-    overflow-x: auto;
-  }
-  
-  :deep(.b-table .table) {
-    min-width: 600px;
-  }
-  
-  :deep(.b-table .table tbody td) {
-    height: 60px !important;
-    padding: 8px 4px !important;
-    font-size: 0.9rem;
-  }
-  
-  :deep(.b-table .table thead th) {
-    padding: 8px 4px !important;
-    font-size: 0.9rem;
-  }
 }
 
 @media (max-width: 480px) {
-  .variables-container {
-    padding: 5px;
-  }
-  
-  .description-column {
-    min-width: 150px;
-  }
-  
   .cerrar-container {
     bottom: 15px;
     right: 15px;
@@ -609,17 +1243,6 @@ export default {
   .modal-content button {
     margin: 4px;
     padding: 6px 12px;
-    font-size: 0.8rem;
-  }
-  
-  :deep(.b-table .table tbody td) {
-    height: 50px !important;
-    padding: 6px 2px !important;
-    font-size: 0.8rem;
-  }
-  
-  :deep(.b-table .table thead th) {
-    padding: 6px 2px !important;
     font-size: 0.8rem;
   }
 }

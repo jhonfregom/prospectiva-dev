@@ -1,3 +1,5 @@
+/* Global Responsive Breakpoints */
+/* Desktop Large */
 @media(min-width: 1920px){
     .login,
     .register{
@@ -21,6 +23,7 @@
         font-size: 1.3rem;
     }
 }
+/* Desktop */
 @media(max-width: 1440px){
     .login,
     .register{
@@ -61,6 +64,7 @@
 @media(max-width: 1360px){
 
 }
+/* Tablet */
 @media(max-width: 1024px){
     .login,
     .register,
@@ -128,6 +132,7 @@
         }
     }
 }
+/* Mobile Large */
 @media(max-width: 768px){
     .login,
     .register{
@@ -167,6 +172,7 @@
         text-align:center;
     }
 }
+/* Mobile Medium */
 @media(max-width: 640px){
     .login,
     .register{
@@ -189,6 +195,7 @@
         }
     }
 }
+/* Mobile Small */
 @media(max-width: 576px){
     .login,
     .register,
@@ -231,6 +238,7 @@
         }
     }
 }
+/* Mobile Extra Small */
 @media(max-width: 481px){
     .login,
     .register{
@@ -259,6 +267,7 @@
         }
     }
 }
+/* Mobile Tiny */
 @media(max-width: 414px){
     .login,
     .register,
@@ -275,6 +284,7 @@
         }
     }
 }
+/* Mobile Micro */
 @media(max-width: 320px){
     .login,
     .register{

@@ -313,4 +313,114 @@ function getTooltipText(stepLabel) {
   margin-bottom: 2px;
   white-space: nowrap;
 }
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .custom-stepper {
+    width: 95%;
+    margin: 80px auto 24px auto;
+  }
+  
+  .step {
+    width: 60px;
+  }
+  
+  .step-circle {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+  
+  .step-label {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .custom-stepper {
+    width: 98%;
+    margin: 60px auto 20px auto;
+  }
+  
+  .stepper-bar-container {
+    height: 8px;
+    margin-bottom: 24px;
+  }
+  
+  .stepper-bar-bg,
+  .stepper-bar-progress {
+    height: 8px;
+  }
+  
+  .custom-stepper ul {
+    top: -20px;
+  }
+  
+  .step {
+    width: 50px;
+  }
+  
+  .step-circle {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+  }
+  
+  .step-label {
+    font-size: 1rem;
+    display: none; /* Ocultar labels en tablet */
+  }
+}
+
+@media (max-width: 480px) {
+  .custom-stepper {
+    margin: 40px auto 16px auto;
+  }
+  
+  .stepper-bar-container {
+    height: 6px;
+    margin-bottom: 20px;
+  }
+  
+  .stepper-bar-bg,
+  .stepper-bar-progress {
+    height: 6px;
+  }
+  
+  .custom-stepper ul {
+    top: -16px;
+  }
+  
+  .step {
+    width: 40px;
+  }
+  
+  .step-circle {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+  }
+  
+  .step-label {
+    display: none; /* Ocultar labels en móvil */
+  }
+}
+
+@media (max-width: 320px) {
+  .custom-stepper {
+    margin: 30px auto 12px auto;
+  }
+  
+  .step {
+    width: 35px;
+  }
+  
+  .step-circle {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+}
 </style>

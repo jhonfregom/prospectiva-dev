@@ -1,0 +1,885 @@
+/* Global Application Responsive Styles */
+
+/* Tablet */
+@media(max-width: 1024px) {
+    .main {
+        padding: 0 0.5rem;
+    }
+    
+    .application {
+        padding: 0 0.5rem;
+    }
+    
+    .section-content {
+        margin-top: 1rem;
+    }
+}
+
+/* Mobile Large */
+@media(max-width: 768px) {
+    .main {
+        padding: 0 0.25rem;
+    }
+    
+    .application {
+        padding: 0 0.25rem;
+    }
+    
+    .section-content {
+        margin-top: 0.5rem;
+    }
+    
+    /* Hide complex elements on mobile */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Make buttons full width on mobile */
+    .button {
+        width: 100%;
+        margin: 0.25rem 0;
+        font-size: 0.8rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    /* Adjust form elements */
+    .input, .textarea, .select {
+        width: 100%;
+        margin: 0.25rem 0;
+        font-size: 0.8rem !important;
+    }
+    
+    /* Reduce all text sizes more aggressively */
+    .title {
+        font-size: 1.5rem !important;
+    }
+    
+    .subtitle {
+        font-size: 1.1rem !important;
+    }
+    
+    .content {
+        font-size: 0.8rem !important;
+    }
+    
+    /* Specific component text reductions */
+    .intro-section h2 {
+        font-size: 1.2rem !important;
+    }
+    
+    .intro-section div {
+        font-size: 0.75rem !important;
+    }
+    
+    .description-banner {
+        font-size: 0.75rem !important;
+    }
+    
+    /* Table text more compact */
+    .table th,
+    .table td {
+        font-size: 0.7rem !important;
+        padding: 0.3rem 0.2rem !important;
+    }
+    
+    /* Form labels smaller */
+    .label {
+        font-size: 0.7rem !important;
+    }
+    
+    /* Button text smaller */
+    .button {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* Mobile Medium */
+@media(max-width: 640px) {
+    .main {
+        padding: 0 0.1rem;
+    }
+    
+    .application {
+        padding: 0 0.1rem;
+    }
+    
+    /* Reduce font sizes more aggressively */
+    .title {
+        font-size: 1.3rem !important;
+    }
+    
+    .subtitle {
+        font-size: 1rem !important;
+    }
+    
+    .content {
+        font-size: 0.7rem !important;
+    }
+    
+    /* Stack elements vertically */
+    .columns {
+        flex-direction: column;
+    }
+    
+    .column {
+        width: 100% !important;
+        margin: 0.25rem 0;
+    }
+    
+    /* Even smaller text for components */
+    .intro-section h2 {
+        font-size: 1rem !important;
+    }
+    
+    .intro-section div {
+        font-size: 0.7rem !important;
+    }
+    
+    .description-banner {
+        font-size: 0.7rem !important;
+    }
+    
+    /* Ultra compact table text */
+    .table th,
+    .table td {
+        font-size: 0.65rem !important;
+        padding: 0.2rem 0.1rem !important;
+    }
+    
+    /* Ultra compact buttons */
+    .button {
+        font-size: 0.7rem !important;
+        padding: 0.4rem 0.6rem !important;
+    }
+    
+    /* Ultra compact form elements */
+    .input, .textarea, .select {
+        font-size: 0.7rem !important;
+        padding: 0.4rem !important;
+    }
+    
+    .label {
+        font-size: 0.65rem !important;
+    }
+}
+
+/* Mobile Small */
+@media(max-width: 576px) {
+    .title {
+        font-size: 1.8rem !important;
+    }
+    
+    .subtitle {
+        font-size: 1.1rem !important;
+    }
+    
+    /* Compact spacing */
+    .section {
+        padding: 1rem 0.5rem;
+    }
+    
+    .box {
+        padding: 1rem;
+    }
+}
+
+/* Mobile Extra Small */
+@media(max-width: 481px) {
+    .title {
+        font-size: 1.6rem !important;
+    }
+    
+    .subtitle {
+        font-size: 1rem !important;
+    }
+    
+    /* Very compact spacing */
+    .section {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .box {
+        padding: 0.75rem;
+    }
+}
+
+/* Mobile Tiny */
+@media(max-width: 414px) {
+    .title {
+        font-size: 1.4rem !important;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Mobile Micro */
+@media(max-width: 320px) {
+    .title {
+        font-size: 1.2rem !important;
+    }
+    
+    .subtitle {
+        font-size: 0.8rem !important;
+    }
+    
+    /* Minimal spacing */
+    .section {
+        padding: 0.25rem 0.1rem;
+    }
+    
+    .box {
+        padding: 0.5rem;
+    }
+}
+
+/* Responsive Text Content for Vue Components */
+/* Tablet */
+@media(max-width: 1024px) {
+    .intro-section h2 {
+        font-size: 1.5rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    .intro-section div {
+        font-size: 0.9rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    .description-banner {
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Mobile Large */
+@media(max-width: 768px) {
+    .intro-section h2 {
+        font-size: 1.3rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    .intro-section div {
+        font-size: 0.8rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    .description-banner {
+        font-size: 0.8rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* Stepper labels */
+    .step-label {
+        font-size: 0.8rem !important;
+    }
+    
+    /* Table headers and content */
+    .table th,
+    .table td {
+        font-size: 0.75rem !important;
+    }
+    
+    /* Button text */
+    .button {
+        font-size: 0.8rem !important;
+    }
+    
+    /* Form elements */
+    .input,
+    .textarea,
+    .select {
+        font-size: 0.8rem !important;
+    }
+    
+    .label {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* Mobile Medium */
+@media(max-width: 640px) {
+    .intro-section h2 {
+        font-size: 1.1rem !important;
+        line-height: 1.1 !important;
+    }
+    
+    .intro-section div {
+        font-size: 0.75rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    .description-banner {
+        font-size: 0.75rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* Hide stepper labels on small screens */
+    .step-label {
+        display: none !important;
+    }
+    
+    /* Compact table text */
+    .table th,
+    .table td {
+        font-size: 0.7rem !important;
+        padding: 0.25rem 0.1rem !important;
+    }
+    
+    /* Compact buttons */
+    .button {
+        font-size: 0.75rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    /* Compact form elements */
+    .input,
+    .textarea,
+    .select {
+        font-size: 0.75rem !important;
+        padding: 0.5rem !important;
+    }
+    
+    .label {
+        font-size: 0.7rem !important;
+    }
+}
+
+/* Mobile Small */
+@media(max-width: 576px) {
+    .intro-section h2 {
+        font-size: 1rem !important;
+        line-height: 1.1 !important;
+    }
+    
+    .intro-section div {
+        font-size: 0.7rem !important;
+        line-height: 1.1 !important;
+    }
+    
+    .description-banner {
+        font-size: 0.7rem !important;
+        line-height: 1.1 !important;
+    }
+    
+    /* Very compact table text */
+    .table th,
+    .table td {
+        font-size: 0.65rem !important;
+        padding: 0.2rem 0.05rem !important;
+    }
+    
+    /* Very compact buttons */
+    .button {
+        font-size: 0.7rem !important;
+        padding: 0.4rem 0.6rem !important;
+    }
+    
+    /* Very compact form elements */
+    .input,
+    .textarea,
+    .select {
+        font-size: 0.7rem !important;
+        padding: 0.4rem !important;
+    }
+    
+    .label {
+        font-size: 0.65rem !important;
+    }
+}
+
+/* Mobile Extra Small */
+@media(max-width: 481px) {
+    .intro-section h2 {
+        font-size: 0.9rem !important;
+        line-height: 1.1 !important;
+    }
+    
+    .intro-section div {
+        font-size: 0.65rem !important;
+        line-height: 1.1 !important;
+    }
+    
+    .description-banner {
+        font-size: 0.65rem !important;
+        line-height: 1.1 !important;
+    }
+    
+    /* Ultra compact table text */
+    .table th,
+    .table td {
+        font-size: 0.6rem !important;
+        padding: 0.15rem 0.05rem !important;
+    }
+    
+    /* Ultra compact buttons */
+    .button {
+        font-size: 0.65rem !important;
+        padding: 0.3rem 0.5rem !important;
+    }
+    
+    /* Ultra compact form elements */
+    .input,
+    .textarea,
+    .select {
+        font-size: 0.65rem !important;
+        padding: 0.3rem !important;
+    }
+    
+    .label {
+        font-size: 0.6rem !important;
+    }
+}
+
+/* Mobile Tiny */
+@media(max-width: 414px) {
+    .intro-section h2 {
+        font-size: 0.8rem !important;
+    }
+    
+    .intro-section div {
+        font-size: 0.6rem !important;
+    }
+    
+    .description-banner {
+        font-size: 0.6rem !important;
+    }
+    
+    .table th,
+    .table td {
+        font-size: 0.55rem !important;
+    }
+    
+    .button {
+        font-size: 0.6rem !important;
+    }
+    
+    .input,
+    .textarea,
+    .select {
+        font-size: 0.6rem !important;
+    }
+    
+    .label {
+        font-size: 0.55rem !important;
+    }
+}
+
+/* Mobile Micro */
+@media(max-width: 320px) {
+    .intro-section h2 {
+        font-size: 0.7rem !important;
+    }
+    
+    .intro-section div {
+        font-size: 0.55rem !important;
+    }
+    
+    .description-banner {
+        font-size: 0.55rem !important;
+    }
+    
+    .table th,
+    .table td {
+        font-size: 0.5rem !important;
+    }
+    
+    .button {
+        font-size: 0.55rem !important;
+    }
+    
+    .input,
+    .textarea,
+    .select {
+        font-size: 0.55rem !important;
+    }
+    
+    .label {
+        font-size: 0.5rem !important;
+    }
+}
+
+/* Specific responsive styles for Direction Future tables */
+.direction-future-container {
+    @media (max-width: 768px) {
+        .variables-container {
+            padding: 8px;
+            overflow-x: auto;
+        }
+        
+        .b-table {
+            min-width: 700px;
+            font-size: 11px;
+        }
+        
+        .b-table th {
+            font-size: 10px;
+            padding: 4px 2px !important;
+        }
+        
+        .b-table td {
+            font-size: 10px;
+            padding: 4px 2px !important;
+            height: 60px !important;
+        }
+        
+        .textarea-container .b-input {
+            min-width: 100px !important;
+            max-width: 150px !important;
+            font-size: 10px;
+        }
+        
+        .word-counter {
+            font-size: 8px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .variables-container {
+            padding: 5px;
+        }
+        
+        .b-table {
+            min-width: 600px;
+            font-size: 9px;
+        }
+        
+        .b-table th {
+            font-size: 8px;
+            padding: 3px 1px !important;
+        }
+        
+        .b-table td {
+            font-size: 8px;
+            padding: 3px 1px !important;
+            height: 50px !important;
+        }
+        
+        .textarea-container .b-input {
+            min-width: 80px !important;
+            max-width: 120px !important;
+            font-size: 8px;
+        }
+        
+        .word-counter {
+            font-size: 7px;
+        }
+    }
+    
+    @media (max-width: 320px) {
+        .variables-container {
+            padding: 3px;
+        }
+        
+        .b-table {
+            min-width: 500px;
+            font-size: 8px;
+        }
+        
+        .b-table th {
+            font-size: 7px;
+            padding: 2px 1px !important;
+        }
+        
+        .b-table td {
+            font-size: 7px;
+            padding: 2px 1px !important;
+            height: 40px !important;
+        }
+        
+        .textarea-container .b-input {
+            min-width: 60px !important;
+            max-width: 100px !important;
+            font-size: 7px;
+        }
+        
+        .word-counter {
+            font-size: 6px;
+        }
+    }
+}
+
+/* Responsive styles for all graphics and charts */
+.graphics-container,
+.schwartz-chart-container,
+.analisis-mapa-variables-container {
+    @media (max-width: 1024px) {
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+            max-width: 700px;
+            max-height: 500px;
+        }
+        
+        .schwartz-matrix {
+            transform: scale(0.9);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        canvas {
+            max-width: 600px;
+            max-height: 400px;
+        }
+        
+        .schwartz-matrix {
+            transform: scale(0.8);
+        }
+        
+        .cell-title {
+            font-size: 0.8rem !important;
+        }
+        
+        .cell-content {
+            font-size: 0.7rem !important;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        canvas {
+            max-width: 500px;
+            max-height: 350px;
+        }
+        
+        .schwartz-matrix {
+            transform: scale(0.7);
+        }
+        
+        .cell-title {
+            font-size: 0.7rem !important;
+        }
+        
+        .cell-content {
+            font-size: 0.6rem !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        canvas {
+            max-width: 400px;
+            max-height: 300px;
+        }
+        
+        .schwartz-matrix {
+            transform: scale(0.6);
+        }
+        
+        .cell-title {
+            font-size: 0.6rem !important;
+        }
+        
+        .cell-content {
+            font-size: 0.5rem !important;
+        }
+    }
+    
+    @media (max-width: 320px) {
+        canvas {
+            max-width: 300px;
+            max-height: 250px;
+        }
+        
+        .schwartz-matrix {
+            transform: scale(0.5);
+        }
+        
+        .cell-title {
+            font-size: 0.5rem !important;
+        }
+        
+        .cell-content {
+            font-size: 0.4rem !important;
+        }
+    }
+}
+
+/* Responsive styles for Schwartz matrix */
+.schwartz-container {
+    @media (max-width: 1024px) {
+        .schwartz-matrix {
+            width: 90% !important;
+        }
+        
+        .cell-title {
+            font-size: 0.9rem !important;
+        }
+        
+        .cell-content {
+            font-size: 0.8rem !important;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .schwartz-matrix {
+            width: 95% !important;
+        }
+        
+        .cell-title {
+            font-size: 0.8rem !important;
+        }
+        
+        .cell-content {
+            font-size: 0.7rem !important;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .schwartz-matrix {
+            width: 100% !important;
+        }
+        
+        .cell-title {
+            font-size: 0.7rem !important;
+        }
+        
+        .cell-content {
+            font-size: 0.6rem !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .cell-title {
+            font-size: 0.6rem !important;
+        }
+        
+        .cell-content {
+            font-size: 0.5rem !important;
+        }
+    }
+    
+    @media (max-width: 320px) {
+        .cell-title {
+            font-size: 0.5rem !important;
+        }
+        
+        .cell-content {
+            font-size: 0.4rem !important;
+        }
+    }
+}
+
+/* Responsive styles for analysis variables table */
+.analisis-mapa-variables-container {
+    @media (max-width: 768px) {
+        .b-table {
+            font-size: 0.8rem !important;
+        }
+        
+        .b-table th {
+            font-size: 0.75rem !important;
+            padding: 0.3rem 0.2rem !important;
+        }
+        
+        .b-table td {
+            font-size: 0.75rem !important;
+            padding: 0.3rem 0.2rem !important;
+        }
+        
+        .b-tag {
+            font-size: 0.7rem !important;
+            padding: 0.2rem 0.4rem !important;
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .b-table {
+            font-size: 0.7rem !important;
+        }
+        
+        .b-table th {
+            font-size: 0.65rem !important;
+            padding: 0.2rem 0.1rem !important;
+        }
+        
+        .b-table td {
+            font-size: 0.65rem !important;
+            padding: 0.2rem 0.1rem !important;
+        }
+        
+        .b-tag {
+            font-size: 0.6rem !important;
+            padding: 0.15rem 0.3rem !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .b-table {
+            font-size: 0.6rem !important;
+        }
+        
+        .b-table th {
+            font-size: 0.55rem !important;
+            padding: 0.15rem 0.05rem !important;
+        }
+        
+        .b-table td {
+            font-size: 0.55rem !important;
+            padding: 0.15rem 0.05rem !important;
+        }
+        
+        .b-tag {
+            font-size: 0.5rem !important;
+            padding: 0.1rem 0.2rem !important;
+        }
+    }
+    
+    @media (max-width: 320px) {
+        .b-table {
+            font-size: 0.5rem !important;
+        }
+        
+        .b-table th {
+            font-size: 0.45rem !important;
+            padding: 0.1rem 0.02rem !important;
+        }
+        
+        .b-table td {
+            font-size: 0.45rem !important;
+            padding: 0.1rem 0.02rem !important;
+        }
+        
+        .b-tag {
+            font-size: 0.4rem !important;
+            padding: 0.05rem 0.1rem !important;
+        }
+    }
+}
+
+/* Responsive styles for modal graphics */
+.modal-card {
+    @media (max-width: 768px) {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        margin: 0 2.5vw !important;
+    }
+    
+    @media (max-width: 640px) {
+        width: 98vw !important;
+        max-width: 98vw !important;
+        margin: 0 1vw !important;
+    }
+}
+
+/* Responsive styles for PDF graphics containers */
+.pdf-graphic-container {
+    @media (max-width: 768px) {
+        width: 600px !important;
+        height: 450px !important;
+    }
+    
+    @media (max-width: 640px) {
+        width: 500px !important;
+        height: 375px !important;
+    }
+    
+    @media (max-width: 480px) {
+        width: 400px !important;
+        height: 300px !important;
+    }
+    
+    @media (max-width: 320px) {
+        width: 300px !important;
+        height: 225px !important;
+    }
+}

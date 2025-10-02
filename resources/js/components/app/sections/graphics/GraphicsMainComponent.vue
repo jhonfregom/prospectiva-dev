@@ -338,6 +338,11 @@ canvas {
     max-width: 600px;
     max-height: 420px;
   }
+  
+  /* Chart.js text scaling for tablet */
+  :deep(.chartjs-render-monitor) {
+    font-size: 0.9rem !important;
+  }
 }
 
 @media (max-width: 768px) {
@@ -357,6 +362,11 @@ canvas {
     height: 280px !important;
     max-width: 400px;
     max-height: 280px;
+  }
+  
+  /* Chart.js text scaling for mobile large */
+  :deep(.chartjs-render-monitor) {
+    font-size: 0.8rem !important;
   }
 }
 
@@ -379,6 +389,11 @@ canvas {
     max-width: 300px;
     max-height: 210px;
   }
+  
+  /* Chart.js text scaling for mobile medium */
+  :deep(.chartjs-render-monitor) {
+    font-size: 0.7rem !important;
+  }
 }
 
 @media (max-width: 320px) {
@@ -392,6 +407,11 @@ canvas {
     height: 175px !important;
     max-width: 250px;
     max-height: 175px;
+  }
+  
+  /* Chart.js text scaling for mobile micro */
+  :deep(.chartjs-render-monitor) {
+    font-size: 0.6rem !important;
   }
 }
 </style>

@@ -12,10 +12,43 @@
             border: 2px solid colors.$color-primary;
             border-radius: 15px;
             padding: 10px;
+            overflow-x: auto; /* Scroll horizontal en móviles */
 
             .b-table table th .sort-icon {
                 display: none;
                 font-size: 12px;
+            }
+            
+            /* Responsive table styles */
+            @media (max-width: 768px) {
+                padding: 5px;
+                border-radius: 10px;
+                
+                .table {
+                    min-width: 600px; /* Ancho mínimo para scroll horizontal */
+                    font-size: 0.9rem;
+                }
+                
+                .table th,
+                .table td {
+                    padding: 0.5rem 0.25rem;
+                    white-space: nowrap;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                padding: 3px;
+                border-radius: 8px;
+                
+                .table {
+                    min-width: 500px;
+                    font-size: 0.8rem;
+                }
+                
+                .table th,
+                .table td {
+                    padding: 0.25rem 0.1rem;
+                }
             }
         }
         .table {

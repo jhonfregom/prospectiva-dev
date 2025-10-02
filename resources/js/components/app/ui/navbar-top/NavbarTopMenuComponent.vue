@@ -1,7 +1,5 @@
 <template>
-    <nav id="navbar-main"
-        class="navbar"
-        >
+    <nav id="navbar-main" class="navbar">
         <div class="navbar-brand">
             <div class="navbar-item">
                 <!-- Bell notification -->
@@ -12,8 +10,21 @@
                     v-bind:dataParticipantsUser="dataParticipantsUser"
                     v-on:actionReloadGeneralData="reloadGeneralData" />
             </div>
+            
+            <!-- Mobile menu burger -->
+            <a role="button" 
+               class="navbar-burger" 
+               :class="{ 'is-active': isMenuOpen }"
+               @click="toggleMenu"
+               aria-label="menu" 
+               aria-expanded="false">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
         </div>
-        <div class="navbar-menu">
+        
+        <div class="navbar-menu" :class="{ 'is-active': isMenuOpen }">
             <div class="navbar-end">
                 <b-button
                     class="is-primary"
@@ -22,7 +33,6 @@
                     Cerrar Sesión
                 </b-button>
             </div>
-            <span class="icon"><i class="fas fa-bars"></i></span>
         </div>
     </nav>
 </template>
@@ -39,6 +49,11 @@
             const storeUrls = useUrlsStore();
             return { storeUrls };
         },
+        data() {
+            return {
+                isMenuOpen: false
+            };
+        },
         components: {
             navbarCompany,
             navbarNotification,
@@ -50,6 +65,9 @@
             },
         },
         methods: {
+            toggleMenu() {
+                this.isMenuOpen = !this.isMenuOpen;
+            },
             reloadGeneralData(accountData){
                 this.$emit("actionReloadGeneralData", accountData);
             },
@@ -72,5 +90,64 @@
     .notify-content{
         margin-top: 0.5rem;
         margin-right: 0.5rem;
+    }
+    
+    /* Responsive navbar styles */
+    .navbar {
+        @media (max-width: 768px) {
+            .navbar-brand {
+                width: 100%;
+                justify-content: space-between;
+                
+                .navbar-item {
+                    flex: 1;
+                    justify-content: flex-start;
+                }
+            }
+            
+            .navbar-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                display: none;
+                
+                &.is-active {
+                    display: block;
+                }
+                
+                .navbar-end {
+                    padding: 1rem;
+                    text-align: center;
+                    
+                    .button {
+                        width: 100%;
+                        margin: 0.5rem 0;
+                    }
+                }
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .navbar-brand {
+                .navbar-item {
+                    font-size: 0.9rem;
+                }
+            }
+            
+            .navbar-menu {
+                .navbar-end {
+                    padding: 0.5rem;
+                    
+                    .button {
+                        font-size: 0.9rem;
+                        padding: 0.75rem 1rem;
+                    }
+                }
+            }
+        }
     }
 </style>

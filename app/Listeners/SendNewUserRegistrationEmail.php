@@ -49,7 +49,11 @@ class SendNewUserRegistrationEmail
         
         // Generar el token UNA SOLA VEZ
         $activationToken = \Illuminate\Support\Str::random(64);
-        $activationUrl = 'http://localhost:8000/user-activation/' . $event->user->id . '/' . $activationToken;
+        // Construir URL usando las rutas de Laravel (respeta APP_URL del .env)
+        $activationUrl = route('user.activation.show', [
+            'userId' => $event->user->id,
+            'token' => $activationToken,
+        ]);
         
         // Guardar el token en el usuario
         $event->user->update([
@@ -63,9 +67,7 @@ class SendNewUserRegistrationEmail
         foreach ($admins as $admin) {
             try {
                 // Crear el correo con el token ya generado
-                $mail = new NewUserRegistrationMail($event->user);
-                $mail->activationToken = $activationToken;
-                $mail->activationUrl = $activationUrl;
+                $mail = new NewUserRegistrationMail($event->user, $activationToken, $activationUrl);
                 
                 Mail::to($admin->user)->send($mail);
                 
