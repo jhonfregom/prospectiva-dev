@@ -222,7 +222,7 @@ export default {
 .new-route-row {
     display: flex;
     justify-content: flex-end;
-    margin: 80px 0 0 0;
+    margin: 100px 0 0 0;
 }
 
 .new-route-row .button {

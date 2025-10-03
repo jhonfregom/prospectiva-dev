@@ -21,14 +21,14 @@
         <span class="step-circle">
           <i :class="['fas', step.icon]"></i>
         </span>
-        <span class="step-label">{{ step.label }}</span>
+        <span class="step-label" v-html="smartTextWrap(step.label)"></span>
       </li>
     </ul>
   </nav>
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted } from 'vue';
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
 import { useTraceabilityStore } from '../../../stores/traceability';
 import { useSessionStore } from '../../../stores/session';
 
@@ -37,6 +37,120 @@ const props = defineProps({
   modelValue: { type: Number, required: true }
 });
 const emit = defineEmits(['update:modelValue']);
+
+// Función para dividir texto inteligentemente
+function smartTextWrap(text) {
+  if (!text) return text;
+  
+  // Si el texto es corto, no dividir
+  if (text.length <= 8) return text;
+  
+  // Palabras que se pueden dividir en puntos específicos
+  const smartBreaks = {
+    'Variables': 'Variables',
+    'Matriz': 'Matriz', 
+    'Gráfica': 'Gráfica',
+    'Mapa': 'Mapa',
+    'Direccionador': 'Direcciona<br>dor',
+    'Schwartz': 'Schwartz',
+    'Condiciones': 'Condi<br>ciones',
+    'Escenarios': 'Escena<br>rios',
+    'Conclusiones': 'Conclu<br>siones',
+    'Resultados': 'Result<br>ados'
+  };
+  
+  // Si no está en la lista, intentar dividir inteligentemente
+  if (!smartBreaks[text]) {
+    // Para palabras largas, buscar el mejor punto de división
+    if (text.length > 10) {
+      const midPoint = Math.ceil(text.length / 2);
+      // Buscar un espacio o vocal cerca del punto medio para dividir
+      let breakPoint = midPoint;
+      for (let i = 0; i < 3; i++) {
+        const char = text[midPoint + i];
+        if (char === ' ' || char === 'a' || char === 'e' || char === 'i' || char === 'o' || char === 'u') {
+          breakPoint = midPoint + i;
+          break;
+        }
+        const charBefore = text[midPoint - i];
+        if (charBefore === ' ' || charBefore === 'a' || charBefore === 'e' || charBefore === 'i' || charBefore === 'o' || charBefore === 'u') {
+          breakPoint = midPoint - i;
+          break;
+        }
+      }
+      return text.substring(0, breakPoint) + '<br>' + text.substring(breakPoint);
+    }
+  }
+  
+  return smartBreaks[text] || text;
+}
+
+// Función para detectar si hay superposición y ajustar dinámicamente
+function detectOverlap() {
+  const steps = document.querySelectorAll('.step');
+  const container = document.querySelector('.custom-stepper');
+  
+  if (!container || steps.length === 0) return;
+  
+  const containerWidth = container.offsetWidth;
+  const stepWidth = containerWidth / steps.length;
+  const windowWidth = window.innerWidth;
+  
+  // Verificar si el texto se está cortando visualmente
+  let needsWrapping = false;
+  
+  steps.forEach(step => {
+    const label = step.querySelector('.step-label');
+    if (label) {
+      const text = label.textContent.replace(/<br>/g, '');
+      
+      // Crear un elemento temporal para medir el ancho real del texto
+      const tempElement = document.createElement('span');
+      tempElement.style.visibility = 'hidden';
+      tempElement.style.position = 'absolute';
+      tempElement.style.fontSize = getComputedStyle(label).fontSize;
+      tempElement.style.fontFamily = getComputedStyle(label).fontFamily;
+      tempElement.style.fontWeight = getComputedStyle(label).fontWeight;
+      tempElement.style.whiteSpace = 'nowrap';
+      tempElement.textContent = text;
+      document.body.appendChild(tempElement);
+      
+      const textWidth = tempElement.offsetWidth;
+      const availableWidth = stepWidth - 1; // Margen de seguridad más pequeño
+      
+      document.body.removeChild(tempElement);
+      
+      // Si el texto es más ancho que el espacio disponible, necesita wrapping
+      // Usar un umbral más conservador (98% del espacio disponible)
+      
+    }
+  });
+  
+  // Aplicar wrapping solo cuando sea realmente necesario
+  const shouldWrap = needsWrapping || (windowWidth < 1400 && stepWidth < 1000);
+  
+  if (shouldWrap) {
+    steps.forEach(step => {
+      const label = step.querySelector('.step-label');
+      if (label) {
+        const text = label.textContent.replace(/<br>/g, '');
+        // Solo aplicar wrapping si el texto es realmente largo
+        if (text.length > 8) {
+          label.innerHTML = smartTextWrap(text);
+        }
+      }
+    });
+  } else {
+    // Si hay suficiente espacio, restaurar el texto original
+    steps.forEach(step => {
+      const label = step.querySelector('.step-label');
+      if (label) {
+        const originalText = label.textContent.replace(/<br>/g, '');
+        label.innerHTML = originalText;
+      }
+    });
+  }
+}
 
 const traceabilityStore = useTraceabilityStore();
 const sessionStore = useSessionStore();
@@ -52,6 +166,17 @@ const lastStep = ref(getPersistedStep());
 const animating = ref(false);
 const isStoreInitialized = ref(false);
 
+// Debounce para evitar ejecutar detectOverlap demasiado frecuentemente
+let resizeTimeout = null;
+function debouncedDetectOverlap() {
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout);
+  }
+  resizeTimeout = setTimeout(() => {
+    detectOverlap();
+  }, 150);
+}
+
 onMounted(async () => {
   try {
     await traceabilityStore.initialize();
@@ -59,6 +184,27 @@ onMounted(async () => {
   } catch (error) {
     await traceabilityStore.loadAvailableSections();
     isStoreInitialized.value = true;
+  }
+  
+  // Detectar superposición después de que se monte el componente
+  setTimeout(() => {
+    detectOverlap();
+  }, 100);
+  
+  // Verificación adicional después de que se renderice completamente
+  setTimeout(() => {
+    detectOverlap();
+  }, 500);
+  
+  // Escuchar cambios de tamaño de ventana con debounce
+  window.addEventListener('resize', debouncedDetectOverlap);
+});
+
+onUnmounted(() => {
+  // Limpiar event listener y timeout
+  window.removeEventListener('resize', debouncedDetectOverlap);
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout);
   }
 });
 
@@ -195,9 +341,10 @@ function getTooltipText(stepLabel) {
 
 <style scoped>
 .custom-stepper {
-  width: 90%;
+  width: 95%;
   position: relative;
-  margin: 120px auto 32px auto;
+  margin: 60px auto 32px auto;
+  transform: translateX(-20px);
 }
 .stepper-bar-container {
   position: relative;
@@ -234,6 +381,7 @@ function getTooltipText(stepLabel) {
   margin: 0;
   list-style: none;
   pointer-events: none;
+  gap: 0;
 }
 .step {
   display: flex;
@@ -244,8 +392,10 @@ function getTooltipText(stepLabel) {
   pointer-events: auto;
   transition: color 0.2s;
   color: #b0b0b0;
-  width: 67.2px;
+  width: 80px;
   z-index: 3;
+  min-width: 0;
+  flex-shrink: 0;
 }
 .step.is-active {
   color: #005883;
@@ -273,15 +423,15 @@ function getTooltipText(stepLabel) {
   color: #9ca3af;
 }
 .step-circle {
-  width: 67.2px;
-  height: 67.2px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   background: #ffffff !important;
   background-color: #ffffff !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.38rem;
+  font-size: 2.6rem;
   margin-bottom: 8px;
   box-shadow: 0 2px 8px rgba(50,115,220,0.08);
   border: 2px solid transparent;
@@ -311,14 +461,130 @@ function getTooltipText(stepLabel) {
   font-weight: 500;
   text-align: center;
   margin-bottom: 2px;
-  white-space: nowrap;
+  white-space: normal;
+  word-wrap: break-word;
+  hyphens: auto;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+  min-height: 2.2em;
 }
 
-/* Responsive Design */
+/* Ultra Large Desktop - Full width for large screens */
+@media (min-width: 1920px) {
+  .custom-stepper {
+    width: 95%;
+    margin: 60px auto 32px auto;
+  }
+  
+  .step {
+    width: 80px;
+  }
+  
+  .step-circle {
+    width: 80px;
+    height: 80px;
+    font-size: 2.6rem;
+  }
+  
+  .step-label {
+    font-size: 1.5rem;
+    line-height: 1.3;
+    max-width: 90px;
+    white-space: normal;
+    word-wrap: break-word;
+    hyphens: auto;
+  }
+}
+
+/* Large Desktop - Better spacing */
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .custom-stepper {
+    width: 92%;
+    margin: 50px auto 30px auto;
+  }
+  
+  .step {
+    width: 75px;
+  }
+  
+  .step-circle {
+    width: 75px;
+    height: 75px;
+    font-size: 2.4rem;
+  }
+  
+  .step-label {
+    font-size: 1.4rem;
+    line-height: 1.2;
+    max-width: 85px;
+    white-space: normal;
+    word-wrap: break-word;
+    hyphens: auto;
+  }
+}
+
+/* Desktop Large - Prevent text overlap */
+@media (min-width: 1200px) and (max-width: 1439px) {
+  .custom-stepper {
+    width: 90%;
+    margin: 40px auto 28px auto;
+  }
+  
+  .step {
+    width: 70px;
+  }
+  
+  .step-circle {
+    width: 70px;
+    height: 70px;
+    font-size: 2.2rem;
+  }
+  
+  .step-label {
+    font-size: 1.3rem;
+    line-height: 1.2;
+    max-width: 80px;
+    white-space: normal;
+    word-wrap: break-word;
+    hyphens: auto;
+  }
+}
+
+/* Desktop Medium - Further reduce to prevent overlap */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .custom-stepper {
+    width: 88%;
+    margin: 30px auto 26px auto;
+  }
+  
+  .step {
+    width: 65px;
+  }
+  
+  .step-circle {
+    width: 65px;
+    height: 65px;
+    font-size: 2rem;
+  }
+  
+  .step-label {
+    font-size: 1.2rem;
+    line-height: 1.1;
+    max-width: 75px;
+    white-space: normal;
+    word-wrap: break-word;
+    hyphens: auto;
+  }
+}
+
+/* Tablet */
 @media (max-width: 1024px) {
   .custom-stepper {
     width: 95%;
-    margin: 80px auto 24px auto;
+    margin: 25px auto 24px auto;
   }
   
   .step {
@@ -333,13 +599,17 @@ function getTooltipText(stepLabel) {
   
   .step-label {
     font-size: 1.2rem;
+    line-height: 1.2;
+    max-width: 65px;
+    word-wrap: break-word;
+    hyphens: auto;
   }
 }
 
 @media (max-width: 768px) {
   .custom-stepper {
     width: 98%;
-    margin: 60px auto 20px auto;
+    margin: 20px auto 20px auto;
   }
   
   .stepper-bar-container {
@@ -375,7 +645,7 @@ function getTooltipText(stepLabel) {
 
 @media (max-width: 480px) {
   .custom-stepper {
-    margin: 40px auto 16px auto;
+    margin: 15px auto 16px auto;
   }
   
   .stepper-bar-container {
@@ -410,7 +680,7 @@ function getTooltipText(stepLabel) {
 
 @media (max-width: 320px) {
   .custom-stepper {
-    margin: 30px auto 12px auto;
+    margin: 10px auto 12px auto;
   }
   
   .step {

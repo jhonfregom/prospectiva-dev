@@ -495,11 +495,11 @@
       @click="confirmarCerrar"
       :disabled="cerrado"
     >Cerrar</button>
-    <button
-      class="cerrar-btn"
-      v-else-if="state !== null && state === '0'"
-      @click="mostrarModalRegresar = true"
-    >Regresar</button>
+      <button
+        class="cerrar-btn"
+        v-else-if="state !== null && state === '0'"
+        @click="confirmarRegresar"
+      >Regresar</button>
   </div>
   <!-- Modal de confirmación -->
   <div v-if="mostrarModal" class="modal-confirm">
@@ -537,6 +537,7 @@ export default {
 
         const cerrado = ref(false);
         const mostrarModal = ref(false);
+        const mostrarModalRegresar = ref(false);
         const state = ref(null); 
 
         const MAX_CHARACTERS = 255;
@@ -809,6 +810,123 @@ export default {
             }
         };
 
+        const loadTriedValue = async () => {
+            try {
+                const response = await axios.get('/traceability/current-route-state');
+                if (response.data && response.data.success && response.data.state !== undefined) {
+                    state.value = response.data.state;
+                    console.log('Estado cargado en Escenarios:', state.value);
+                }
+            } catch (error) {
+                console.error('Error al cargar state:', error);
+            }
+        };
+
+        const incrementTried = async () => {
+            try {
+                await axios.put('/traceability/current-route-state', { state: '1' });
+                state.value = '1';
+            } catch (error) {
+                console.error('Error al actualizar state:', error);
+            }
+        };
+
+        // Cargar el estado al montar el componente
+        onMounted(async () => {
+            await loadTriedValue();
+        });
+
+        const confirmarCerrar = () => {
+            mostrarModal.value = true;
+        };
+
+        const confirmarRegresar = () => {
+            mostrarModalRegresar.value = true;
+        };
+
+        const cerrarModulo = async () => {
+            mostrarModal.value = false;
+            
+            const result = await store.closeAllScenarios();
+            if (result.success) {
+                
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'scenarios' }));
+                
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const cerradoKey = 'scenarios_cerrado_' + (user.id || 'anon');
+                localStorage.setItem(cerradoKey, 'true');
+                
+                // Mostrar toast de éxito
+                if (typeof window !== 'undefined' && window.$buefy) {
+                    window.$buefy.toast.open({
+                        message: 'Módulo de escenarios estratégicos cerrado correctamente',
+                        type: 'is-success'
+                    });
+                }
+                
+                sessionStore.setActiveContent('main');
+                
+                setTimeout(async () => {
+                    const { useTraceabilityStore } = await import('../../../../stores/traceability');
+                    const traceabilityStore = useTraceabilityStore();
+                    await traceabilityStore.markSectionCompleted('scenarios');
+                }, 1000);
+                
+                cerrado.value = true;
+            } else {
+                // Mostrar toast de error
+                if (typeof window !== 'undefined' && window.$buefy) {
+                    window.$buefy.toast.open({
+                        message: 'Error al cerrar el módulo de escenarios estratégicos',
+                        type: 'is-danger'
+                    });
+                }
+            }
+        };
+
+        const regresarModulo = async () => {
+            mostrarModalRegresar.value = false;
+            try {
+                
+                await incrementTried();
+                
+                await loadTriedValue();
+                
+                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'scenarios' }));
+                
+                const user = JSON.parse(localStorage.getItem('user')) || {};
+                const posteriores = [
+                  'conclusions', 'results' 
+                ];
+                posteriores.forEach(mod => {
+                  const cerradoKey = mod + '_cerrado_' + (user.id || 'anon');
+                  localStorage.removeItem(cerradoKey);
+                });
+                
+                sessionStore.setActiveContent('main');
+                
+                const cerradoKey = 'scenarios_cerrado_' + (user.id || 'anon');
+                localStorage.removeItem(cerradoKey);
+                cerrado.value = false;
+                
+                // Mostrar toast de éxito
+                if (typeof window !== 'undefined' && window.$buefy) {
+                    window.$buefy.toast.open({
+                        message: 'Módulo de escenarios estratégicos reabierto correctamente',
+                        type: 'is-success'
+                    });
+                }
+            } catch (error) {
+                // Mostrar toast de error
+                if (typeof window !== 'undefined' && window.$buefy) {
+                    window.$buefy.toast.open({
+                        message: 'Error al regresar el módulo de escenarios estratégicos',
+                        type: 'is-danger'
+                    });
+                }
+            }
+        };
+
         return {
             store,
             textsStore,
@@ -816,6 +934,11 @@ export default {
             sessionStore,
             cerrado,
             mostrarModal,
+            mostrarModalRegresar,
+            confirmarCerrar,
+            cerrarModulo,
+            confirmarRegresar,
+            regresarModulo,
             state,
             handleTextInput,
             handleTextPaste,
@@ -864,80 +987,6 @@ export default {
             updateScenarioInServer,
             MAX_CHARACTERS
         };
-    },
-
-    methods: {
-        confirmarCerrar() {
-            this.mostrarModal = true;
-        },
-
-        async cerrarModulo() {
-            this.mostrarModal = false;
-            
-            const result = await this.store.closeAllScenarios();
-            if (result.success) {
-                
-                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'cerrar', modulo: 'scenarios' }));
-                
-                const user = JSON.parse(localStorage.getItem('user')) || {};
-                const cerradoKey = 'scenarios_cerrado_' + (user.id || 'anon');
-                localStorage.setItem(cerradoKey, 'true');
-                this.$buefy.toast.open({
-                    message: 'Módulo de escenarios estratégicos cerrado correctamente',
-                    type: 'is-success'
-                });
-                this.sessionStore.setActiveContent('main');
-                
-                setTimeout(async () => {
-                    const { useTraceabilityStore } = await import('../../../../stores/traceability');
-                    const traceabilityStore = useTraceabilityStore();
-                    await traceabilityStore.markSectionCompleted('scenarios');
-                }, 1000);
-                
-                this.cerrado = true;
-            } else {
-                this.$buefy.toast.open({
-                    message: 'Error al cerrar el módulo de escenarios estratégicos',
-                    type: 'is-danger'
-                });
-            }
-        },
-
-        async regresarModulo() {
-            this.mostrarModalRegresar = false;
-            try {
-                
-                await this.incrementState();
-                
-                await this.loadStateValue();
-                
-                localStorage.setItem('accion_pendiente', JSON.stringify({ tipo: 'regresar', modulo: 'scenarios' }));
-                
-                const user = JSON.parse(localStorage.getItem('user')) || {};
-                const posteriores = [
-                  'conclusions', 'results' 
-                ];
-                posteriores.forEach(mod => {
-                  const cerradoKey = mod + '_cerrado_' + (user.id || 'anon');
-                  localStorage.removeItem(cerradoKey);
-                });
-                
-                this.sessionStore.setActiveContent('main');
-                
-                const cerradoKey = 'scenarios_cerrado_' + (user.id || 'anon');
-                localStorage.removeItem(cerradoKey);
-                this.cerrado = false;
-                this.$buefy.toast.open({
-                    message: 'Módulo de escenarios estratégicos reabierto correctamente',
-                    type: 'is-success'
-                });
-            } catch (error) {
-                this.$buefy.toast.open({
-                    message: 'Error al regresar el módulo de escenarios estratégicos',
-                    type: 'is-danger'
-                });
-            }
-        }
     }
 };
 </script>

@@ -107,11 +107,15 @@
         margin-top: 15px;
         padding-left: 1.9rem;
         padding-right: 1.9rem;
+        padding-top: 0.4rem;
+        padding-bottom: 0.4rem;
 
         .header{
             width: 100%;
             .title-group{
                 color: white;
+                font-size: 1.1rem;
+                font-weight: bold;
             }
         }
 

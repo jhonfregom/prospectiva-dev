@@ -29,7 +29,28 @@ export default {
     margin: { type: Number, default: 40 },
     offset: { type: Number, default: 150 }, 
     hypoOffset: { type: Number, default: 210 }, 
-    axisLength: { type: Number, default: 100 } 
+    axisLength: { type: Number, default: 100 },
+    axisLengthX: { type: Number, default: 100 },  // Longitud flecha horizontal
+    axisLengthY: { type: Number, default: 100 },  // Longitud flecha vertical
+    centerOffsetX: { type: Number, default: 0 },  // Mover centro horizontalmente
+    centerOffsetY: { type: Number, default: 0 },  // Mover centro verticalmente
+    // PARÁMETROS INDIVIDUALES DE CADA CAJA
+    hypo1PlusX: { type: Number, default: 0 },
+    hypo1PlusY: { type: Number, default: -80 },
+    hypo1MinusX: { type: Number, default: 0 },
+    hypo1MinusY: { type: Number, default: 80 },
+    hypo2MinusX: { type: Number, default: -80 },
+    hypo2MinusY: { type: Number, default: 0 },
+    hypo2PlusX: { type: Number, default: 80 },
+    hypo2PlusY: { type: Number, default: 0 },
+    escenario1X: { type: Number, default: 150 },
+    escenario1Y: { type: Number, default: -150 },
+    escenario2X: { type: Number, default: 150 },
+    escenario2Y: { type: Number, default: 150 },
+    escenario3X: { type: Number, default: -150 },
+    escenario3Y: { type: Number, default: 150 },
+    escenario4X: { type: Number, default: -150 },
+    escenario4Y: { type: Number, default: -150 } 
   },
   setup(props) {
     const schwartzCanvas = ref(null);
@@ -42,8 +63,8 @@ export default {
 
       const W = props.width;
       const H = props.height;
-      const centerX = W / 2;
-      const centerY = H / 2;
+      const centerX = W / 2 + props.centerOffsetX;
+      const centerY = H / 2 + props.centerOffsetY;
       const boxW = props.boxWidth;
       const boxH = props.boxHeight;
       const scenBoxW = props.scenarioBoxWidth;
@@ -88,24 +109,24 @@ export default {
       const axisOffsetLeft = 20;   
       const axisOffsetRight = -20;  
 
-      const gradientY = ctx.createLinearGradient(centerX - 2, centerY - props.axisLength, centerX + 2, centerY + props.axisLength);
+      const gradientY = ctx.createLinearGradient(centerX - 2, centerY - props.axisLengthY, centerX + 2, centerY + props.axisLengthY);
       gradientY.addColorStop(0, axisColor);
       gradientY.addColorStop(1, '#FCA5A5');
       ctx.strokeStyle = gradientY;
       
       ctx.beginPath();
-      ctx.moveTo(centerX, centerY - props.axisLength + axisOffsetTop);
-      ctx.lineTo(centerX, centerY + props.axisLength + axisOffsetBottom);
+      ctx.moveTo(centerX, centerY - props.axisLengthY + axisOffsetTop);
+      ctx.lineTo(centerX, centerY + props.axisLengthY + axisOffsetBottom);
       ctx.stroke();
 
-      const gradientX = ctx.createLinearGradient(centerX - props.axisLength, centerY - 2, centerX + props.axisLength, centerY + 2);
+      const gradientX = ctx.createLinearGradient(centerX - props.axisLengthX, centerY - 2, centerX + props.axisLengthX, centerY + 2);
       gradientX.addColorStop(0, axisColor);
       gradientX.addColorStop(1, '#FCA5A5');
       ctx.strokeStyle = gradientX;
       
       ctx.beginPath();
-      ctx.moveTo(centerX - props.axisLength + axisOffsetLeft, centerY);
-      ctx.lineTo(centerX + props.axisLength + axisOffsetRight, centerY);
+      ctx.moveTo(centerX - props.axisLengthX + axisOffsetLeft, centerY);
+      ctx.lineTo(centerX + props.axisLengthX + axisOffsetRight, centerY);
       ctx.stroke();
 
       ctx.shadowColor = 'transparent';
@@ -115,30 +136,30 @@ export default {
 
       ctx.fillStyle = axisColor;
       ctx.beginPath();
-      ctx.moveTo(centerX, centerY - props.axisLength + axisOffsetTop - arrowOutTop);
-      ctx.lineTo(centerX - arrowWidth, centerY - props.axisLength + axisOffsetTop + arrowLength);
-      ctx.lineTo(centerX + arrowWidth, centerY - props.axisLength + axisOffsetTop + arrowLength);
+      ctx.moveTo(centerX, centerY - props.axisLengthY + axisOffsetTop - arrowOutTop);
+      ctx.lineTo(centerX - arrowWidth, centerY - props.axisLengthY + axisOffsetTop + arrowLength);
+      ctx.lineTo(centerX + arrowWidth, centerY - props.axisLengthY + axisOffsetTop + arrowLength);
       ctx.closePath();
       ctx.fill();
 
       ctx.beginPath();
-      ctx.moveTo(centerX, centerY + props.axisLength + axisOffsetBottom + arrowOutBottom);
-      ctx.lineTo(centerX - arrowWidth, centerY + props.axisLength + axisOffsetBottom - arrowLength);
-      ctx.lineTo(centerX + arrowWidth, centerY + props.axisLength + axisOffsetBottom - arrowLength);
+      ctx.moveTo(centerX, centerY + props.axisLengthY + axisOffsetBottom + arrowOutBottom);
+      ctx.lineTo(centerX - arrowWidth, centerY + props.axisLengthY + axisOffsetBottom - arrowLength);
+      ctx.lineTo(centerX + arrowWidth, centerY + props.axisLengthY + axisOffsetBottom - arrowLength);
       ctx.closePath();
       ctx.fill();
 
       ctx.beginPath();
-      ctx.moveTo(centerX - props.axisLength + axisOffsetLeft - arrowOutLeft, centerY);
-      ctx.lineTo(centerX - props.axisLength + axisOffsetLeft + arrowLength, centerY - arrowWidth);
-      ctx.lineTo(centerX - props.axisLength + axisOffsetLeft + arrowLength, centerY + arrowWidth);
+      ctx.moveTo(centerX - props.axisLengthX + axisOffsetLeft - arrowOutLeft, centerY);
+      ctx.lineTo(centerX - props.axisLengthX + axisOffsetLeft + arrowLength, centerY - arrowWidth);
+      ctx.lineTo(centerX - props.axisLengthX + axisOffsetLeft + arrowLength, centerY + arrowWidth);
       ctx.closePath();
       ctx.fill();
 
       ctx.beginPath();
-      ctx.moveTo(centerX + props.axisLength + axisOffsetRight + arrowOutRight, centerY);
-      ctx.lineTo(centerX + props.axisLength + axisOffsetRight - arrowLength, centerY - arrowWidth);
-      ctx.lineTo(centerX + props.axisLength + axisOffsetRight - arrowLength, centerY + arrowWidth);
+      ctx.moveTo(centerX + props.axisLengthX + axisOffsetRight + arrowOutRight, centerY);
+      ctx.lineTo(centerX + props.axisLengthX + axisOffsetRight - arrowLength, centerY - arrowWidth);
+      ctx.lineTo(centerX + props.axisLengthX + axisOffsetRight - arrowLength, centerY + arrowWidth);
       ctx.closePath();
       ctx.fill();
       
@@ -152,13 +173,17 @@ export default {
       ctx.strokeStyle = '#000'; 
       ctx.lineWidth = 2;
       
-      drawBox(centerX - boxW/2, margin, boxW, boxH, 'HIPÓTESIS 1+', getHypothesisText('H1', 'H1') || 'Ejemplo H1+');
+      // HIPÓTESIS 1+ - AJUSTAR POSICIÓN INDIVIDUAL (altura automática)
+      drawBox(centerX + props.hypo1PlusX - boxW/2, centerY + props.hypo1PlusY, boxW, 0, 'HIPÓTESIS 1+', getHypothesisText('H1', 'H1') || 'Ejemplo H1+');
       
-      drawBox(centerX - boxW/2, H - margin - boxH, boxW, boxH, 'HIPÓTESIS 1-', getHypothesisText('H1', 'H0') || 'Ejemplo H1-');
+      // HIPÓTESIS 1- - AJUSTAR POSICIÓN INDIVIDUAL (altura automática)
+      drawBox(centerX + props.hypo1MinusX - boxW/2, centerY + props.hypo1MinusY, boxW, 0, 'HIPÓTESIS 1-', getHypothesisText('H1', 'H0') || 'Ejemplo H1-');
       
-      drawBox(margin, centerY - boxH/2, boxW, boxH, 'HIPÓTESIS 2-', getHypothesisText('H2', 'H0') || 'Ejemplo H2-');
+      // HIPÓTESIS 2- - AJUSTAR POSICIÓN INDIVIDUAL (altura automática)
+      drawBox(centerX + props.hypo2MinusX, centerY + props.hypo2MinusY, boxW, 0, 'HIPÓTESIS 2-', getHypothesisText('H2', 'H0') || 'Ejemplo H2-');
       
-      drawBox(W - margin - boxW, centerY - boxH/2, boxW, boxH, 'HIPÓTESIS 2+', getHypothesisText('H2', 'H1') || 'Ejemplo H2+');
+      // HIPÓTESIS 2+ - AJUSTAR POSICIÓN INDIVIDUAL (altura automática)
+      drawBox(centerX + props.hypo2PlusX, centerY + props.hypo2PlusY, boxW, 0, 'HIPÓTESIS 2+', getHypothesisText('H2', 'H1') || 'Ejemplo H2+');
       ctx.restore();
 
       ctx.save();
@@ -169,25 +194,37 @@ export default {
       ctx.strokeStyle = '#000'; 
       ctx.lineWidth = 2;
       
-      drawBox(centerX + offset - scenBoxW/2, centerY - offset - scenBoxH/2, scenBoxW, scenBoxH, 'ESCENARIO 1', getScenarioText(0) || 'Ejemplo Escenario 1');
+      // ESCENARIO 1 - AJUSTAR POSICIÓN INDIVIDUAL (altura automática)
+      drawBox(centerX + props.escenario1X - scenBoxW/2, centerY + props.escenario1Y, scenBoxW, 0, 'ESCENARIO 1', getScenarioText(0) || 'Ejemplo Escenario 1');
       
-      drawBox(centerX + offset - scenBoxW/2, centerY + offset - scenBoxH/2, scenBoxW, scenBoxH, 'ESCENARIO 2', getScenarioText(1) || 'Ejemplo Escenario 2');
+      // ESCENARIO 2 - AJUSTAR POSICIÓN INDIVIDUAL (altura automática)
+      drawBox(centerX + props.escenario2X - scenBoxW/2, centerY + props.escenario2Y, scenBoxW, 0, 'ESCENARIO 2', getScenarioText(1) || 'Ejemplo Escenario 2');
       
-      drawBox(centerX - offset - scenBoxW/2, centerY + offset - scenBoxH/2, scenBoxW, scenBoxH, 'ESCENARIO 3', getScenarioText(2) || 'Ejemplo Escenario 3');
+      // ESCENARIO 3 - AJUSTAR POSICIÓN INDIVIDUAL (altura automática)
+      drawBox(centerX + props.escenario3X - scenBoxW/2, centerY + props.escenario3Y, scenBoxW, 0, 'ESCENARIO 3', getScenarioText(2) || 'Ejemplo Escenario 3');
       
-      drawBox(centerX - offset - scenBoxW/2, centerY - offset - scenBoxH/2, scenBoxW, scenBoxH, 'ESCENARIO 4', getScenarioText(3) || 'Ejemplo Escenario 4');
+      // ESCENARIO 4 - AJUSTAR POSICIÓN INDIVIDUAL (altura automática)
+      drawBox(centerX + props.escenario4X - scenBoxW/2, centerY + props.escenario4Y, scenBoxW, 0, 'ESCENARIO 4', getScenarioText(3) || 'Ejemplo Escenario 4');
       ctx.restore();
 
       function drawBox(x, y, w, h, title, text) {
         ctx.save();
 
-        const textLines = calculateTextLines(text, w - 20);
-        const titleHeight = 30;
-        const textHeight = textLines.length * 18;
-        const padding = 20;
+        // Calcular el ancho disponible para el texto
+        const textWidth = w - 40; // Más padding para el texto
+        const textLines = calculateTextLines(text, textWidth);
+        const titleHeight = 20; // Espacio mínimo para el título
+        const lineHeight = 12; // Altura de línea compacta
+        const textHeight = textLines.length * lineHeight;
+        const padding = 5; // Padding mínimo
         const newHeight = titleHeight + textHeight + padding;
 
-        const actualHeight = Math.max(h, newHeight);
+        // Si h = 0, usar solo altura calculada dinámicamente
+        // Si h > 0, usar la mayor entre h y newHeight
+        const actualHeight = h === 0 ? newHeight : Math.max(h, newHeight);
+        
+        // Debug: mostrar información de altura
+        console.log(`Caja ${title}: h=${h}, newHeight=${newHeight}, actualHeight=${actualHeight}, textLines=${textLines.length}`);
         const radius = 8; 
 
         ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
@@ -219,7 +256,7 @@ export default {
         ctx.fillStyle = textColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
-        wrapText(ctx, text, x + w/2, y + titleHeight + 10, w - 20, 18);
+        wrapText(ctx, text, x + w/2, y + titleHeight + 3, textWidth, lineHeight);
         
         ctx.restore();
       }
@@ -240,6 +277,11 @@ export default {
 
       function calculateTextLines(text, maxWidth) {
         if (!text) return [];
+        
+        // Asegurar que la fuente esté configurada
+        ctx.font = font;
+        
+        // Dividir el texto en palabras
         const words = text.split(' ');
         let lines = [];
         let currentLine = '';
@@ -247,6 +289,7 @@ export default {
         for (let word of words) {
           const testLine = currentLine + word + ' ';
           const metrics = ctx.measureText(testLine);
+          
           if (metrics.width > maxWidth && currentLine !== '') {
             lines.push(currentLine.trim());
             currentLine = word + ' ';
@@ -254,9 +297,14 @@ export default {
             currentLine = testLine;
           }
         }
+        
         if (currentLine.trim()) {
           lines.push(currentLine.trim());
         }
+        
+        // Mostrar todo el texto sin limitaciones
+        // Las cajas crecerán automáticamente para contener todo el contenido
+        
         return lines;
       }
 
@@ -273,6 +321,8 @@ export default {
       function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
         if (!text) return;
         const lines = calculateTextLines(text, maxWidth);
+        
+        // Mostrar todas las líneas sin limitaciones
         for (let i = 0; i < lines.length; i++) {
           ctx.fillText(lines[i], x, y + i * lineHeight);
         }

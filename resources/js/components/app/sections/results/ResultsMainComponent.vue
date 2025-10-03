@@ -1858,24 +1858,47 @@ export default {
             tempDivSchwartz.style.position = 'fixed';
             tempDivSchwartz.style.left = '-9999px';
             tempDivSchwartz.style.top = '0';
-            tempDivSchwartz.style.width = '900px';
-            tempDivSchwartz.style.height = '700px';
+            tempDivSchwartz.style.width = '1600px';
+            tempDivSchwartz.style.height = '1400px';
             document.body.appendChild(tempDivSchwartz);
             const appSchwartz = createApp(SchwartzPDFEditableCanvas, {
               scenarios: usuario.scenarios || [],
               hypotheses: convertFutureDriversToPDFFormat(usuario.future_drivers || []),
-              width: 900,
-              height: 700,
-              boxWidth: 210,
-              boxHeight: 90,
-              scenarioBoxWidth: 210,
-              scenarioBoxHeight: 90,
-              font: '14px Arial',
-              titleFont: 'bold 16px Arial',
-              offset: 150,
-              hypoOffset: 300,
-              axisLength: 230,
-              margin: 30
+              width: 1600,
+              height: 1000,
+              boxWidth: 280,
+              boxHeight: 180,
+              scenarioBoxWidth: 280,
+              scenarioBoxHeight: 180,
+              font: '12px Arial',
+              titleFont: 'bold 11px Arial',
+              offset: 320,
+              hypoOffset: 200,
+              axisLength: 200,
+              axisLengthX: 320,  // Longitud de la flecha horizontal
+              axisLengthY: 250,  // Longitud de la flecha vertical
+              centerOffsetX: 0,   // Mover centro horizontalmente
+              centerOffsetY: 0,   // Mover centro verticalmente
+              margin: 100,
+              // CONFIGURACIÓN INDIVIDUAL DE CADA CAJA
+              // HIPÓTESIS
+              hypo1PlusX: 0,      // Ajuste horizontal HIPÓTESIS 1+
+              hypo1PlusY: -430,    // Ajuste vertical HIPÓTESIS 1+
+              hypo1MinusX: 0,     // Ajuste horizontal HIPÓTESIS 1-
+              hypo1MinusY: 250,    // Ajuste vertical HIPÓTESIS 1-
+              hypo2MinusX: -580,   // Ajuste horizontal HIPÓTESIS 2-
+              hypo2MinusY: -100,     // Ajuste vertical HIPÓTESIS 2-
+              hypo2PlusX: 300,     // Ajuste horizontal HIPÓTESIS 2+
+              hypo2PlusY: -100,      // Ajuste vertical HIPÓTESIS 2+
+              // ESCENARIOS
+              escenario1X: 150,   // Ajuste horizontal ESCENARIO 1
+              escenario1Y: -150,  // Ajuste vertical ESCENARIO 1
+              escenario2X: 150,   // Ajuste horizontal ESCENARIO 2
+              escenario2Y: 50,   // Ajuste vertical ESCENARIO 2
+              escenario3X: -150,  // Ajuste horizontal ESCENARIO 3
+              escenario3Y: 50,   // Ajuste vertical ESCENARIO 3
+              escenario4X: -150,  // Ajuste horizontal ESCENARIO 4
+              escenario4Y: -150   // Ajuste vertical ESCENARIO 4
             });
             appSchwartz.mount(tempDivSchwartz);
             await nextTick();
@@ -1889,9 +1912,9 @@ export default {
               doc.text(titleText, margin, y);
               y += 25; 
 
-              const originalWidth = 560;
-              const originalHeight = 420;
-              const scaleFactor = 0.7; 
+              const originalWidth = 1600;
+              const originalHeight = 1000;
+              const scaleFactor = 0.5; 
               const finalWidth = originalWidth * scaleFactor;
               const finalHeight = originalHeight * scaleFactor;
 
