@@ -39,7 +39,7 @@ class NewUserRegistrationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Nuevo Usuario Registrado - Prospectiva',
+            subject: 'Nuevo Usuario Registrado - Foresight tool',
         );
     }
 

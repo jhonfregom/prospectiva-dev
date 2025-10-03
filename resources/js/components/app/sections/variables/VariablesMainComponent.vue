@@ -1,5 +1,6 @@
 <template>
-    <div class="variables-container">
+    <div class="variables-wrapper">
+        <div class="variables-container">
         <!-- Letrero informativo -->
         <info-banner-component
             :description="textsStore.getText('variables_section.description')"
@@ -15,7 +16,7 @@
                 :hoverable="true"
                 default-sort="id"
                 default-sort-direction="asc"
-                :sort-icon="false"
+                :sort-icon="'fas fa-sort'"
                 icon-pack="fas">
 
             <b-table-column field="id" :label="textsStore.getText('variables_section.table.variable')" v-slot="props" width="100" centered>
@@ -61,7 +62,7 @@
                         v-if="isAdmin"
                         type="is-danger"
                         size="is-small"
-                        icon-left="delete"
+                        icon-left="fas fa-trash"
                         @click="confirmDelete(props.row)"
                         outlined>
                         {{ textsStore.getText('variables_section.table.delete') }}
@@ -97,14 +98,16 @@
         <button @click="cerrarModulo">{{ textsStore.getText('variables_section.confirm_yes') || 'Sí, cerrar' }}</button>
         <button @click="mostrarModal = false">{{ textsStore.getText('variables_section.confirm_no') || 'Cancelar' }}</button>
       </div>
-    </div>
-    <!-- Modal de confirmación para regresar -->
-    <div v-if="mostrarModalRegresar" class="modal-confirm">
-      <div class="modal-content">
-        <p class="modal-text">{{ textsStore.getText('variables_section.return_confirm_message') || '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.' }}</p>
-        <button @click="regresarModulo">{{ textsStore.getText('variables_section.confirm_yes_return') || 'Sí, regresar' }}</button>
-        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('variables_section.confirm_no') || 'Cancelar' }}</button>
-      </div>
+        </div>
+        
+        <!-- Modal de confirmación para regresar -->
+        <div v-if="mostrarModalRegresar" class="modal-confirm">
+          <div class="modal-content">
+            <p class="modal-text">{{ textsStore.getText('variables_section.return_confirm_message') || '¿Está seguro que desea regresar? Solo podrá hacer esto una vez.' }}</p>
+            <button @click="regresarModulo">{{ textsStore.getText('variables_section.confirm_yes_return') || 'Sí, regresar' }}</button>
+            <button @click="mostrarModalRegresar = false">{{ textsStore.getText('variables_section.confirm_no') || 'Cancelar' }}</button>
+          </div>
+        </div>
     </div>
 
 </template>

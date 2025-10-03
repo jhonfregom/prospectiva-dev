@@ -1,6 +1,7 @@
 <template>
-    <div v-if="traceabilityStore.isLoading || !seccionesValidas" style="min-height:160px;"></div>
-    <div v-else class="analisis-mapa-variables-container">
+    <div class="analisis-mapa-variables-wrapper">
+        <div v-if="traceabilityStore.isLoading || !seccionesValidas" style="min-height:160px;"></div>
+        <div v-else class="analisis-mapa-variables-container">
         <b-message type="is-info" has-icon class="description-message">
             {{ descriptionWithCount }}
         </b-message>
@@ -90,13 +91,14 @@
         <button @click="mostrarModal = false">{{ textsStore.getText('analysis_section.confirm_no') }}</button>
       </div>
     </div>
-    <!-- Modal de confirmación para regresar -->
-    <div v-if="mostrarModalRegresar" class="modal-confirm">
-      <div class="modal-content">
-        <p class="modal-text">{{ textsStore.getText('analysis_section.return_confirm_message') }}</p>
-        <button @click="regresarModulo">{{ textsStore.getText('analysis_section.confirm_yes_return') }}</button>
-        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('analysis_section.confirm_no') }}</button>
-      </div>
+        <!-- Modal de confirmación para regresar -->
+        <div v-if="mostrarModalRegresar" class="modal-confirm">
+          <div class="modal-content">
+            <p class="modal-text">{{ textsStore.getText('analysis_section.return_confirm_message') }}</p>
+            <button @click="regresarModulo">{{ textsStore.getText('analysis_section.confirm_yes_return') }}</button>
+            <button @click="mostrarModalRegresar = false">{{ textsStore.getText('analysis_section.confirm_no') }}</button>
+          </div>
+        </div>
     </div>
 </template>
 

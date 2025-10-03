@@ -96,7 +96,7 @@
     <div class="container">
         <div class="header">
             <h1 class="title">🔐 Restablecimiento de Contraseña</h1>
-            <p class="subtitle">Sistema Prospectiva</p>
+            <p class="subtitle">Foresight tool</p>
         </div>
 
         <div class="content">
@@ -105,7 +105,7 @@
             </div>
 
             <div class="message">
-                Has solicitado restablecer tu contraseña en el Sistema Prospectiva. 
+                Has solicitado restablecer tu contraseña en el Sistema Foresight tool. 
                 Para continuar con el proceso, haz clic en el botón de abajo.
             </div>
 

@@ -25,11 +25,13 @@
                     <b-button
                         :loading="isLoading"
                         type="is-primary"
+                        class="modal-button"
                         @click="handleSubmit">
                         {{ textsStore.getText('variables_section.modal.save') }}
                     </b-button>
                     <b-button
                         type="is-danger"
+                        class="modal-button"
                         @click="handleClose">
                         {{ textsStore.getText('variables_section.modal.cancel') }}
                     </b-button>
@@ -109,6 +111,22 @@ export default {
 .modal-card-foot {
     justify-content: flex-end;
     padding: 20px;
+    gap: 10px;
+}
+
+.modal-button {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    flex: 0 0 120px !important;
+    text-align: center;
+    box-sizing: border-box;
+    display: inline-block !important;
+    line-height: 1 !important;
+    padding: 8px 16px !important;
 }
 
 .b-field {

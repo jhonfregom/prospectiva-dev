@@ -1,5 +1,6 @@
 <template>
-    <div class="conclusions-container" :key="forceRerender">
+    <div class="conclusions-wrapper">
+        <div class="conclusions-container" :key="forceRerender">
         <!-- MiniStepper eliminado -->
         
         <!-- Mostrar mensaje de carga si los textos no están disponibles -->
@@ -151,14 +152,16 @@
         <button @click="cerrarModulo">{{ textsStore.getText('conclusions_section.confirm_yes') }}</button>
         <button @click="mostrarModal = false">{{ textsStore.getText('conclusions_section.confirm_no') }}</button>
       </div>
-    </div>
-    <!-- Modal de confirmación para regresar -->
-    <div v-if="mostrarModalRegresar" class="modal-confirm">
-      <div class="modal-content">
-        <p>{{ textsStore.getText('conclusions_section.return_confirm_message') }}</p>
-        <button @click="regresarModulo">{{ textsStore.getText('conclusions_section.confirm_yes_return') }}</button>
-        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('conclusions_section.confirm_no') }}</button>
-      </div>
+        </div>
+        
+        <!-- Modal de confirmación para regresar -->
+        <div v-if="mostrarModalRegresar" class="modal-confirm">
+          <div class="modal-content">
+            <p>{{ textsStore.getText('conclusions_section.return_confirm_message') }}</p>
+            <button @click="regresarModulo">{{ textsStore.getText('conclusions_section.confirm_yes_return') }}</button>
+            <button @click="mostrarModalRegresar = false">{{ textsStore.getText('conclusions_section.confirm_no') }}</button>
+          </div>
+        </div>
     </div>
 </template>
 

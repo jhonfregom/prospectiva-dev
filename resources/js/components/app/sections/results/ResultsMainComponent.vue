@@ -1,5 +1,6 @@
 <template>
-    <div class="main-content">
+    <div class="results-wrapper">
+        <div class="main-content">
         <!-- Letrero informativo -->
         <info-banner-component
             :description="getResultsDescription"
@@ -555,13 +556,13 @@
   <!-- Modal funcional de Bulma para mostrar los Ejes de Schwartz -->
   <div v-if="showSchwartzModalRef" class="modal is-active">
     <div class="modal-background" @click="showSchwartzModalRef = false"></div>
-    <div class="modal-card" style="width: 900px; max-width: 98vw;">
+    <div class="modal-card" style="width: 1400px; max-width: 98vw;">
       <header class="modal-card-head">
         <p class="modal-card-title">Ejes de Peter Schwartz de {{ selectedSchwartzUser }}</p>
         <button class="delete" aria-label="close" @click="showSchwartzModalRef = false"></button>
       </header>
       <section class="modal-card-body">
-        <SchwartzMainComponent :external-scenarios="selectedSchwartzScenarios" :external-hypotheses="selectedSchwartzHypotheses" :readonly="true" size="medium" />
+        <SchwartzMainComponent :external-scenarios="selectedSchwartzScenarios" :external-hypotheses="selectedSchwartzHypotheses" :readonly="true" size="large" />
       </section>
       <footer class="modal-card-foot">
         <button class="button is-danger" @click="showSchwartzModalRef = false">Cerrar</button>
@@ -606,10 +607,23 @@
       :pdfMode="true"
       style="width: 900px; height: 700px;"
     />
-  </div>
-
-
-
+        </div>
+        
+        <!-- Div oculto para PDF -->
+        <div
+          v-if="user"
+          id="pdf-content"
+          style="position: absolute; left: -9999px; top: 0; width: 900px; height: 700px; background: white;"
+        >
+          <SchwartzMainComponent
+            :scenarios="user.scenarios"
+            :hypotheses="convertFutureDriversToHypotheses(user.future_drivers)"
+            :readonly="true"
+            :pdfMode="true"
+            style="width: 900px; height: 700px;"
+          />
+        </div>
+    </div>
 </template>
 <script>
 import { jsPDF } from 'jspdf';
@@ -646,8 +660,8 @@ export default {
         const traceabilityStore = useTraceabilityStore();
         const { users, isLoading } = storeToRefs(resultsStore);
 
-        const user = JSON.parse(localStorage.getItem('user')) || {};
-        const isAdmin = user.role === 1;
+        const user = ref(JSON.parse(localStorage.getItem('user')) || {});
+        const isAdmin = computed(() => user.value.role === 1);
 
         const filterId = ref('');
         const filterFirstName = ref('');
@@ -1389,9 +1403,9 @@ export default {
           doc.setFontSize(16);
           doc.setFont(undefined, 'bold');
           
-          const titleWidth = doc.getTextWidth('REPORTE COMPLETO DE PROSPECTIVA');
+          const titleWidth = doc.getTextWidth('REPORTE COMPLETO DE FORESIGHT TOOL');
           const titleX = (pageWidth - titleWidth) / 2;
-          doc.text('REPORTE COMPLETO DE PROSPECTIVA', titleX, y);
+          doc.text('REPORTE COMPLETO DE FORESIGHT TOOL', titleX, y);
           y += 25;
           
           doc.setFontSize(14);
@@ -2134,9 +2148,9 @@ export default {
             doc.setFontSize(8);
             doc.text(`Reporte generado el ${new Date().toLocaleString('es-ES')}`, 40, y);
             y += 8;
-            doc.text('Sistema de Prospectiva - Análisis Estructural de Variables', 40, y);
+            doc.text('Sistema de foresight tool - Análisis Estructural de Variables', 40, y);
 
-            doc.save(`Reporte_Prospectiva_${usuario.first_name || ''}_${usuario.last_name || ''}_${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`Reporte_foresight tool_${usuario.first_name || ''}_${usuario.last_name || ''}_${new Date().toISOString().split('T')[0]}.pdf`);
           } catch (error) {
             restoreGraphics();
             restoreGraphicsToOriginal();
@@ -2191,6 +2205,7 @@ export default {
             traceabilityStore, 
             users, 
             isLoading, 
+            user,
             isAdmin,
             getResultsDescription,
             filterId,

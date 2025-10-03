@@ -150,13 +150,13 @@
             <div class="header-icon">🚀</div>
             <div>
                 <h1>Nuevo Usuario Registrado</h1>
-                <p>Sistema de Prospectiva</p>
+                <p>Foresight tool</p>
             </div>
         </div>
 
         <p>Hola Administrador,</p>
         
-        <p>Se ha registrado un nuevo usuario en el sistema de Prospectiva. A continuación los detalles:</p>
+        <p>Se ha registrado un nuevo usuario en el sistema de Foresight too. A continuación los detalles:</p>
 
         <div class="user-info">
             <h3>Información del Usuario</h3>
@@ -203,7 +203,7 @@
         <p><strong>Nota:</strong> Este es un mensaje automático del sistema. No es necesario responder.</p>
 
         <div class="footer">
-            <p>© {{ date('Y') }} Sistema de Prospectiva</p>
+            <p>© {{ date('Y') }} Sistema de Foresight tool</p>
             <p>Este email fue enviado automáticamente cuando se registró un nuevo usuario.</p>
         </div>
     </div>

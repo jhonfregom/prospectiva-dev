@@ -1,6 +1,7 @@
 <template>
-    <div v-if="traceabilityStore.isLoading || !seccionesValidas" style="min-height:160px;"></div>
-    <div v-else class="matriz-container">
+    <div class="matriz-wrapper">
+        <div v-if="traceabilityStore.isLoading || !seccionesValidas" style="min-height:160px;"></div>
+        <div v-else class="matriz-container">
         <!-- Letrero informativo -->
         <info-banner-component
             :description="textsStore.getText('matriz.description')"
@@ -167,12 +168,13 @@
         <button @click="mostrarModal = false">{{ textsStore.getText('matriz_section.confirm_no') }}</button>
       </div>
     </div>
-    <div v-if="mostrarModalRegresar" class="modal-confirm">
-      <div class="modal-content">
-        <p>¿Está seguro de que desea regresar el módulo de matriz? Podrá editar y guardar nuevamente.</p>
-        <button @click="regresarModulo">Sí, regresar</button>
-        <button @click="mostrarModalRegresar = false">Cancelar</button>
-      </div>
+        <div v-if="mostrarModalRegresar" class="modal-confirm">
+          <div class="modal-content">
+            <p>¿Está seguro de que desea regresar el módulo de matriz? Podrá editar y guardar nuevamente.</p>
+            <button @click="regresarModulo">Sí, regresar</button>
+            <button @click="mostrarModalRegresar = false">Cancelar</button>
+          </div>
+        </div>
     </div>
 </template>
 

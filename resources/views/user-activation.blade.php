@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activación de Usuario - Prospectiva</title>
+    <title>Activación de Usuario - Foresight tool</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -208,7 +208,7 @@
     <div class="activation-container">
         <div class="activation-header">
             <h1>Activación de Usuario</h1>
-            <p>Sistema de Prospectiva</p>
+            <p>Foresight tool</p>
         </div>
         
         <div class="user-info">
@@ -233,7 +233,7 @@
         
         <div class="activation-question">
             <h3>¿Desea habilitar al usuario?</h3>
-            <p>Al habilitar al usuario, podrá acceder al sistema de Prospectiva.</p>
+            <p>Al habilitar al usuario, podrá acceder al sistema de Foresight tool.</p>
         </div>
         
         <div class="activation-buttons">

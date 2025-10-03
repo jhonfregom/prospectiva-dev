@@ -7,6 +7,7 @@
         <!-- Nuevo Stepper visual custom -->
         <CustomStepper
             :steps="steps"
+            :modelValue="currentStep"
             @update:modelValue="onStepperInput"
         />
         
@@ -25,11 +26,10 @@
 </template>
 
 <script>
-import { onMounted, computed } from 'vue';
+import { onMounted, computed, ref, watch } from 'vue';
 import { useTextsStore } from '../../../stores/texts';
 import { useSessionStore } from '../../../stores/session';
 import { useTraceabilityStore } from '../../../stores/traceability';
-import { ref, watch } from 'vue';
 import CustomStepper from './CustomStepper.vue';
 
 export default {
@@ -169,14 +169,25 @@ export default {
             }
         });
         // --- FIN NUEVO ---
+        // Variable para el stepper - inicializar basado en el contenido activo
+        const getCurrentStep = () => {
+            const activeContent = storeSession.activeContent;
+            const sectionKeys = ['variables', 'matrix', 'graphics', 'analysis', 'hypothesis', 'schwartz', 'initialconditions', 'scenarios', 'conclusions', 'results'];
+            const index = sectionKeys.indexOf(activeContent);
+            return index >= 0 ? index : -1; // -1 para main
+        };
+        
+        const currentStep = ref(getCurrentStep());
+        
         return { 
             storeTexts, 
             storeSession, 
             traceabilityStore,
             steps, 
+            currentStep,
             onStepperInput, 
             showNewRouteButton, 
-            createNewRoute 
+            createNewRoute
         };
     }
 }

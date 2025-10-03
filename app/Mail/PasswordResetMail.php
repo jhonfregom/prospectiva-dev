@@ -31,7 +31,7 @@ class PasswordResetMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Restablecimiento de Contraseña - Sistema Prospectiva',
+            subject: 'Restablecimiento de Contraseña - Sistema Foresight tool',
         );
     }
 

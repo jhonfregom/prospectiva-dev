@@ -1,5 +1,6 @@
 <template>
-    <div class="direction-future-container">
+    <div class="direction-future-wrapper">
+        <div class="direction-future-container">
         <!-- Letrero informativo -->
         <info-banner-component
             :description="textsStore.getText('hypothesis.description')"
@@ -95,14 +96,16 @@
         <button @click="cerrarModulo">{{ textsStore.getText('hypothesis_section.confirm_yes') }}</button>
         <button @click="mostrarModal = false">{{ textsStore.getText('hypothesis_section.confirm_no') }}</button>
       </div>
-    </div>
-    <!-- Modal de confirmación para regresar -->
-    <div v-if="mostrarModalRegresar" class="modal-confirm">
-      <div class="modal-content">
-        <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
-        <button @click="regresarModulo">Sí, regresar</button>
-        <button @click="mostrarModalRegresar = false">Cancelar</button>
-      </div>
+        </div>
+        
+        <!-- Modal de confirmación para regresar -->
+        <div v-if="mostrarModalRegresar" class="modal-confirm">
+          <div class="modal-content">
+            <p>¿Está seguro que desea regresar? Solo podrá hacer esto una vez.</p>
+            <button @click="regresarModulo">Sí, regresar</button>
+            <button @click="mostrarModalRegresar = false">Cancelar</button>
+          </div>
+        </div>
     </div>
 
 </template>

@@ -1,5 +1,6 @@
 <template>
-    <div class="schwartz-container">
+    <div class="schwartz-wrapper">
+        <div class="schwartz-container">
         <!-- Letrero informativo - solo mostrar si no es readonly y no es modo externo -->
         <info-banner-component
             v-if="!readonly && !externalScenarios && !externalHypotheses"
@@ -7,16 +8,17 @@
         />
         
         <div class="schwartz-matrix-container" :style="{ width: schwartzSize, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center' }">
+            <!-- Ejes rojos - fuera de la matriz para que no se muevan -->
+            <div class="schwartz-axis schwartz-axis-x"></div>
+            <div class="schwartz-axis schwartz-axis-y"></div>
+            
             <div class="schwartz-matrix">
-                <!-- Ejes rojos -->
-                <div class="schwartz-axis schwartz-axis-x"></div>
-                <div class="schwartz-axis schwartz-axis-y"></div>
                 <!-- Fila 1 -->
                 <div class="cell empty"></div>
                 <div class="cell empty"></div>
                 <div class="cell hypo top">
                     <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_plus') }}</div>
-                    <div class="cell-content" :style="readonly ? { maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' } : {}">{{ h1H1 }}</div>
+                    <div class="cell-content" :style="readonly ? { maxHeight: '120px', overflowY: 'auto', overflowX: 'hidden', whiteSpace: 'pre-line', padding: '6px' } : {}">{{ h1H1 }}</div>
                 </div>
                 <div class="cell empty"></div>
                 <div class="cell empty"></div>
@@ -26,7 +28,7 @@
                 <div class="cell scenario">
                     <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_4') }}</div>
                     <div v-if="readonly">
-                        <div class="cell-content" :style="{ maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' }">{{ escenarios[3]?.texto || escenarios[3]?.titulo }}</div>
+                        <div class="cell-content" :style="{ maxHeight: '120px', overflowY: 'auto', overflowX: 'hidden', whiteSpace: 'pre-line', padding: '6px' }">{{ escenarios[3]?.texto || escenarios[3]?.titulo }}</div>
                     </div>
                     <div v-else>
                         <b-input type="textarea"
@@ -53,7 +55,7 @@
                 <div class="cell scenario">
                     <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_1') }}</div>
                     <div v-if="readonly">
-                        <div class="cell-content" :style="{ maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' }">{{ escenarios[0]?.texto || escenarios[0]?.titulo }}</div>
+                        <div class="cell-content" :style="{ maxHeight: '120px', overflowY: 'auto', overflowX: 'hidden', whiteSpace: 'pre-line', padding: '6px' }">{{ escenarios[0]?.texto || escenarios[0]?.titulo }}</div>
                     </div>
                     <div v-else>
                         <b-input type="textarea"
@@ -81,14 +83,14 @@
                 <!-- Fila 3 -->
                 <div class="cell hypo left">
                     <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_minus') }}</div>
-                    <div class="cell-content" :style="readonly ? { maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' } : {}">{{ h2H0 }}</div>
+                    <div class="cell-content" :style="readonly ? { maxHeight: '120px', overflowY: 'auto', overflowX: 'hidden', whiteSpace: 'pre-line', padding: '6px' } : {}">{{ h2H0 }}</div>
                 </div>
                 <div class="cell empty"></div>
                 <div class="cell empty"></div>
                 <div class="cell empty"></div>
                 <div class="cell hypo right">
                     <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h2_plus') }}</div>
-                    <div class="cell-content" :style="readonly ? { maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' } : {}">{{ h2H1 }}</div>
+                    <div class="cell-content" :style="readonly ? { maxHeight: '120px', overflowY: 'auto', overflowX: 'hidden', whiteSpace: 'pre-line', padding: '6px' } : {}">{{ h2H1 }}</div>
                 </div>
 
                 <!-- Fila 4 -->
@@ -96,7 +98,7 @@
                 <div class="cell scenario">
                     <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_3') }}</div>
                     <div v-if="readonly">
-                        <div class="cell-content" :style="{ maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' }">{{ escenarios[2]?.texto || escenarios[2]?.titulo }}</div>
+                        <div class="cell-content" :style="{ maxHeight: '120px', overflowY: 'auto', overflowX: 'hidden', whiteSpace: 'pre-line', padding: '6px' }">{{ escenarios[2]?.texto || escenarios[2]?.titulo }}</div>
                     </div>
                     <div v-else>
                         <b-input type="textarea"
@@ -123,7 +125,7 @@
                 <div class="cell scenario">
                     <div class="scenario-title">{{ textsStore.getText('schwartz.scenarios.scenario_2') }}</div>
                     <div v-if="readonly">
-                        <div class="cell-content" :style="{ maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' }">{{ escenarios[1]?.texto || escenarios[1]?.titulo }}</div>
+                        <div class="cell-content" :style="{ maxHeight: '120px', overflowY: 'auto', overflowX: 'hidden', whiteSpace: 'pre-line', padding: '6px' }">{{ escenarios[1]?.texto || escenarios[1]?.titulo }}</div>
                     </div>
                     <div v-else>
                         <b-input type="textarea"
@@ -153,7 +155,7 @@
                 <div class="cell empty"></div>
                 <div class="cell hypo bottom">
                     <div class="cell-title">{{ textsStore.getText('schwartz.hypothesis.h1_minus') }}</div>
-                    <div class="cell-content" :style="readonly ? { maxHeight: 'none', overflow: 'visible', whiteSpace: 'pre-line' } : {}">{{ h1H0 }}</div>
+                    <div class="cell-content" :style="readonly ? { maxHeight: '120px', overflowY: 'auto', overflowX: 'hidden', whiteSpace: 'pre-line', padding: '6px' } : {}">{{ h1H0 }}</div>
                 </div>
                 <div class="cell empty"></div>
                 <div class="cell empty"></div>
@@ -173,22 +175,25 @@
         v-else-if="state !== null && state === '0'"
         @click="confirmarRegresar"
       >{{ textsStore.getText('schwartz_section.return_button') }}</button>
-    </div>
-    <!-- Modal de confirmación -->
-    <div v-if="mostrarModal" class="modal-confirm">
-      <div class="modal-content">
-        <p>{{ textsStore.getText('schwartz_section.close_confirm_message') }}</p>
-        <button @click="cerrarModulo">{{ textsStore.getText('schwartz_section.confirm_yes') }}</button>
-        <button @click="mostrarModal = false">{{ textsStore.getText('schwartz_section.confirm_no') }}</button>
-      </div>
-    </div>
-    <!-- Modal de confirmación para regresar -->
-    <div v-if="mostrarModalRegresar" class="modal-confirm">
-      <div class="modal-content">
-        <p>{{ textsStore.getText('schwartz_section.return_confirm_message') }}</p>
-        <button @click="regresarModulo">{{ textsStore.getText('schwartz_section.confirm_yes_return') }}</button>
-        <button @click="mostrarModalRegresar = false">{{ textsStore.getText('schwartz_section.confirm_no') }}</button>
-      </div>
+        </div>
+        
+        <!-- Modal de confirmación -->
+        <div v-if="mostrarModal" class="modal-confirm">
+          <div class="modal-content">
+            <p>{{ textsStore.getText('schwartz_section.close_confirm_message') }}</p>
+            <button @click="cerrarModulo">{{ textsStore.getText('schwartz_section.confirm_yes') }}</button>
+            <button @click="mostrarModal = false">{{ textsStore.getText('schwartz_section.confirm_no') }}</button>
+          </div>
+        </div>
+        
+        <!-- Modal de confirmación para regresar -->
+        <div v-if="mostrarModalRegresar" class="modal-confirm">
+          <div class="modal-content">
+            <p>{{ textsStore.getText('schwartz_section.return_confirm_message') }}</p>
+            <button @click="regresarModulo">{{ textsStore.getText('schwartz_section.confirm_yes_return') }}</button>
+            <button @click="mostrarModalRegresar = false">{{ textsStore.getText('schwartz_section.confirm_no') }}</button>
+          </div>
+        </div>
     </div>
 </template>
 
@@ -308,6 +313,13 @@ export default {
                 return props.externalScenarios;
             }
             return schwartzStore.escenarios;
+        });
+
+        const schwartzSize = computed(() => {
+            if (props.size === 'small') return '400px';
+            if (props.size === 'medium') return '600px';
+            if (props.size === 'large') return '1200px';
+            return '800px'; // default
         });
         const setEscenario = (index, texto) => schwartzStore.setEscenario(index, texto);
 
@@ -505,6 +517,7 @@ export default {
             h2H0,
             h2H1,
             escenarios,
+            schwartzSize,
             setEscenario,
             handleTextInput,
             handleTextPaste,
@@ -531,12 +544,13 @@ export default {
 .schwartz-matrix-container {
     position: relative;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     width: 100%;
     height: 100%;
-    min-height: 600px;
+    min-height: 700px;
     margin-top: 32px;
+    padding-left: 0px;
 }
 .schwartz-matrix.pdf-mode {
     grid-template-columns: repeat(5, minmax(220px, 1fr));
@@ -544,8 +558,8 @@ export default {
 }
 .schwartz-matrix {
     display: grid;
-    grid-template-columns: repeat(5, minmax(160px, 1fr));
-    grid-template-rows: repeat(5, minmax(80px, 1fr));
+    grid-template-columns: repeat(5, minmax(250px, 1fr));
+    grid-template-rows: repeat(5, minmax(120px, 1fr));
     gap: 0px;
     position: relative;
     z-index: 2;
@@ -553,6 +567,7 @@ export default {
     height: 100%;
     max-width: 100%;
     max-height: 100%;
+    margin-left: -50px;
 }
 .cell {
     background: #fff;
@@ -608,24 +623,36 @@ export default {
     line-height: 1.5;
     box-sizing: border-box;
     white-space: pre-line;
-    max-height: none;
-    overflow: visible;
+    max-height: 140px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px;
+    border-radius: 4px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .cell.hypo {
     background: #FAFAFA;
     border: 1px solid #E0E7FF;
-    min-height: 120px;
+    min-height: 160px;
     max-height: 300px;
     box-shadow: 0 3px 12px rgba(79, 70, 229, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 .cell.scenario {
     background: #fff;
     border: 1px solid #E0E7FF;
-    min-width: 120px;
-    min-height: 80px;
+    min-width: 200px;
+    min-height: 120px;
     align-items: stretch;
     justify-content: flex-start;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
 }
 .scenario-title {
     font-weight: 600;
@@ -647,7 +674,7 @@ export default {
     margin-top: 6px;
     resize: vertical;
     max-height: 120px;
-    overflow-y: auto;
+    overflow-y: hidden;
     border: 1px solid #E0E7FF;
     border-radius: 4px;
     padding: 8px;
@@ -664,15 +691,19 @@ export default {
     position: absolute;
     background: red;
     z-index: 1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 .schwartz-axis-x {
     position: absolute;
     top: 50%;
-    left: 50%;
-    width: 61%;
-    height: 4px;
+    left: 600px;
+    width: 761px;
+    height: 6px;
     background: red;
     transform: translate(-50%, -50%);
+    z-index: 1;
 }
 .schwartz-axis-x::before,
 .schwartz-axis-x::after {
@@ -698,10 +729,11 @@ export default {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 4px;
+    width: 6px;
     height: 61%; 
     background: red;
     transform: translate(-50%, -50%);
+    z-index: 1;
 }
 .schwartz-axis-y::before,
 .schwartz-axis-y::after {

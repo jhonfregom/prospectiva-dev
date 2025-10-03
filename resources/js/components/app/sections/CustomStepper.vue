@@ -62,7 +62,7 @@ function smartTextWrap(text) {
   // Si no está en la lista, intentar dividir inteligentemente
   if (!smartBreaks[text]) {
     // Para palabras largas, buscar el mejor punto de división
-    if (text.length > 10) {
+    if (text.length > 8) {
       const midPoint = Math.ceil(text.length / 2);
       // Buscar un espacio o vocal cerca del punto medio para dividir
       let breakPoint = midPoint;
@@ -92,49 +92,17 @@ function detectOverlap() {
   
   if (!container || steps.length === 0) return;
   
-  const containerWidth = container.offsetWidth;
-  const stepWidth = containerWidth / steps.length;
   const windowWidth = window.innerWidth;
   
-  // Verificar si el texto se está cortando visualmente
-  let needsWrapping = false;
-  
-  steps.forEach(step => {
-    const label = step.querySelector('.step-label');
-    if (label) {
-      const text = label.textContent.replace(/<br>/g, '');
-      
-      // Crear un elemento temporal para medir el ancho real del texto
-      const tempElement = document.createElement('span');
-      tempElement.style.visibility = 'hidden';
-      tempElement.style.position = 'absolute';
-      tempElement.style.fontSize = getComputedStyle(label).fontSize;
-      tempElement.style.fontFamily = getComputedStyle(label).fontFamily;
-      tempElement.style.fontWeight = getComputedStyle(label).fontWeight;
-      tempElement.style.whiteSpace = 'nowrap';
-      tempElement.textContent = text;
-      document.body.appendChild(tempElement);
-      
-      const textWidth = tempElement.offsetWidth;
-      const availableWidth = stepWidth - 1; // Margen de seguridad más pequeño
-      
-      document.body.removeChild(tempElement);
-      
-      // Si el texto es más ancho que el espacio disponible, necesita wrapping
-      // Usar un umbral más conservador (98% del espacio disponible)
-      
-    }
-  });
-  
-  // Aplicar wrapping solo cuando sea realmente necesario
-  const shouldWrap = needsWrapping || (windowWidth < 1400 && stepWidth < 1000);
+  // Solo aplicar wrapping en pantallas muy pequeñas
+  const shouldWrap = windowWidth < 1000;
   
   if (shouldWrap) {
     steps.forEach(step => {
       const label = step.querySelector('.step-label');
       if (label) {
         const text = label.textContent.replace(/<br>/g, '');
-        // Solo aplicar wrapping si el texto es realmente largo
+        // Aplicar wrapping a todos los textos largos
         if (text.length > 8) {
           label.innerHTML = smartTextWrap(text);
         }
@@ -198,6 +166,11 @@ onMounted(async () => {
   
   // Escuchar cambios de tamaño de ventana con debounce
   window.addEventListener('resize', debouncedDetectOverlap);
+  
+  // Ejecutar detección inicial después de que se renderice el componente
+  setTimeout(() => {
+    detectOverlap();
+  }, 100);
 });
 
 onUnmounted(() => {
@@ -248,7 +221,15 @@ function persistStep(idx) {
 function isStepEnabled(idx) {
   const step = props.steps[idx];
   if (!step) return false;
-  if (!isStoreInitialized.value) return true;
+  
+  // Variables y Matriz siempre están disponibles
+  if (idx === 0 || idx === 1) return true;
+  
+  // Si el store no está inicializado, permitir acceso a los primeros módulos
+  if (!isStoreInitialized.value) {
+    return idx <= 2; // Variables, Matriz, Gráfica
+  }
+  
   const sectionKeys = [
     'variables',
     'matrix', 
@@ -271,20 +252,20 @@ function isStepEnabled(idx) {
 
 async function onBubbleClick(idx) {
   await traceabilityStore.forceReloadSections();
-  if (idx === props.modelValue || animating.value) return;
-  const userRole = traceabilityStore.getUserRole;
-  const isAdmin = traceabilityStore.isAdmin;
-  if (!isAdmin) {
-    const currentIndex = props.modelValue;
-    const targetIndex = idx;
-    if (targetIndex > currentIndex + 1) {
-      alert('Debes completar las secciones en orden. Solo puedes avanzar al siguiente módulo disponible.');
+  if (idx === props.modelValue || animating.value) {
+    return;
+  }
+  
+  // Variables y Matriz siempre permitidos
+  if (idx === 0 || idx === 1) {
+    // Acceso directo permitido
+  } else {
+    const userRole = traceabilityStore.getUserRole;
+    const isAdmin = traceabilityStore.isAdmin;
+    if (!isStepEnabled(idx)) {
+      alert(`La sección ${props.steps[idx].label} no está disponible aún. Debes completar las secciones anteriores primero.`);
       return;
     }
-  }
-  if (!isStepEnabled(idx)) {
-    alert(`La sección ${props.steps[idx].label} no está disponible aún. Debes completar las secciones anteriores primero.`);
-    return;
   }
   animating.value = true;
   lastStep.value = idx;
@@ -380,7 +361,7 @@ function getTooltipText(stepLabel) {
   padding: 0;
   margin: 0;
   list-style: none;
-  pointer-events: none;
+  pointer-events: auto;
   gap: 0;
 }
 .step {
@@ -457,7 +438,7 @@ function getTooltipText(stepLabel) {
   opacity: 1;
 }
 .step-label {
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   font-weight: 500;
   text-align: center;
   margin-bottom: 2px;
@@ -490,7 +471,7 @@ function getTooltipText(stepLabel) {
   }
   
   .step-label {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     line-height: 1.3;
     max-width: 90px;
     white-space: normal;
@@ -517,7 +498,7 @@ function getTooltipText(stepLabel) {
   }
   
   .step-label {
-    font-size: 1.4rem;
+    font-size: 1.1rem;
     line-height: 1.2;
     max-width: 85px;
     white-space: normal;
@@ -544,7 +525,7 @@ function getTooltipText(stepLabel) {
   }
   
   .step-label {
-    font-size: 1.3rem;
+    font-size: 1rem;
     line-height: 1.2;
     max-width: 80px;
     white-space: normal;
@@ -571,7 +552,7 @@ function getTooltipText(stepLabel) {
   }
   
   .step-label {
-    font-size: 1.2rem;
+    font-size: 0.9rem;
     line-height: 1.1;
     max-width: 75px;
     white-space: normal;
@@ -598,7 +579,7 @@ function getTooltipText(stepLabel) {
   }
   
   .step-label {
-    font-size: 1.2rem;
+    font-size: 0.9rem;
     line-height: 1.2;
     max-width: 65px;
     word-wrap: break-word;
@@ -638,7 +619,7 @@ function getTooltipText(stepLabel) {
   }
   
   .step-label {
-    font-size: 1rem;
+    font-size: 0.8rem;
     display: none; /* Ocultar labels en tablet */
   }
 }
