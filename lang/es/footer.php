@@ -10,5 +10,5 @@ return [
     */
     'terms'             =>  'Terminos y condiciones',
     'policies'          =>  'Políticas privaciad',
-    'copyright'         =>  'Copyright '. date('Y') .' Proyecto Prospectiva - Todos los derechos reservados',
+    'copyright'         =>  'Copyright '. date('Y') .' Proyecto Foresight Tool - Todos los derechos reservados',
 ];
