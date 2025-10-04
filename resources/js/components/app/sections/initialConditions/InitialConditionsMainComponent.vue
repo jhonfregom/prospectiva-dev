@@ -186,13 +186,11 @@ export default {
             });
             
             if (row.state === '1') {
-                console.log('Row is locked, cannot edit');
                 return;
             }
             
             if (editingRow.value === row.id) {
                 
-                console.log('Saving initial condition for variable ID:', row.id);
                 const result = await initialConditionsStore.updateCondition(row.id, localNowConditions.value[row.id] || '');
                 
                 if (result && result.success) {

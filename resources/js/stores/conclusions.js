@@ -30,11 +30,9 @@ export const useConclusionsStore = defineStore('conclusions', {
             
             try {
                 const response = await axios.get('/conclusions');
-                console.log('Fetch conclusions response:', response.data);
                 
                 if (response.data.status === 200) {
                     this.conclusions = { ...response.data.data };
-                    console.log('Conclusions state:', this.conclusions.state);
                 }
                 
                 return response.data;

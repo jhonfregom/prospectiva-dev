@@ -224,7 +224,6 @@ export default {
         const actualHeight = h === 0 ? newHeight : Math.max(h, newHeight);
         
         // Debug: mostrar información de altura
-        console.log(`Caja ${title}: h=${h}, newHeight=${newHeight}, actualHeight=${actualHeight}, textLines=${textLines.length}`);
         const radius = 8; 
 
         ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
