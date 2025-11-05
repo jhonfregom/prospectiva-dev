@@ -119,19 +119,15 @@ export const useVariablesStore = defineStore('variables', {
                     state: variable.state // <-- AÑADIDO
                 });
 
-                console.log('Variable update response:', response.data);
-
                 if (response.data.status === 200) {
                     const index = this.variables.findIndex(v => v.id === variable.id);
                     if (index !== -1) {
-                        console.log('Updating variable at index:', index, 'with data:', response.data.data);
                         // Forzar reactividad reemplazando todo el array
                         this.variables = [
                             ...this.variables.slice(0, index),
                             response.data.data,
                             ...this.variables.slice(index + 1)
                         ];
-                        console.log('Variable updated, new state:', this.variables[index].state);
                     }
                     return true;
                 }

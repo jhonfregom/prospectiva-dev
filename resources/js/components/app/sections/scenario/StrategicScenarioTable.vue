@@ -815,7 +815,6 @@ export default {
                 const response = await axios.get('/traceability/current-route-state');
                 if (response.data && response.data.success && response.data.state !== undefined) {
                     state.value = response.data.state;
-                    console.log('Estado cargado en Escenarios:', state.value);
                 }
             } catch (error) {
                 console.error('Error al cargar state:', error);
