@@ -15,7 +15,7 @@
             icon-pack="fas"
         >
             <b-table-column field="zone" label="Ubicación" width="180" v-slot="props" centered>
-                <span>{{ getZoneName(props.row.key) }}</span>
+                <span class="zone-name-tooltip" :data-tooltip="getZoneTooltip(props.row.key)">{{ getZoneName(props.row.key) }}</span>
             </b-table-column>
             <b-table-column field="variables" label="Variables en la zona" v-slot="props" centered>
                 <div>
@@ -257,6 +257,15 @@ export default {
         getZoneName(key) {
             const zone = this.textsStore.getText('analysis.zones').find(z => z.key === key);
             return zone ? zone.name : key;
+        },
+        getZoneTooltip(key) {
+            const tooltips = {
+                'poder': 'Variables en zona de Poder: Son variables clave que condicionan fuertemente el sistema, pero sobre las que hay poca posibilidad de influencia interna. Se debe prestarles mucha atención ya que son el motor del sistema.',
+                'conflicto': 'Variables en zona de Conflicto: Son las más influyentes y a la vez las más dependientes del sistema. Son el corazón de la estrategia, ya que al actuar sobre ellas se genera un gran efecto en el sistema (pero también son las que más dependen de la evolución de las otras).',
+                'salida': 'Variables en zona de Salida: Variables que son muy dependientes pero poco influyentes. Su cambio o evolución es un resultado de lo que ocurre con el resto de variables del sistema.',
+                'indiferencia': 'Variables en zona de indiferencia: Variables con una conexión muy reducida con el conjunto del sistema. Son poco motrices y apenas dependen de las demás. Tienen escaso valor para diseñar la estrategia a corto plazo.'
+            };
+            return tooltips[key] || '';
         },
         getDiagnosis(score) {
             const diagnosis = this.textsStore.getText('analysis.diagnosis');
@@ -591,6 +600,52 @@ export default {
 
 :deep(.tag.is-info:hover) {
   background-color: #004466 !important;
+}
+
+/* Tooltip para nombres de zonas */
+.zone-name-tooltip {
+  position: relative;
+  cursor: help;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  display: inline-block;
+}
+
+.zone-name-tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 12px;
+  background: rgba(0, 88, 131, 0.95);
+  color: white;
+  padding: 9px 11px;
+  border-radius: 6px;
+  font-size: 9.4px;
+  white-space: normal;
+  width: 230px;
+  max-width: calc(100vw - 20px);
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 88, 131, 0.4);
+  line-height: 1.5;
+  text-align: justify;
+  font-weight: normal;
+  pointer-events: none;
+}
+
+.zone-name-tooltip:hover::before {
+  content: '';
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 6px;
+  border: 6px solid transparent;
+  border-right-color: rgba(0, 88, 131, 0.95);
+  z-index: 10000;
+  pointer-events: none;
 }
 
 /* Responsive styles for analysis variables */
